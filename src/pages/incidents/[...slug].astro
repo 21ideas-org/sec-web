@@ -73,10 +73,6 @@ const urgency = displayUrgency(d);
       )
     }
 
-    <Content />
-
-    <Thread posts={posts} current={entry.id} />
-
     {
       !d.hijacked && d.links.length > 0 && (
         <div class="links">
@@ -89,6 +85,10 @@ const urgency = displayUrgency(d);
         </div>
       )
     }
+
+    <Content />
+
+    <Thread posts={posts} current={entry.id} />
 
     {
       d.telegramUrl && (

@@ -5,7 +5,19 @@ import { allIncidents, own, type Incident } from '../lib.ts';
 import { displayUrgency, unrecognizedStatuses } from '../status.ts';
 
 const esc = (t: string) =>
-  t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  t
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+const sources = (e: Incident) =>
+  !e.data.hijacked && e.data.links.length > 0
+    ? `<p><strong>Первоисточники:</strong><br>${e.data.links
+        .map(({ label, url }) => `<a href="${esc(url)}">${esc(label)}</a>`)
+        .join('<br>')}</p>`
+    : false;
 
 /**
  * Тело элемента фида.
@@ -31,6 +43,7 @@ function itemContent(e: Incident): string {
         .join(' ')}</p>`,
     e.data.description && `<p>${esc(e.data.description)}</p>`,
     e.data.action && `<p><strong>Что делать:</strong> ${esc(e.data.action)}</p>`,
+    sources(e),
     e.body?.trim(),
   ]
     .filter(Boolean)
