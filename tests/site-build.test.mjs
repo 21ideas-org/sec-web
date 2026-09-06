@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { cp, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import { cp, mkdtemp, readFile, readdir, rm, symlink, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative } from 'node:path';
@@ -139,6 +139,20 @@ async function text(path) {
   return readFile(path, 'utf8');
 }
 
+async function recentRootCount(directory) {
+  const cutoff = Date.now() - 365 * 864e5;
+  let count = 0;
+  for (const file of await readdir(directory)) {
+    if (!file.endsWith('.md')) continue;
+    const source = await text(join(directory, file));
+    if (/^parent:/m.test(source)) continue;
+    const pubDate = source.match(/^pubDate: (\S+)$/m)?.[1];
+    assert.ok(pubDate, `${file} has no pubDate`);
+    if (Date.parse(pubDate) >= cutoff) count += 1;
+  }
+  return count;
+}
+
 test('temporary fixture cleanup also runs after a failed assertion', async () => {
   let created;
   await assert.rejects(
@@ -231,7 +245,12 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
     assert.ok(unknownPage.includes('updateSufficiency=future_sufficiency_state'));
     assert.ok(unknownPage.includes('actionTiming=future_timing_state'));
     assert.match(index, /<article class="card panel" style="--accent: var\(--dim\)">[\s\S]*?Unknown status fixture/);
-    assert.ok(index.includes('<span>за год<b>9</b></span>'), 'updates inflated the incident count');
+    const expectedRecentRoots = await recentRootCount(join(site, 'src/content/incidents'));
+    assert.equal(BACKFILL.filter(([, parent]) => parent === null).length, 3);
+    assert.ok(
+      index.includes(`<span>за год<b>${expectedRecentRoots}</b></span>`),
+      'updates inflated the incident count',
+    );
     assert.ok(index.includes('<span>всего<b>20</b></span>'), 'archive entries leaked into counters');
 
     assert.ok(rootPage.includes(`/incidents/${UPDATE_FIXTURE_ID}/`));
