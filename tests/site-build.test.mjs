@@ -54,6 +54,9 @@ const ARCHIVE_SOURCE_URLS = new Map([
 const ROOT_FIXTURE_ID = 'fixture-2031-09-04-status-axes';
 const UPDATE_FIXTURE_ID = 'fixture-2031-09-05-status-update';
 const UNKNOWN_FIXTURE_ID = 'fixture-2032-09-04-unknown-status';
+const SOURCE_FIXTURE_LABEL = `Source & <safe> "double" 'single'`;
+const SOURCE_FIXTURE_URL = `https://sources.example/path?amp=1&lt=<tag>&double="quoted"&single='quoted'`;
+const SECOND_SOURCE_FIXTURE_URL = 'https://second.example/source?one=1&two=2';
 
 const rootFixture = `---
 title: "Status axes fixture"
@@ -92,7 +95,11 @@ actionTiming: "now"
 hijacked: false
 incidentKey: "fixture-thread"
 parent: "${ROOT_FIXTURE_ID}"
-links: []
+links:
+  - label: 'Source & <safe> "double" ''single'''
+    url: 'https://sources.example/path?amp=1&lt=<tag>&double="quoted"&single=''quoted'''
+  - label: "Second source"
+    url: "${SECOND_SOURCE_FIXTURE_URL}"
 ---
 `;
 
@@ -137,6 +144,28 @@ async function copySite(target) {
 
 async function text(path) {
   return readFile(path, 'utf8');
+}
+
+function rssItemFor(xml, id) {
+  const canonical = `https://sec.21ideas.org/incidents/${id}/`;
+  const item = xml
+    .split('<item>')
+    .slice(1)
+    .map((part) => `<item>${part.slice(0, part.indexOf('</item>') + '</item>'.length)}`)
+    .find((part) => part.includes(`<link>${canonical}</link>`));
+  assert.ok(item, `${id} is missing from RSS`);
+  return { canonical, item };
+}
+
+function rssContent(item) {
+  const encoded = item.match(/<content:encoded>([\s\S]*?)<\/content:encoded>/)?.[1];
+  assert.ok(encoded, 'RSS item has no content:encoded');
+  return encoded
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, '&');
 }
 
 async function recentRootCount(directory) {
@@ -237,6 +266,14 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
     assert.ok(!hijack[1].includes('<a '), 'hijack banner must not contain links');
     assert.ok(!rootPage.includes('https://untrusted.example/'), 'hijacked page must suppress source links');
 
+    const actionPosition = updatePage.indexOf('class="action panel"');
+    const sourcesPosition = updatePage.indexOf('class="links"');
+    const threadPosition = updatePage.indexOf('class="thread"');
+    assert.ok(actionPosition >= 0, 'threaded fixture action is missing');
+    assert.ok(sourcesPosition > actionPosition, 'sources must render after the action');
+    assert.ok(threadPosition > sourcesPosition, 'sources must render before incident history');
+    assert.ok(!unknownPage.includes('<h2>Первоисточники</h2>'), 'empty links rendered a source block');
+
     assert.ok(!unknownPage.includes('class="u u-ok"'));
     assert.ok(!unknownPage.includes('#патч_есть'));
     assert.ok(!unknownPage.includes('class="u u-neutral"'));
@@ -260,6 +297,24 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
     assert.ok(rss.includes('#патч_есть'));
     assert.ok(rss.includes('официальный аккаунт Fixture Vendor угнан'));
     assert.ok(!rss.includes('https://untrusted.example/'));
+    const { canonical, item: updateRssItem } = rssItemFor(rss, UPDATE_FIXTURE_ID);
+    assert.ok(updateRssItem.includes(`<link>${canonical}</link>`));
+    assert.ok(updateRssItem.includes(`<guid isPermaLink="true">${canonical}</guid>`));
+    const updateRssContent = rssContent(updateRssItem);
+    const rssActionPosition = updateRssContent.indexOf('<strong>Что делать:</strong>');
+    const rssSourcesPosition = updateRssContent.indexOf('<strong>Первоисточники:</strong>');
+    assert.ok(rssSourcesPosition > rssActionPosition, 'RSS sources must render after the action');
+    assert.ok(!updateRssContent.includes(SOURCE_FIXTURE_LABEL), 'RSS source label was not escaped');
+    assert.ok(!updateRssContent.includes(SOURCE_FIXTURE_URL), 'RSS source URL was not escaped');
+    assert.ok(updateRssContent.includes('Source &amp; &lt;safe&gt; &quot;double&quot; &#39;single&#39;'));
+    assert.ok(
+      updateRssContent.includes(
+        'href="https://sources.example/path?amp=1&amp;lt=&lt;tag&gt;&amp;double=&quot;quoted&quot;&amp;single=&#39;quoted&#39;"',
+      ),
+    );
+    assert.ok(updateRssContent.includes(`href="${SECOND_SOURCE_FIXTURE_URL.replace('&', '&amp;')}"`));
+    const { item: emptyRssItem } = rssItemFor(rss, UNKNOWN_FIXTURE_ID);
+    assert.ok(!rssContent(emptyRssItem).includes('<strong>Первоисточники:</strong>'));
     assert.ok(rss.includes('fixStatus=future_fix_state'));
     assert.ok(!rss.includes('<category>fixStatus='));
     assert.ok(!rss.includes('src/content/archive'));
