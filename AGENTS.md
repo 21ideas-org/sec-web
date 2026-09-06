@@ -1,10 +1,10 @@
 # AGENTS.md
 
-`sec-web` — публичный статический сайт `sec.21ideas.org`. Сейчас content поддерживается
-в repository; автоматическая доставка из
-[`sec-watcher-bot`](https://github.com/21ideas-org/sec-watcher-bot) через Contents API
-ещё не реализована. Approved target: сайт хранит канонический текст и permalink,
-Telegram уведомляет со ссылкой на него.
+`sec-web` — публичный статический сайт `sec.21ideas.org`. Канонический content
+автоматически создаёт
+[`sec-watcher-bot`](https://github.com/21ideas-org/sec-watcher-bot): immutable Markdown
+пишется create-only запросом в `sec-web/main`, а парное Telegram-уведомление ссылается
+на его permalink.
 
 Implementation work приходит только из central tracker
 [`21ideas-org/sec-watcher-bot`](https://github.com/21ideas-org/sec-watcher-bot/issues).
@@ -32,24 +32,29 @@ Issue обязан содержать применимые решения websit
 - Counter считает от первого post последнего thread; current status/statistics берут
   последний post thread.
 
-## Current schema и approved target
+## Current schema и delivery
 
-- Current schema/UI используют legacy free-string `urgency[]` и `audience[]`; content
-  в repository должен продолжать собираться без изменения URLs.
-- Bot уже классифицирует четырьмя независимыми осями: `exploitationStatus`, `fixStatus`,
-  `updateSufficiency`, `actionTiming`. Approved site slice добавляет их как optional
-  free strings и выводит `urgency[]` только как deterministic compatibility layer.
+- Bot-generated content несёт четыре независимые канонические оси:
+  `exploitationStatus`, `fixStatus`, `updateSufficiency`, `actionTiming`. Schema хранит
+  их как optional free strings ради старого content, а неизвестные значения показывает
+  neutral вместо остановки сайта.
+- `urgency[]` — deterministic legacy compatibility, не источник канонической
+  классификации: при наличии соответствующей оси site presentation выводится из неё, а
+  legacy-теги служат fallback только для content без этой оси. `audience[]` остаётся
+  free-string списком; существующий content продолжает собираться без изменения URLs.
 - Не схлопывать оси обратно: exploitation может сосуществовать с available fix, а fix
   может быть недостаточен для уже затронутого пользователя.
-- `telegramUrl` optional и reserved. Первый create-only slice не перезаписывает Markdown
-  после Telegram delivery.
-- Website create идёт перед Telegram, но bot не ждёт workflow, Pages, DNS или HTTP 200.
-  Custom 404 честно покрывает build window.
-- В approved target live и `--dry-run` bot publications одинаково пишут канонический
-  public incident content в `sec-web/main` для `https://sec.21ideas.org`. Runtime mode
-  меняет только парный Telegram target (`channel` или `dry_channel`) и не выбирает
-  другой website, staging или mode-specific content. PAT, live seed/state,
-  Pages/DNS/settings и deploy — human rollout, не agent implementation.
+- Website — роль общего crash-safe outbox. Slug, Markdown bytes и logical `pubDate`
+  замораживаются до первого сетевого вызова; GitHub write создаёт только отсутствующий
+  файл и не перезаписывает его после Telegram delivery. `telegramUrl` остаётся optional
+  reserved field.
+- Одна bounded website-попытка идёт перед парным Telegram send, но bot не ждёт retry,
+  workflow, Pages, DNS или HTTP 200. Custom 404 честно покрывает build window.
+- Live и `--dry-run` одинаково пишут канонический public incident content в
+  `sec-web/main` для `https://sec.21ideas.org`. Runtime mode меняет только парный
+  Telegram target (`channel` или `dry_channel`) и не выбирает другой website, staging
+  или mode-specific content. PAT, live seed/state, Pages/DNS/settings и deploy — human
+  rollout, не agent implementation.
 
 ## Не менять автономно
 
@@ -74,6 +79,7 @@ Issue обязан содержать применимые решения websit
 
 | Команда | Назначение |
 | --- | --- |
+| `npm test` | isolated behavioral harness: во временном site tree проверяет pinned exact producer fixture против schema, routes, counters, threads и RSS, включая cleanup после успеха и ошибки; без сети и соседнего checkout |
 | `npm run check` | Astro/TypeScript validation; обязательно для PR |
 | `npm run build` | production build; обязательно для PR |
 | `npm run dev` | локальный development server |
