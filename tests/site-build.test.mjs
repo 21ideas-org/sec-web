@@ -23,6 +23,18 @@ const INCIDENT_IDS = [
   'umbrel-2026-08-27-cln-update',
 ];
 
+const BACKFILL = [
+  ['specter-2026-09-01-security-alert', null],
+  ['specter-2026-09-01-security-alert-upd', 'specter-2026-09-01-security-alert'],
+  ['specter-2026-09-01-security-alert-upd2', 'specter-2026-09-01-security-alert'],
+  ['start9-2026-09-01-security-alert', 'start9-2026-08-26-cln-update'],
+  ['core-lightning-2026-09-02-security-alert', 'start9-2026-08-26-cln-update'],
+  ['ghsa-malware-2026-09-03-security-alert', null],
+  ['trezor-2026-09-04-security-alert', null],
+];
+
+const BACKFILL_NEWEST_FIRST = [...BACKFILL].reverse().map(([id]) => id);
+
 const ARCHIVE_SOURCE_URLS = new Map([
   ['2013-08-11-android-securerandom', 'https://bitcoin.org/en/alert/2013-08-11-android'],
   ['2014-04-11-heartbleed', 'https://bitcoin.org/en/alert/2014-04-11-heartbleed'],
@@ -161,8 +173,30 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
       assert.equal(existsSync(join(site, 'dist/incidents', id, 'index.html')), true, id);
     }
 
+    const generatedBackfill = [];
+    for (const [id, expectedParent] of BACKFILL) {
+      const source = await text(join(site, 'src/content/incidents', `${id}.md`));
+      const actualParent = source.match(/^parent: ["']([^"']+)["']$/m)?.[1] ?? null;
+      assert.equal(actualParent, expectedParent, `${id} parent changed`);
+      assert.ok(!source.includes('telegramUrl:'), `${id} contains telegramUrl`);
+      assert.ok(!source.includes('t.me/c/4443934489'), `${id} contains a private Telegram URL`);
+      const page = join(site, 'dist/incidents', id, 'index.html');
+      assert.equal(existsSync(page), true, id);
+      generatedBackfill.push(await text(page));
+    }
+
     const feed = await text(join(site, 'dist/feed/index.html'));
     const rss = await text(join(site, 'dist/rss.xml'));
+    let feedPosition = -1;
+    let rssPosition = -1;
+    for (const id of BACKFILL_NEWEST_FIRST) {
+      const nextFeedPosition = feed.indexOf(`/incidents/${id}/`);
+      const nextRssPosition = rss.indexOf(`/incidents/${id}/`);
+      assert.ok(nextFeedPosition > feedPosition, `${id} is missing or out of order in feed`);
+      assert.ok(nextRssPosition > rssPosition, `${id} is missing or out of order in RSS`);
+      feedPosition = nextFeedPosition;
+      rssPosition = nextRssPosition;
+    }
     for (const [id, expectedUrl] of ARCHIVE_SOURCE_URLS) {
       const source = await text(join(site, 'src/content/archive', `${id}.md`));
       const actualUrl = source.match(/^sourceUrl: ["']([^"']+)["']$/m)?.[1];
@@ -197,7 +231,8 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
     assert.ok(unknownPage.includes('updateSufficiency=future_sufficiency_state'));
     assert.ok(unknownPage.includes('actionTiming=future_timing_state'));
     assert.match(index, /<article class="card panel" style="--accent: var\(--dim\)">[\s\S]*?Unknown status fixture/);
-    assert.ok(index.includes('<span>всего<b>13</b></span>'), 'archive entries leaked into counters');
+    assert.ok(index.includes('<span>за год<b>9</b></span>'), 'updates inflated the incident count');
+    assert.ok(index.includes('<span>всего<b>20</b></span>'), 'archive entries leaked into counters');
 
     assert.ok(rootPage.includes(`/incidents/${UPDATE_FIXTURE_ID}/`));
     assert.ok(updatePage.includes(`/incidents/${ROOT_FIXTURE_ID}/`));
@@ -209,6 +244,9 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
     assert.ok(rss.includes('fixStatus=future_fix_state'));
     assert.ok(!rss.includes('<category>fixStatus='));
     assert.ok(!rss.includes('src/content/archive'));
+    for (const output of [index, feed, rss, rootPage, updatePage, unknownPage, ...generatedBackfill]) {
+      assert.ok(!output.includes('t.me/c/4443934489'), 'private Telegram URL leaked into generated output');
+    }
   });
 
   for (const id of [ROOT_FIXTURE_ID, UPDATE_FIXTURE_ID, UNKNOWN_FIXTURE_ID]) {
