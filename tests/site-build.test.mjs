@@ -1,14 +1,20 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { cp, mkdtemp, readFile, readdir, rm, symlink, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
+// Use the same parser as Astro's content loader, from its locked dependency tree.
+import { parseFrontmatter } from '@astrojs/internal-helpers/frontmatter';
+import { z } from 'astro/zod';
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const REPOSITORY = dirname(ROOT);
+const PRODUCER_FIXTURE_ID = 'fixture-2026-09-05-producer-alert';
+const PRODUCER_SHA256 = '4703b93ff04788c0833c670ee9d5d93ccedf1425229f4846c9274c996a56ea21';
 
 const INCIDENT_IDS = [
   'btcpay-2026-08-26-cln-routes-off',
@@ -168,18 +174,36 @@ function rssContent(item) {
     .replace(/&amp;/g, '&');
 }
 
-async function recentRootCount(directory) {
-  const cutoff = Date.now() - 365 * 864e5;
-  let count = 0;
-  for (const file of await readdir(directory)) {
-    if (!file.endsWith('.md')) continue;
-    const source = await text(join(directory, file));
-    if (/^parent:/m.test(source)) continue;
-    const pubDate = source.match(/^pubDate: (\S+)$/m)?.[1];
-    assert.ok(pubDate, `${file} has no pubDate`);
-    if (Date.parse(pubDate) >= cutoff) count += 1;
-  }
-  return count;
+function frontmatter(source) {
+  const data = parseFrontmatter(source).frontmatter;
+  // Match the site's date coercion; missing/invalid dates must not silently skip counts.
+  return { ...data, pubDate: z.coerce.date().parse(data.pubDate) };
+}
+
+async function corpus(directory) {
+  const files = await readdir(directory, { recursive: true });
+  return Promise.all(files.filter((file) => file.endsWith('.md')).map(async (file) => ({
+    id: file.split('/').at(-1).slice(0, -3),
+    data: frontmatter(await text(join(directory, file))),
+  })));
+}
+
+function buildSite(site) {
+  return spawnSync(process.execPath, [join(REPOSITORY, 'node_modules/astro/bin/astro.mjs'), 'build'], {
+    cwd: site,
+    encoding: 'utf8',
+    env: { ...process.env, ASTRO_TELEMETRY_DISABLED: '1' },
+    timeout: 120_000,
+  });
+}
+
+async function installProducer(site) {
+  const bytes = await readFile(join(ROOT, 'fixtures/site-generated-alert.md'));
+  assert.equal(createHash('sha256').update(bytes).digest('hex'), PRODUCER_SHA256);
+  const path = join(site, 'src/content/incidents', `${PRODUCER_FIXTURE_ID}.md`);
+  await writeFile(path, bytes);
+  assert.deepEqual(await readFile(path), bytes);
+  return frontmatter(bytes.toString('utf8'));
 }
 
 test('temporary fixture cleanup also runs after a failed assertion', async () => {
@@ -187,29 +211,56 @@ test('temporary fixture cleanup also runs after a failed assertion', async () =>
   await assert.rejects(
     withTemporaryDirectory(async (directory) => {
       created = directory;
+      const site = join(directory, 'site');
+      await copySite(site);
+      await installProducer(site);
       throw new Error('intentional fixture failure');
     }),
     /intentional fixture failure/,
   );
   assert.equal(existsSync(created), false);
+  assert.equal(existsSync(join(REPOSITORY, 'src/content/incidents', `${PRODUCER_FIXTURE_ID}.md`)), false);
+});
+
+test('frontmatter accepts equivalent key styles and rejects invalid required dates', () => {
+  assert.deepEqual(
+    frontmatter('---\n"pubDate": "2026-09-06T00:00:00Z"\n"parent": "root"\n---\n'),
+    frontmatter('---\npubDate: 2026-09-06T00:00:00Z\nparent: root\n---\n'),
+  );
+  assert.throws(() => frontmatter('---\ntitle: Missing date\n---\n'));
+  assert.throws(() => frontmatter('---\n"pubDate": "not-a-date"\n---\n'));
+  assert.throws(() => frontmatter('---\n"pubDate": [broken\n---\n'));
+});
+
+test('actual content schema rejects missing and malformed pubDate in the temporary site', async () => {
+  for (const date of ['', '"pubDate": "not-a-date"\n']) {
+    await withTemporaryDirectory(async (directory) => {
+      const site = join(directory, 'site');
+      await copySite(site);
+      await writeFile(join(site, 'src/content/incidents/fixture-invalid-date.md'),
+        `---\ntitle: Invalid date fixture\n${date}---\n`);
+      const build = buildSite(site);
+      assert.notEqual(build.status, 0);
+      assert.match(`${build.stdout}\n${build.stderr}`, /pubDate/);
+      assert.match(`${build.stdout}\n${build.stderr}`, /InvalidContentEntryDataError/);
+    });
+  }
 });
 
 test('isolated generated fixtures preserve routes, archive behavior, status rendering, and threads', async () => {
+  let created;
   await withTemporaryDirectory(async (directory) => {
+    created = directory;
     const site = join(directory, 'site');
     await copySite(site);
+    const producer = await installProducer(site);
 
     const fixtureDirectory = join(site, 'src/content/incidents');
     await writeFile(join(fixtureDirectory, `${ROOT_FIXTURE_ID}.md`), rootFixture);
     await writeFile(join(fixtureDirectory, `${UPDATE_FIXTURE_ID}.md`), updateFixture);
     await writeFile(join(fixtureDirectory, `${UNKNOWN_FIXTURE_ID}.md`), unknownFixture);
 
-    const build = spawnSync(process.execPath, [join(REPOSITORY, 'node_modules/astro/bin/astro.mjs'), 'build'], {
-      cwd: site,
-      encoding: 'utf8',
-      env: { ...process.env, ASTRO_TELEMETRY_DISABLED: '1' },
-      timeout: 120_000,
-    });
+    const build = buildSite(site);
     assert.equal(build.status, 0, `${build.stdout}\n${build.stderr}`);
 
     for (const id of INCIDENT_IDS) {
@@ -219,9 +270,9 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
     const generatedBackfill = [];
     for (const [id, expectedParent] of BACKFILL) {
       const source = await text(join(site, 'src/content/incidents', `${id}.md`));
-      const actualParent = source.match(/^parent: ["']([^"']+)["']$/m)?.[1] ?? null;
+      const actualParent = frontmatter(source).parent ?? null;
       assert.equal(actualParent, expectedParent, `${id} parent changed`);
-      assert.ok(!source.includes('telegramUrl:'), `${id} contains telegramUrl`);
+      assert.ok(!('telegramUrl' in frontmatter(source)), `${id} contains telegramUrl`);
       assert.ok(!source.includes('t.me/c/4443934489'), `${id} contains a private Telegram URL`);
       const page = join(site, 'dist/incidents', id, 'index.html');
       assert.equal(existsSync(page), true, id);
@@ -242,7 +293,7 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
     }
     for (const [id, expectedUrl] of ARCHIVE_SOURCE_URLS) {
       const source = await text(join(site, 'src/content/archive', `${id}.md`));
-      const actualUrl = source.match(/^sourceUrl: ["']([^"']+)["']$/m)?.[1];
+      const actualUrl = frontmatter(source).sourceUrl;
       assert.equal(actualUrl, expectedUrl, `${id} sourceUrl changed`);
       assert.equal(existsSync(join(site, 'dist/incidents', id, 'index.html')), false, id);
       assert.ok(feed.includes(expectedUrl), `${id} missing from archive feed`);
@@ -282,13 +333,48 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
     assert.ok(unknownPage.includes('updateSufficiency=future_sufficiency_state'));
     assert.ok(unknownPage.includes('actionTiming=future_timing_state'));
     assert.match(index, /<article class="card panel" style="--accent: var\(--dim\)">[\s\S]*?Unknown status fixture/);
-    const expectedRecentRoots = await recentRootCount(join(site, 'src/content/incidents'));
+    const entries = await corpus(join(site, 'src/content'));
+    const own = entries.filter(({ data }) => !data.external && !data.draft);
+    const roots = own.filter(({ data }) => !data.parent);
+    const expectedRecentRoots = roots.filter(({ data }) => data.pubDate.valueOf() >= Date.now() - 365 * 864e5).length;
     assert.equal(BACKFILL.filter(([, parent]) => parent === null).length, 3);
     assert.ok(
       index.includes(`<span>за год<b>${expectedRecentRoots}</b></span>`),
       'updates inflated the incident count',
     );
-    assert.ok(index.includes('<span>всего<b>20</b></span>'), 'archive entries leaked into counters');
+    assert.ok(index.includes(`<span>всего<b>${own.length}</b></span>`), 'archive entries leaked into counters');
+    const anchor = roots.map(({ data }) => data.pubDate.valueOf()).sort((a, b) => b - a)[0];
+    assert.ok(index.includes(`data-since="${new Date(anchor).toISOString()}"`));
+    for (const { id } of own) {
+      assert.ok(feed.includes(`/incidents/${id}/`), `${id} missing from feed`);
+      rssItemFor(rss, id);
+    }
+
+    assert.deepEqual([
+      producer.exploitationStatus, producer.fixStatus, producer.updateSufficiency, producer.actionTiming,
+    ], ['active', 'partial', 'additional_action_required', 'now']);
+    assert.deepEqual(producer.urgency, ['#эксплуатируется', '#патч_частичный']);
+    assert.deepEqual(producer.links, [{ label: 'coldcard.com', url: 'https://coldcard.com/security' }]);
+    assert.equal(producer.parent, 'start9-2026-08-26-cln-update');
+    for (const field of ['reason', 'linkRefs', 'telegramUrl', 'sourceUrl']) {
+      assert.ok(!(field in producer), `${field} leaked into producer frontmatter`);
+    }
+    const producerPage = await text(join(site, 'dist/incidents', PRODUCER_FIXTURE_ID, 'index.html'));
+    const producerRoot = await text(join(site, 'dist/incidents', producer.parent, 'index.html'));
+    assert.ok(producerPage.includes(`/incidents/${producer.parent}/`));
+    assert.ok(producerRoot.includes(`/incidents/${PRODUCER_FIXTURE_ID}/`));
+    const { item: producerRss } = rssItemFor(rss, PRODUCER_FIXTURE_ID);
+    for (const output of [producerPage, rssContent(producerRss)]) {
+      assert.ok(output.includes(producer.description));
+      assert.ok(output.includes(producer.action));
+      assert.ok(output.includes('href="https://coldcard.com/security"'));
+      assert.ok(output.includes('coldcard.com'));
+      for (const field of ['reason', 'linkRefs', 'telegramUrl']) assert.ok(!output.includes(field));
+    }
+    for (const label of producer.urgency) {
+      assert.ok(producerPage.includes(label));
+      assert.ok(producerRss.includes(`<category>${label}</category>`));
+    }
 
     assert.ok(rootPage.includes(`/incidents/${UPDATE_FIXTURE_ID}/`));
     assert.ok(updatePage.includes(`/incidents/${ROOT_FIXTURE_ID}/`));
@@ -323,7 +409,8 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
     }
   });
 
-  for (const id of [ROOT_FIXTURE_ID, UPDATE_FIXTURE_ID, UNKNOWN_FIXTURE_ID]) {
+  assert.equal(existsSync(created), false);
+  for (const id of [ROOT_FIXTURE_ID, UPDATE_FIXTURE_ID, UNKNOWN_FIXTURE_ID, PRODUCER_FIXTURE_ID]) {
     assert.equal(existsSync(join(REPOSITORY, 'src/content/incidents', `${id}.md`)), false);
   }
 });
