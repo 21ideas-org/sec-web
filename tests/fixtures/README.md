@@ -9,3 +9,7 @@ Tests verify the digest and install these bytes only in a temporary site tree; n
 neighboring checkout or network fetch is needed. When intentionally updating the
 producer contract, copy its fixture unchanged and update the commit and digest here
 and in the test together. This file is never public incident content.
+
+The isolated build harness also creates synthetic audience fixtures at test time. They
+exercise the website's canonical-ID reader contract and legacy fallbacks; they are not
+examples of current producer output and are always removed with the temporary site.

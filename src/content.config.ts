@@ -32,6 +32,11 @@ const incidents = defineCollection({
      * использует legacy-тег только как fallback, когда соответствующая ось отсутствует.
      */
     urgency: z.array(z.string()).default([]),
+    /**
+     * Bot writers use canonical IDs (holders, node_operators, developers,
+     * merchant_infra). This stays a free-string list so legacy and future values
+     * render neutrally instead of stopping the whole site build.
+     */
     audience: z.array(z.string()).default([]),
 
     product: z.string().optional(),

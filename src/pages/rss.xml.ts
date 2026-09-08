@@ -3,6 +3,7 @@ import type { APIContext } from 'astro';
 import { SITE_DESCRIPTION, SITE_NAME } from '../consts.ts';
 import { allIncidents, own, type Incident } from '../lib.ts';
 import { displayUrgency, unrecognizedStatuses } from '../status.ts';
+import { displayAudience } from '../audience.ts';
 
 const esc = (t: string) =>
   t
@@ -69,7 +70,7 @@ export async function GET(context: APIContext) {
       pubDate: e.data.pubDate,
       link: `/incidents/${e.id}/`,
       content: itemContent(e),
-      categories: [...displayUrgency(e.data), ...e.data.audience],
+      categories: [...displayUrgency(e.data), ...displayAudience(e.data.audience).map(({ label }) => label)],
     })),
     customData: '<language>ru</language>',
   });

@@ -41,7 +41,9 @@ Issue обязан содержать применимые решения websit
 - `urgency[]` — deterministic legacy compatibility, не источник канонической
   классификации: при наличии соответствующей оси site presentation выводится из неё, а
   legacy-теги служат fallback только для content без этой оси. `audience[]` остаётся
-  free-string списком; существующий content продолжает собираться без изменения URLs.
+  free-string списком; новый producer пишет `holders | node_operators | developers |
+  merchant_infra`, а reader нормализует только явные legacy aliases. Неизвестное
+  значение остаётся neutral; существующий content собирается без изменения URLs.
 - Не схлопывать оси обратно: exploitation может сосуществовать с available fix, а fix
   может быть недостаточен для уже затронутого пользователя.
 - Website — роль общего crash-safe outbox. Slug, Markdown bytes и logical `pubDate`

@@ -7,6 +7,7 @@ import UnknownStatuses from '../components/UnknownStatuses.astro';
 import { SITE_NAME, SITE_DESCRIPTION, urgencyAccent } from '../consts.ts';
 import { allIncidents, own, archive, counterAnchor, dateShort, stats } from '../lib.ts';
 import { displayUrgency } from '../status.ts';
+import { displayAudience } from '../audience.ts';
 
 const list = await allIncidents();
 const posts = own(list);
@@ -17,6 +18,7 @@ const anchor = counterAnchor(list);
 const s = stats(list);
 const latestDate = latest && dateShort(latest.data.pubDate);
 const latestUrgency = latest ? displayUrgency(latest.data) : [];
+const latestAudience = latest ? displayAudience(latest.data.audience) : [];
 ---
 <Base title={SITE_NAME} description={SITE_DESCRIPTION}>
   <section class="board panel">
@@ -42,7 +44,7 @@ const latestUrgency = latest ? displayUrgency(latest.data) : [];
           <div class="tags">
             <Urgency tags={latestUrgency} />
             <UnknownStatuses status={latest.data} />
-            {latest.data.audience.map((a) => <span class="aud">{a}</span>)}
+            {latestAudience.map((a) => <span class="aud">{a.label}</span>)}
             <span class="aud when">{latestDate}</span>
           </div>
           <h2><a href={`/incidents/${latest.id}/`}>{latest.data.title}</a></h2>
