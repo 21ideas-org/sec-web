@@ -14,8 +14,9 @@ Issue обязан содержать применимые решения websit
 ## Safety contract
 
 - Content schema проверяет обязательную форму и оставляет status-словари открытыми:
-  неизвестное значение free-string поля отрисовывается neutral. Неверная форма должна
-  останавливать check/build; schema errors не проглатывать.
+  неизвестные statusTags, legacy urgency и значения status-осей принимаются как строки,
+  но не публикуются и не создают claims или цвет. Неверная форма останавливает
+  check/build; schema errors не проглатывать.
 - В bot-generated incident content `reason`, raw model links и URL без cross-check не
   публикуются: ссылки приходят только из validated `links[]`, hijack banner строится
   кодом из trusted `vendor`. Human-maintained archive отдельно использует доверенный
@@ -70,7 +71,8 @@ Issue обязан содержать применимые решения websit
 
 ## Rendering invariants
 
-- Unknown urgency stays `.u-neutral`; missing/unknown status is never green by default.
+- Missing/unknown status не создаёт публичных claims; без известных фактов card/OG neutral.
+  Audience отображается независимо по собственному контракту.
 - OG images are static assets selected by code. Не добавлять per-incident generation в
   deploy critical path.
 - Dates форматируются в UTC, независимо от timezone builder.
