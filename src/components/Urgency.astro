@@ -1,13 +1,7 @@
 ---
-import { URGENCY_ORDER, urgencyClass } from '../consts.ts';
+import { urgencyClass } from '../status.ts';
 interface Props { tags: string[]; }
 const { tags } = Astro.props;
-// Порядок остроты — от горящего к спокойному. Незнакомые ярлыки уезжают
-// в хвост, но показываются: сборку роняет только исключение, не новый тег.
-const rank = (t: string) => {
-  const i = (URGENCY_ORDER as readonly string[]).indexOf(t);
-  return i === -1 ? URGENCY_ORDER.length : i;
-};
-const sorted = [...tags].sort((a, b) => rank(a) - rank(b));
+// Labels have already been normalized and ordered at the status boundary.
 ---
-{sorted.map((t) => <span class={`u ${urgencyClass(t)}`}>{t}</span>)}
+{tags.map((t) => <span class={`u ${urgencyClass(t)}`}>{t}</span>)}

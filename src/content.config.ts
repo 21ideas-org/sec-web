@@ -8,8 +8,8 @@ import { z } from 'astro/zod';
  * `sec-watcher-bot` создаёт incident files create-only. Упавшая сборка останавливает
  * ВЕСЬ сайт, а не один плохой пост, поэтому `urgency`, `audience` и `vendor` —
  * свободные строки: неизвестное значение
- * отрисуется нейтрально (см. `urgencyClass`), а расхождение контракта поймает
- * глаз в ленте, а не 404 на всём домене.
+ * не создаст неподтверждённый status claim (см. `src/status.ts`). Неверная форма
+ * по-прежнему останавливает сборку.
  */
 const incidents = defineCollection({
   loader: glob({
@@ -27,11 +27,12 @@ const incidents = defineCollection({
     pubDate: z.coerce.date(),
 
     /**
-     * ⚠️ Legacy compatibility list, не каноническая классификация. Бот пишет его
-     * детерминированно вместе с четырьмя независимыми status-осями; site presentation
-     * использует legacy-тег только как fallback, когда соответствующая ось отсутствует.
+     * Legacy compatibility list. Used only without statusTags and when the
+     * corresponding legacy axis is absent; explicit unknown blocks fallback.
      */
     urgency: z.array(z.string()).default([]),
+    /** Optional supported facts; present [] disables all legacy status fallback. */
+    statusTags: z.array(z.string()).optional(),
     /**
      * Bot writers use canonical IDs (holders, node_operators, developers,
      * merchant_infra). This stays a free-string list so legacy and future values
@@ -44,7 +45,7 @@ const incidents = defineCollection({
     action: z.string().optional(),
 
     /**
-     * Canonical classification axes. Bot-generated incidents несут все четыре;
+     * Legacy classification axes. Historical incidents may carry all four;
      * optional сохраняет старый content, а open values не дают новому значению бота
      * остановить весь сайт.
      */

@@ -3,10 +3,9 @@ import Base from '../layouts/Base.astro';
 import Counter from '../components/Counter.astro';
 import Row from '../components/Row.astro';
 import Urgency from '../components/Urgency.astro';
-import UnknownStatuses from '../components/UnknownStatuses.astro';
-import { SITE_NAME, SITE_DESCRIPTION, urgencyAccent } from '../consts.ts';
+import { SITE_NAME, SITE_DESCRIPTION } from '../consts.ts';
 import { allIncidents, own, archive, counterAnchor, dateShort, stats } from '../lib.ts';
-import { displayUrgency } from '../status.ts';
+import { displayUrgency, urgencyAccent } from '../status.ts';
 import { displayAudience } from '../audience.ts';
 
 const list = await allIncidents();
@@ -24,7 +23,6 @@ const latestAudience = latest ? displayAudience(latest.data.audience) : [];
   <section class="board panel">
     <Counter since={anchor} />
     <div class="stats">
-      <span class="hot">без патча<b>{s.unpatched}</b></span>
       <span>за год<b>{s.lastYear}</b></span>
       {/* Оповещения, а не инциденты: у аварии Core Lightning их семь на один
           инцидент, и обе цифры отвечают на разные вопросы. Подпись короткая, как
@@ -43,7 +41,6 @@ const latestAudience = latest ? displayAudience(latest.data.audience) : [];
         <article class="card panel" style={`--accent: ${urgencyAccent(latestUrgency)}`}>
           <div class="tags">
             <Urgency tags={latestUrgency} />
-            <UnknownStatuses status={latest.data} />
             {latestAudience.map((a) => <span class="aud">{a.label}</span>)}
             <span class="aud when">{latestDate}</span>
           </div>

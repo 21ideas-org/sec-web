@@ -1,5 +1,5 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
-import { isUnpatched } from './status.ts';
+import { statusDiagnostic } from './status.ts';
 
 export type Incident = CollectionEntry<'incidents'>;
 
@@ -58,7 +58,12 @@ const byDateDesc = (a: Incident, b: Incident) =>
   b.data.pubDate.valueOf() - a.data.pubDate.valueOf();
 
 export async function allIncidents(): Promise<Incident[]> {
-  return (await getCollection('incidents')).filter(live).sort(byDateDesc);
+  const entries = (await getCollection('incidents')).filter(live).sort(byDateDesc);
+  for (const entry of entries) {
+    const diagnostic = statusDiagnostic(entry.data);
+    if (diagnostic) console.warn(`[status] ${diagnostic}`);
+  }
+  return entries;
 }
 
 /** Собственные публикации сайта: имеют страницу и входят в RSS. */
@@ -105,12 +110,5 @@ export function stats(list: Incident[]) {
   const yearAgo = Date.now() - 365 * 864e5;
   return {
     lastYear: threadStarts(list).filter((e) => e.data.pubDate.valueOf() >= yearAgo).length,
-    /**
-     * Открытые без патча — по ПОСЛЕДНЕМУ посту треда, а не по началу.
-     *
-     * Последний post определяет текущее состояние; `counterAnchor` отдельно отвечает
-     * на вопрос, когда incident начался, и использует первый post.
-     */
-    unpatched: threadStarts(list).filter((s) => isUnpatched(thread(list, s).at(-1)!.data)).length,
   };
 }

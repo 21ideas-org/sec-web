@@ -2,11 +2,9 @@
 import { render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Urgency from '../../components/Urgency.astro';
-import UnknownStatuses from '../../components/UnknownStatuses.astro';
 import Thread from '../../components/Thread.astro';
-import { ogFor } from '../../consts.ts';
 import { allIncidents, dateLong, keepFlags, own, thread, threadStart } from '../../lib.ts';
-import { displayUrgency } from '../../status.ts';
+import { displayUrgency, ogFor } from '../../status.ts';
 import { displayAudience } from '../../audience.ts';
 
 export async function getStaticPaths() {
@@ -43,7 +41,6 @@ const audience = displayAudience(d.audience);
     {subject && <div class="eyebrow">{subject}</div>}
     <div class="tags">
       <Urgency tags={urgency} />
-      <UnknownStatuses status={d} />
       {audience.map((a) => <span class="aud">{a.label}</span>)}
       <span class="aud when">{date}</span>
     </div>
