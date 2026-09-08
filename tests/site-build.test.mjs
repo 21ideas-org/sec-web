@@ -60,6 +60,9 @@ const ARCHIVE_SOURCE_URLS = new Map([
 const ROOT_FIXTURE_ID = 'fixture-2031-09-04-status-axes';
 const UPDATE_FIXTURE_ID = 'fixture-2031-09-05-status-update';
 const UNKNOWN_FIXTURE_ID = 'fixture-2032-09-04-unknown-status';
+const LEGACY_AUDIENCE_FIXTURE_ID = 'fixture-2030-09-04-legacy-audience';
+const EMPTY_AUDIENCE_FIXTURE_ID = 'fixture-2029-09-04-empty-audience';
+const MISSING_AUDIENCE_FIXTURE_ID = 'fixture-2028-09-04-missing-audience';
 const SOURCE_FIXTURE_LABEL = `Source & <safe> "double" 'single'`;
 const SOURCE_FIXTURE_URL = `https://sources.example/path?amp=1&lt=<tag>&double="quoted"&single='quoted'`;
 const SECOND_SOURCE_FIXTURE_URL = 'https://second.example/source?one=1&two=2';
@@ -114,7 +117,7 @@ title: "Unknown status fixture"
 description: "Unknown canonical values stay neutral"
 pubDate: 2032-09-04T12:00:00.000Z
 urgency: ["#патч_есть"]
-audience: []
+audience: ["developers", "держатели", "holders", "разработчики", "<audience & unknown>"]
 product: "Fixture"
 vendor: "Fixture Vendor"
 exploitationStatus: "future_exploitation_state"
@@ -123,6 +126,35 @@ updateSufficiency: "future_sufficiency_state"
 actionTiming: "future_timing_state"
 hijacked: false
 incidentKey: "fixture-unknown"
+links: []
+---
+`;
+
+const legacyAudienceFixture = `---
+title: "Legacy audience fixture"
+description: "Broad audience aliases remain unresolved"
+pubDate: 2030-09-04T12:00:00.000Z
+urgency: []
+audience: ["all", "все", "всем"]
+links: []
+---
+`;
+
+const emptyAudienceFixture = `---
+title: "Empty audience fixture"
+description: "An empty list remains empty"
+pubDate: 2029-09-04T12:00:00.000Z
+urgency: []
+audience: []
+links: []
+---
+`;
+
+const missingAudienceFixture = `---
+title: "Missing audience fixture"
+description: "A missing field uses the empty default"
+pubDate: 2028-09-04T12:00:00.000Z
+urgency: []
 links: []
 ---
 `;
@@ -232,16 +264,20 @@ test('frontmatter accepts equivalent key styles and rejects invalid required dat
   assert.throws(() => frontmatter('---\n"pubDate": [broken\n---\n'));
 });
 
-test('actual content schema rejects missing and malformed pubDate in the temporary site', async () => {
-  for (const date of ['', '"pubDate": "not-a-date"\n']) {
+test('actual content schema rejects malformed required fields in the temporary site', async () => {
+  for (const [fields, expectedField] of [
+    ['', 'pubDate'],
+    ['"pubDate": "not-a-date"\n', 'pubDate'],
+    ['pubDate: 2030-09-04T12:00:00.000Z\naudience: "holders"\n', 'audience'],
+  ]) {
     await withTemporaryDirectory(async (directory) => {
       const site = join(directory, 'site');
       await copySite(site);
-      await writeFile(join(site, 'src/content/incidents/fixture-invalid-date.md'),
-        `---\ntitle: Invalid date fixture\n${date}---\n`);
+      await writeFile(join(site, 'src/content/incidents/fixture-invalid-shape.md'),
+        `---\ntitle: Invalid shape fixture\n${fields}---\n`);
       const build = buildSite(site);
       assert.notEqual(build.status, 0);
-      assert.match(`${build.stdout}\n${build.stderr}`, /pubDate/);
+      assert.match(`${build.stdout}\n${build.stderr}`, new RegExp(expectedField));
       assert.match(`${build.stdout}\n${build.stderr}`, /InvalidContentEntryDataError/);
     });
   }
@@ -259,6 +295,9 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
     await writeFile(join(fixtureDirectory, `${ROOT_FIXTURE_ID}.md`), rootFixture);
     await writeFile(join(fixtureDirectory, `${UPDATE_FIXTURE_ID}.md`), updateFixture);
     await writeFile(join(fixtureDirectory, `${UNKNOWN_FIXTURE_ID}.md`), unknownFixture);
+    await writeFile(join(fixtureDirectory, `${LEGACY_AUDIENCE_FIXTURE_ID}.md`), legacyAudienceFixture);
+    await writeFile(join(fixtureDirectory, `${EMPTY_AUDIENCE_FIXTURE_ID}.md`), emptyAudienceFixture);
+    await writeFile(join(fixtureDirectory, `${MISSING_AUDIENCE_FIXTURE_ID}.md`), missingAudienceFixture);
 
     const build = buildSite(site);
     assert.equal(build.status, 0, `${build.stdout}\n${build.stderr}`);
@@ -303,6 +342,9 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
     const rootPage = await text(join(site, 'dist/incidents', ROOT_FIXTURE_ID, 'index.html'));
     const updatePage = await text(join(site, 'dist/incidents', UPDATE_FIXTURE_ID, 'index.html'));
     const unknownPage = await text(join(site, 'dist/incidents', UNKNOWN_FIXTURE_ID, 'index.html'));
+    const legacyAudiencePage = await text(join(site, 'dist/incidents', LEGACY_AUDIENCE_FIXTURE_ID, 'index.html'));
+    const emptyAudiencePage = await text(join(site, 'dist/incidents', EMPTY_AUDIENCE_FIXTURE_ID, 'index.html'));
+    const missingAudiencePage = await text(join(site, 'dist/incidents', MISSING_AUDIENCE_FIXTURE_ID, 'index.html'));
     const index = await text(join(site, 'dist/index.html'));
 
     assert.ok(rootPage.includes('#эксплуатируется'));
@@ -333,6 +375,33 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
     assert.ok(unknownPage.includes('updateSufficiency=future_sufficiency_state'));
     assert.ok(unknownPage.includes('actionTiming=future_timing_state'));
     assert.match(index, /<article class="card panel" style="--accent: var\(--dim\)">[\s\S]*?Unknown status fixture/);
+
+    const holdersPosition = unknownPage.indexOf('class="aud">Ходлеры</span>');
+    const developersPosition = unknownPage.indexOf('class="aud">Разработчики</span>');
+    const unknownAudience = '&lt;audience &amp; unknown&gt;';
+    assert.ok(holdersPosition >= 0, 'canonical holders label is missing');
+    assert.ok(developersPosition > holdersPosition, 'known audiences are not in canonical order');
+    assert.equal(unknownPage.split('class="aud">Ходлеры</span>').length - 1, 1, 'holders alias was not deduplicated');
+    assert.equal(unknownPage.split('class="aud">Разработчики</span>').length - 1, 1, 'developers alias was not deduplicated');
+    assert.ok(unknownPage.includes(`class="aud">${unknownAudience}</span>`), 'unknown audience was not escaped');
+    assert.ok(index.includes('class="aud">Ходлеры</span>'));
+    assert.ok(index.includes('class="aud">Разработчики</span>'));
+    assert.ok(index.includes(`class="aud">${unknownAudience}</span>`));
+    assert.ok(updatePage.includes('class="aud">операторы</span>'), 'unlisted legacy alias was reclassified');
+    assert.ok(!updatePage.includes('class="aud">Операторы нод</span>'));
+    assert.equal(legacyAudiencePage.split('Все — старая категория').length - 1, 1, 'broad aliases were not deduplicated');
+    assert.ok(!legacyAudiencePage.includes('class="aud">Ходлеры</span>'));
+    assert.ok(!legacyAudiencePage.includes('class="aud">Операторы нод</span>'));
+    assert.ok(!legacyAudiencePage.includes('class="aud">Разработчики</span>'));
+    assert.ok(!legacyAudiencePage.includes('class="aud">Мерчанты</span>'));
+    assert.ok(!emptyAudiencePage.includes('class="aud">'), 'empty audience invented a label');
+    assert.ok(!missingAudiencePage.includes('class="aud">'), 'missing audience invented a label');
+
+    const nodeOperatorPage = await text(join(site, 'dist/incidents/cln-2026-08-27-offline-guidance/index.html'));
+    const merchantPage = await text(join(site, 'dist/incidents/btcpay-2026-08-26-cln-routes-off/index.html'));
+    assert.ok(rootPage.includes('class="aud">Ходлеры</span>'));
+    assert.ok(nodeOperatorPage.includes('class="aud">Операторы нод</span>'));
+    assert.ok(merchantPage.includes('class="aud">Мерчанты</span>'));
     const entries = await corpus(join(site, 'src/content'));
     const own = entries.filter(({ data }) => !data.external && !data.draft);
     const roots = own.filter(({ data }) => !data.parent);
@@ -399,8 +468,27 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
       ),
     );
     assert.ok(updateRssContent.includes(`href="${SECOND_SOURCE_FIXTURE_URL.replace('&', '&amp;')}"`));
-    const { item: emptyRssItem } = rssItemFor(rss, UNKNOWN_FIXTURE_ID);
-    assert.ok(!rssContent(emptyRssItem).includes('<strong>Первоисточники:</strong>'));
+    const { item: audienceRssItem } = rssItemFor(rss, UNKNOWN_FIXTURE_ID);
+    assert.ok(!rssContent(audienceRssItem).includes('<strong>Первоисточники:</strong>'));
+    assert.equal(audienceRssItem.split('<category>Ходлеры</category>').length - 1, 1);
+    assert.equal(audienceRssItem.split('<category>Разработчики</category>').length - 1, 1);
+    assert.ok(audienceRssItem.includes('<category>&lt;audience &amp; unknown&gt;</category>'));
+    const { item: legacyAudienceRss } = rssItemFor(rss, LEGACY_AUDIENCE_FIXTURE_ID);
+    assert.equal(legacyAudienceRss.split('<category>Все — старая категория</category>').length - 1, 1);
+    const { item: updateAudienceRss } = rssItemFor(rss, UPDATE_FIXTURE_ID);
+    assert.ok(updateAudienceRss.includes('<category>операторы</category>'));
+    assert.ok(!updateAudienceRss.includes('<category>Операторы нод</category>'));
+    const { item: holderRss } = rssItemFor(rss, ROOT_FIXTURE_ID);
+    const { item: nodeOperatorRss } = rssItemFor(rss, 'cln-2026-08-27-offline-guidance');
+    const { item: merchantRss } = rssItemFor(rss, 'btcpay-2026-08-26-cln-routes-off');
+    assert.ok(holderRss.includes('<category>Ходлеры</category>'));
+    assert.ok(nodeOperatorRss.includes('<category>Операторы нод</category>'));
+    assert.ok(merchantRss.includes('<category>Мерчанты</category>'));
+    for (const id of [EMPTY_AUDIENCE_FIXTURE_ID, MISSING_AUDIENCE_FIXTURE_ID]) {
+      const { item } = rssItemFor(rss, id);
+      assert.ok(!item.includes('<category>Ходлеры</category>'));
+      assert.ok(!item.includes('<category>Все — старая категория</category>'));
+    }
     assert.ok(rss.includes('fixStatus=future_fix_state'));
     assert.ok(!rss.includes('<category>fixStatus='));
     assert.ok(!rss.includes('src/content/archive'));
@@ -410,7 +498,15 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
   });
 
   assert.equal(existsSync(created), false);
-  for (const id of [ROOT_FIXTURE_ID, UPDATE_FIXTURE_ID, UNKNOWN_FIXTURE_ID, PRODUCER_FIXTURE_ID]) {
+  for (const id of [
+    ROOT_FIXTURE_ID,
+    UPDATE_FIXTURE_ID,
+    UNKNOWN_FIXTURE_ID,
+    LEGACY_AUDIENCE_FIXTURE_ID,
+    EMPTY_AUDIENCE_FIXTURE_ID,
+    MISSING_AUDIENCE_FIXTURE_ID,
+    PRODUCER_FIXTURE_ID,
+  ]) {
     assert.equal(existsSync(join(REPOSITORY, 'src/content/incidents', `${id}.md`)), false);
   }
 });
