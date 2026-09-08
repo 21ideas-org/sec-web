@@ -1,6 +1,5 @@
 ---
 import Urgency from './Urgency.astro';
-import UnknownStatuses from './UnknownStatuses.astro';
 import { dateShort, type Incident } from '../lib.ts';
 import { displayUrgency } from '../status.ts';
 interface Props { entry: Incident; }
@@ -24,6 +23,6 @@ const urgency = displayUrgency(d);
   {
     d.external
       ? <span class="ext">{d.source} ↗</span>
-      : <span class="rt"><Urgency tags={urgency} /><UnknownStatuses status={d} /></span>
+      : <span class="rt"><Urgency tags={urgency} /></span>
   }
 </div>

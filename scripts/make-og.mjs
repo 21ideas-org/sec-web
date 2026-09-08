@@ -5,7 +5,7 @@
 // платится: в это время ссылка уже разослана, а страницы ещё нет. По той же
 // причине sharp — devDependency: в деплое он не запускается никогда.
 //
-// Выбор картинки делает КОД по срочности (`ogFor` в src/consts.ts), не модель.
+// Выбор картинки делает КОД по срочности (`ogFor` в src/status.ts), не модель.
 //
 // Карточка повторяет тёмную тему сайта, потому что превью в мессенджере — первое,
 // что читатель видит от канала, и узнать его он должен до того, как откроет
@@ -31,9 +31,9 @@ const TX_X = PANEL.x + BAR + PAD;
 const TX_W = PANEL.x + PANEL.w - PAD - TX_X;
 
 const CARDS = [
-  { file: 'critical.png',  label: 'ЭКСПЛУАТИРУЕТСЯ',          tracking: 4, accent: '#ff6a5c', note: 'Средства уходят прямо сейчас' },
-  { file: 'unpatched.png', label: 'ПАТЧА НЕТ',                tracking: 4, accent: '#f2a63d', note: 'Исправления пока не существует' },
-  { file: 'patched.png',   label: 'ПАТЧ ЕСТЬ',                tracking: 4, accent: '#4fc884', note: 'Обновитесь, эксплуатации не видно' },
+  { file: 'critical.png',  label: 'ЭКСПЛУАТАЦИЯ ПОДТВЕРЖДЕНА', tracking: 2, accent: '#ff6a5c', note: 'Есть данные о состоявшейся эксплуатации' },
+  { file: 'unpatched.png', label: 'ПАТЧА НЕТ',                tracking: 4, accent: '#f2a63d', note: 'Для описанного случая патч не выпущен' },
+  { file: 'patched.png',   label: 'ПАТЧ ЕСТЬ',                tracking: 4, accent: '#4fc884', note: 'Выпущен патч для описанного случая' },
   { file: 'default.png',   label: 'Bitcoin Security Watcher', tracking: 2, accent: '#7fa9e8', note: 'Критические оповещения для биткоинеров' },
 ];
 

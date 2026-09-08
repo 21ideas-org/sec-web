@@ -14,8 +14,9 @@ Issue обязан содержать применимые решения websit
 ## Safety contract
 
 - Content schema проверяет обязательную форму и оставляет status-словари открытыми:
-  неизвестное значение free-string поля отрисовывается neutral. Неверная форма должна
-  останавливать check/build; schema errors не проглатывать.
+  неизвестные statusTags, legacy urgency и значения status-осей принимаются как строки,
+  но не публикуются и не создают claims или цвет. Неверная форма останавливает
+  check/build; schema errors не проглатывать.
 - В bot-generated incident content `reason`, raw model links и URL без cross-check не
   публикуются: ссылки приходят только из validated `links[]`, hijack banner строится
   кодом из trusted `vendor`. Human-maintained archive отдельно использует доверенный
@@ -29,23 +30,23 @@ Issue обязан содержать применимые решения websit
   страницей, а не уронить build.
 - `external: true` одновременно отключает собственную incident page и RSS, исключает
   запись из counter и направляет link на `sourceUrl`. Не разъединять эти следствия.
-- Counter считает от первого post последнего thread; current status/statistics берут
-  последний post thread.
+- Counter считает от первого post последнего thread; facts описывают отдельную
+  публикацию, а не агрегированное текущее состояние инцидента.
 
 ## Current schema и delivery
 
-- Bot-generated content несёт четыре независимые канонические оси:
-  `exploitationStatus`, `fixStatus`, `updateSufficiency`, `actionTiming`. Schema хранит
-  их как optional free strings ради старого content, а неизвестные значения показывает
-  neutral вместо остановки сайта.
-- `urgency[]` — deterministic legacy compatibility, не источник канонической
-  классификации: при наличии соответствующей оси site presentation выводится из неё, а
-  legacy-теги служат fallback только для content без этой оси. `audience[]` остаётся
-  free-string списком; новый producer пишет `holders | node_operators | developers |
-  merchant_infra`, а reader нормализует только явные legacy aliases. Неизвестное
-  значение остаётся neutral; существующий content собирается без изменения URLs.
-- Не схлопывать оси обратно: exploitation может сосуществовать с available fix, а fix
-  может быть недостаточен для уже затронутого пользователя.
+- `statusTags?: string[]` — optional supported facts. Наличие, включая `[]`, полностью
+  отключает legacy fallback. Unknown IDs не печатаются и не создают claims; неверная
+  форма останавливает build. Единственная presentation boundary — `src/status.ts`.
+- Для legacy content без `statusTags` каждая explicit status-ось блокирует fallback
+  своего `urgency[]` значения, включая unknown. Active/observed означают подтверждённую
+  эксплуатацию; partial не означает отсутствие патча. Conflicting patch tags оба
+  опускаются с безопасным build diagnostic, exploitation сохраняется.
+- Приоритет card/OG: exploitation red, patch unavailable yellow, patch available green,
+  иначе neutral. Green означает только наличие патча. Совместимые факты показаны вместе;
+  пустой набор не означает безопасность. Не добавлять статусную статистику или фильтры.
+- `audience[]` остаётся free-string списком; reader нормализует только явные aliases.
+  Audience, identity, thread links и source provenance независимы от status facts.
 - Website — роль общего crash-safe outbox. Slug, Markdown bytes и logical `pubDate`
   замораживаются до первого сетевого вызова; GitHub write создаёт только отсутствующий
   файл и не перезаписывает его после Telegram delivery. `telegramUrl` остаётся optional
@@ -70,7 +71,8 @@ Issue обязан содержать применимые решения websit
 
 ## Rendering invariants
 
-- Unknown urgency stays `.u-neutral`; missing/unknown status is never green by default.
+- Missing/unknown status не создаёт публичных claims; без известных фактов card/OG neutral.
+  Audience отображается независимо по собственному контракту.
 - OG images are static assets selected by code. Не добавлять per-incident generation в
   deploy critical path.
 - Dates форматируются в UTC, независимо от timezone builder.
@@ -98,7 +100,7 @@ Issue обязан содержать применимые решения websit
   scrolling decorative grid.
 - `.panel` is opaque with a hard shadow. List rows use translucent fill, not separator
   rules over the grid.
-- Urgency colors encode only alert state; links use a separate signal color. Card accent
+- Status colors encode only supported publication facts; links use a separate signal color. Card accent
   is an inset `::before`, not `border-left`.
 - JetBrains Mono is for instrument UI; IBM Plex Sans is for prose. Fonts stay local in
   `public/fonts`.

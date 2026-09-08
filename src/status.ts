@@ -1,4 +1,5 @@
 export interface StatusPresentationInput {
+  statusTags?: readonly string[];
   urgency?: readonly string[];
   exploitationStatus?: string;
   fixStatus?: string;
@@ -6,84 +7,57 @@ export interface StatusPresentationInput {
   actionTiming?: string;
 }
 
-const EXPLOITATION_LABEL = '#эксплуатируется';
-const FIX_LABELS = ['#патча_нет', '#патч_частичный', '#патч_есть'] as const;
-const CONTROLLED_LABELS = new Set<string>([EXPLOITATION_LABEL, ...FIX_LABELS]);
+const FACTS = [
+  { id: 'exploitation_confirmed', label: 'Эксплуатация подтверждена', className: 'u-crit', accent: 'var(--crit-fg)', og: '/og/critical.png' },
+  { id: 'patch_unavailable', label: 'Патча нет', className: 'u-warn', accent: 'var(--warn-fg)', og: '/og/unpatched.png' },
+  { id: 'patch_available', label: 'Патч есть', className: 'u-ok', accent: 'var(--ok-fg)', og: '/og/patched.png' },
+] as const;
 
-const KNOWN_STATUSES = {
-  exploitationStatus: ['active', 'observed', 'none_observed', 'unknown'],
-  fixStatus: ['available', 'partial', 'unavailable', 'unknown', 'not_applicable'],
-  updateSufficiency: [
-  'sufficient',
-  'additional_action_required',
-  'not_applicable',
-  'unknown',
-  ],
-  actionTiming: ['now', 'scheduled', 'none'],
-} satisfies Record<StatusAxis, readonly string[]>;
-
-export type StatusAxis = Exclude<keyof StatusPresentationInput, 'urgency'>;
-
-export interface UnrecognizedStatus {
-  axis: StatusAxis;
-  value: string;
-}
-
-function addOnce(labels: string[], label: string | undefined) {
-  if (label !== undefined && !labels.includes(label)) labels.push(label);
-}
-
-/**
- * Legacy tags are presentation only. Each canonical axis replaces only its own
- * legacy fact, so partially migrated content stays readable without letting an
- * unknown new value inherit a misleading old green/red label.
- */
-export function displayUrgency(input: StatusPresentationInput): string[] {
+/** Presence, including [], owns all facts. Legacy precedence remains per axis. */
+function recordedTags(input: StatusPresentationInput): readonly string[] {
+  if (input.statusTags !== undefined) return input.statusTags;
   const legacy = input.urgency ?? [];
-  const labels: string[] = [];
-
-  if (input.exploitationStatus === undefined) {
-    if (legacy.includes(EXPLOITATION_LABEL)) addOnce(labels, EXPLOITATION_LABEL);
-  } else if (
-    input.exploitationStatus === 'active' ||
-    input.exploitationStatus === 'observed'
-  ) {
-    addOnce(labels, EXPLOITATION_LABEL);
+  const tags: string[] = [];
+  if (input.exploitationStatus === undefined
+    ? legacy.includes('#эксплуатируется')
+    : ['active', 'observed'].includes(input.exploitationStatus)) {
+    tags.push('exploitation_confirmed');
   }
-
   if (input.fixStatus === undefined) {
-    for (const label of FIX_LABELS) {
-      if (legacy.includes(label)) addOnce(labels, label);
-    }
+    if (legacy.includes('#патча_нет')) tags.push('patch_unavailable');
+    if (legacy.includes('#патч_есть')) tags.push('patch_available');
   } else {
-    addOnce(labels, {
-      unavailable: '#патча_нет',
-      partial: '#патч_частичный',
-      available: '#патч_есть',
-    }[input.fixStatus]);
+    if (input.fixStatus === 'unavailable') tags.push('patch_unavailable');
+    if (input.fixStatus === 'available') tags.push('patch_available');
   }
-
-  for (const label of legacy) {
-    if (!CONTROLLED_LABELS.has(label)) addOnce(labels, label);
-  }
-
-  return labels;
+  return tags;
 }
 
-/** Future free-string values stay visible as neutral metadata, never as urgency labels. */
-export function unrecognizedStatuses(input: StatusPresentationInput): UnrecognizedStatus[] {
-  return (Object.keys(KNOWN_STATUSES) as StatusAxis[]).flatMap((axis) => {
-    const value = input[axis];
-    return value !== undefined && !KNOWN_STATUSES[axis].includes(value) ? [{ axis, value }] : [];
-  });
+/** Safe build-only diagnostic: never echo untrusted values into public output. */
+export function statusDiagnostic(input: StatusPresentationInput): string | undefined {
+  const tags = recordedTags(input);
+  if (tags.includes('patch_available') && tags.includes('patch_unavailable')) {
+    return 'Conflicting patch status tags: both patch claims omitted.';
+  }
 }
 
-/** Canonical fix state owns statistics when present; legacy tags are old-content fallback. */
-export function isUnpatched(input: StatusPresentationInput): boolean {
-  if (input.fixStatus !== undefined) {
-    return input.fixStatus === 'unavailable' || input.fixStatus === 'partial';
-  }
-  return (input.urgency ?? []).some(
-    (label) => label === '#патча_нет' || label === '#патч_частичный',
-  );
+/** Trusted labels, deduplicated in accent priority order; unknown IDs are non-semantic. */
+export function displayUrgency(input: StatusPresentationInput): string[] {
+  const tags = recordedTags(input);
+  const conflict = statusDiagnostic(input) !== undefined;
+  return FACTS.filter(({ id }) => tags.includes(id) && (!conflict || id === 'exploitation_confirmed'))
+    .map(({ label }) => label);
+}
+
+export function urgencyClass(label: string): string {
+  return FACTS.find((fact) => fact.label === label)?.className ?? 'u-neutral';
+}
+
+/** Green means only a released patch, never safety or absence of exploitation. */
+export function urgencyAccent(labels: readonly string[] = []): string {
+  return FACTS.find((fact) => labels.includes(fact.label))?.accent ?? 'var(--dim)';
+}
+
+export function ogFor(labels: readonly string[] = []): string {
+  return FACTS.find((fact) => labels.includes(fact.label))?.og ?? '/og/default.png';
 }

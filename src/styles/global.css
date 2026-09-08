@@ -245,18 +245,15 @@ a:focus-visible { outline: 2px solid var(--sig); outline-offset: 2px; }
    и заголовок панели уже сказали, о чём речь. */
 .board .stats { display: flex; flex-wrap: wrap; gap: 28px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--hair); font-size: var(--fs-xs); color: var(--mut); }
 .board .stats b { display: block; font-size: var(--fs-lg); font-weight: 600; color: var(--tx); font-variant-numeric: tabular-nums; margin-top: 2px; }
-.board .stats .hot b { color: var(--warn-fg); }
 
 /* ─── Ярлыки ─── */
 .tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-.u { font-size: var(--fs-xs); font-weight: 600; letter-spacing: 0.02em; white-space: nowrap; padding: 3px 7px; border: 1px solid; }
+.u { font-size: var(--fs-xs); font-weight: 600; letter-spacing: 0.02em; white-space: normal; padding: 3px 7px; border: 1px solid; }
 .u-crit { background: var(--crit-bg); color: var(--crit-fg); border-color: var(--crit-fg); }
 .u-warn { background: var(--warn-bg); color: var(--warn-fg); border-color: var(--warn-fg); }
 .u-ok   { background: var(--ok-bg);   color: var(--ok-fg);   border-color: var(--ok-fg); }
-/* Ярлык, которого сайт ещё не знает: нейтрально, но видимо. Сборку не роняем. */
+/* Defensive neutral style; unknown status values do not create public badges. */
 .u-neutral { background: transparent; color: var(--mut); border-color: var(--dim); }
-.status-note { font-size: var(--fs-xs); color: var(--mut); }
-.status-note code { font-size: inherit; }
 .aud { font-size: var(--fs-xs); color: var(--mut); }
 .when { margin-left: auto; }
 

@@ -13,3 +13,8 @@ and in the test together. This file is never public incident content.
 The isolated build harness also creates synthetic audience fixtures at test time. They
 exercise the website's canonical-ID reader contract and legacy fallbacks; they are not
 examples of current producer output and are always removed with the temporary site.
+
+Synthetic `statusTags` cases are authored in `tests/site-build.test.mjs` for the optional
+reader contract: empty, single, compatible multiple, unknown and conflicting tags.
+They are not new producer output. The exact legacy fixture above remains unchanged;
+the new producer bytes will be pinned separately after the writer transition.

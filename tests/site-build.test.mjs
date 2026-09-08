@@ -269,6 +269,8 @@ test('actual content schema rejects malformed required fields in the temporary s
     ['', 'pubDate'],
     ['"pubDate": "not-a-date"\n', 'pubDate'],
     ['pubDate: 2030-09-04T12:00:00.000Z\naudience: "holders"\n', 'audience'],
+    ['pubDate: 2030-09-04T12:00:00.000Z\nstatusTags: "patch_available"\n', 'statusTags'],
+    ['pubDate: 2030-09-04T12:00:00.000Z\nstatusTags: [42]\n', 'statusTags'],
   ]) {
     await withTemporaryDirectory(async (directory) => {
       const site = join(directory, 'site');
@@ -346,12 +348,15 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
     const emptyAudiencePage = await text(join(site, 'dist/incidents', EMPTY_AUDIENCE_FIXTURE_ID, 'index.html'));
     const missingAudiencePage = await text(join(site, 'dist/incidents', MISSING_AUDIENCE_FIXTURE_ID, 'index.html'));
     const index = await text(join(site, 'dist/index.html'));
+    assert.ok(!index.includes('без патча'));
+    assert.ok(!index.includes('Без патча'));
 
-    assert.ok(rootPage.includes('#эксплуатируется'));
-    assert.ok(rootPage.includes('#патч_есть'));
+    assert.ok(rootPage.includes('Эксплуатация подтверждена'));
+    assert.ok(rootPage.includes('Патч есть'));
     assert.ok(!rootPage.includes('#патча_нет'));
-    assert.ok(updatePage.includes('#патч_частичный'));
-    assert.ok(updatePage.includes('class="u u-warn">#патч_частичный</span>'));
+    assert.ok(!updatePage.includes('#патч_частичный'));
+    assert.ok(!updatePage.includes('class="u u-warn"'));
+    assert.ok(updatePage.includes('/og/critical.png'));
 
     const hijack = rootPage.match(/<aside class="hijack[^>]*>([\s\S]*?)<\/aside>/);
     assert.ok(hijack, 'trusted hijack banner is missing');
@@ -370,10 +375,10 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
     assert.ok(!unknownPage.includes('class="u u-ok"'));
     assert.ok(!unknownPage.includes('#патч_есть'));
     assert.ok(!unknownPage.includes('class="u u-neutral"'));
-    assert.ok(unknownPage.includes('class="status-note"'));
-    assert.ok(unknownPage.includes('fixStatus=future_fix_state'));
-    assert.ok(unknownPage.includes('updateSufficiency=future_sufficiency_state'));
-    assert.ok(unknownPage.includes('actionTiming=future_timing_state'));
+    assert.ok(!unknownPage.includes('class="status-note"'));
+    assert.ok(!unknownPage.includes('fixStatus=future_fix_state'));
+    assert.ok(!unknownPage.includes('updateSufficiency=future_sufficiency_state'));
+    assert.ok(!unknownPage.includes('actionTiming=future_timing_state'));
     assert.match(index, /<article class="card panel" style="--accent: var\(--dim\)">[\s\S]*?Unknown status fixture/);
 
     const holdersPosition = unknownPage.indexOf('class="aud">Ходлеры</span>');
@@ -440,7 +445,9 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
       assert.ok(output.includes('coldcard.com'));
       for (const field of ['reason', 'linkRefs', 'telegramUrl']) assert.ok(!output.includes(field));
     }
-    for (const label of producer.urgency) {
+    assert.ok(!producerPage.includes('#патч_частичный'));
+    assert.ok(!producerRss.includes('<category>#патч_частичный</category>'));
+    for (const label of ['Эксплуатация подтверждена']) {
       assert.ok(producerPage.includes(label));
       assert.ok(producerRss.includes(`<category>${label}</category>`));
     }
@@ -448,8 +455,8 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
     assert.ok(rootPage.includes(`/incidents/${UPDATE_FIXTURE_ID}/`));
     assert.ok(updatePage.includes(`/incidents/${ROOT_FIXTURE_ID}/`));
     assert.ok(rss.includes(`/incidents/${ROOT_FIXTURE_ID}/`));
-    assert.ok(rss.includes('#эксплуатируется'));
-    assert.ok(rss.includes('#патч_есть'));
+    assert.ok(rss.includes('Эксплуатация подтверждена'));
+    assert.ok(rss.includes('Патч есть'));
     assert.ok(rss.includes('официальный аккаунт Fixture Vendor угнан'));
     assert.ok(!rss.includes('https://untrusted.example/'));
     const { canonical, item: updateRssItem } = rssItemFor(rss, UPDATE_FIXTURE_ID);
@@ -489,7 +496,7 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
       assert.ok(!item.includes('<category>Ходлеры</category>'));
       assert.ok(!item.includes('<category>Все — старая категория</category>'));
     }
-    assert.ok(rss.includes('fixStatus=future_fix_state'));
+    assert.ok(!rss.includes('fixStatus=future_fix_state'));
     assert.ok(!rss.includes('<category>fixStatus='));
     assert.ok(!rss.includes('src/content/archive'));
     for (const output of [index, feed, rss, rootPage, updatePage, unknownPage, ...generatedBackfill]) {
@@ -509,4 +516,77 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
   ]) {
     assert.equal(existsSync(join(REPOSITORY, 'src/content/incidents', `${id}.md`)), false);
   }
+});
+
+// Synthetic reader cases only. The pinned producer fixture above remains exact legacy evidence.
+test('synthetic optional facts share labels and accents across cards, rows, pages, RSS and OG', async () => {
+  const cases = [
+    ['empty', [], [], 'dim', 'default'],
+    ['unknown', ['future_status'], [], 'dim', 'default'],
+    ['exploited', ['exploitation_confirmed'], ['Эксплуатация подтверждена'], 'crit-fg', 'critical'],
+    ['unavailable', ['patch_unavailable'], ['Патча нет'], 'warn-fg', 'unpatched'],
+    ['available', ['patch_available'], ['Патч есть'], 'ok-fg', 'patched'],
+    ['exploited-unavailable', ['patch_unavailable', 'exploitation_confirmed'], ['Эксплуатация подтверждена', 'Патча нет'], 'crit-fg', 'critical'],
+    ['exploited-available', ['patch_available', 'exploitation_confirmed', 'patch_available'], ['Эксплуатация подтверждена', 'Патч есть'], 'crit-fg', 'critical'],
+    ['conflict', ['patch_available', 'patch_unavailable'], [], 'dim', 'default'],
+    ['exploited-conflict', ['patch_available', 'exploitation_confirmed', 'patch_unavailable'], ['Эксплуатация подтверждена'], 'crit-fg', 'critical'],
+  ];
+  await withTemporaryDirectory(async (directory) => {
+    const site = join(directory, 'site');
+    await copySite(site);
+    for (const [name, tags] of cases) {
+      await writeFile(join(site, `src/content/incidents/synthetic-${name}.md`), `---
+title: "Synthetic ${name}"
+description: "Source-supported description"
+pubDate: 2033-09-04T12:00:00.000Z
+statusTags: ${JSON.stringify(tags)}
+urgency: ["#эксплуатируется", "#патча_нет", "#патч_есть"]
+exploitationStatus: active
+fixStatus: available
+audience: [node_operators]
+action: "Read the source advice"
+parent: missing-synthetic-root
+links: [{label: Source, url: "https://source.example/advice"}]
+---
+`);
+    }
+    await writeFile(join(site, 'src/content/incidents/synthetic-draft.md'), '---\ntitle: Synthetic draft\npubDate: 2040-01-01\nstatusTags: [patch_available]\ndraft: true\n---\n');
+    const build = buildSite(site);
+    assert.equal(build.status, 0, `${build.stdout}\n${build.stderr}`);
+    assert.equal(existsSync(join(site, 'dist/incidents/synthetic-draft/index.html')), false);
+    assert.match(build.stdout + build.stderr, /Conflicting patch status tags: both patch claims omitted/);
+    const feed = await text(join(site, 'dist/feed/index.html'));
+    const rss = await text(join(site, 'dist/rss.xml'));
+    const index = await text(join(site, 'dist/index.html'));
+    const card = index.match(/<article class="card panel"[\s\S]*?<\/article>/)?.[0];
+    assert.ok(card);
+    for (const output of [index, feed, rss]) assert.ok(!output.includes('Synthetic draft'));
+    for (const [name, , labels, accent, og] of cases) {
+      const page = await text(join(site, `dist/incidents/synthetic-${name}/index.html`));
+      const row = feed.split('<div class="row">').find((part) => part.includes(`>Synthetic ${name}</a>`));
+      assert.ok(row, name);
+      const { item } = rssItemFor(rss, `synthetic-${name}`);
+      for (const label of ['Эксплуатация подтверждена', 'Патча нет', 'Патч есть']) {
+        for (const output of [page, row]) {
+          assert.equal(output.split(`>${label}</span>`).length - 1, labels.includes(label) ? 1 : 0, name + label);
+        }
+        assert.equal(item.split(`<category>${label}</category>`).length - 1, labels.includes(label) ? 1 : 0, name + label);
+      }
+      assert.ok(page.includes(`/og/${og}.png`), name);
+      assert.ok(page.includes('Операторы нод'));
+      assert.ok(page.includes('Read the source advice'));
+      assert.ok(page.includes('href="https://source.example/advice"'));
+      assert.ok(!page.includes('Апдейт инцидента:'));
+      assert.ok(item.includes('<pubDate>Sun, 04 Sep 2033 12:00:00 GMT</pubDate>'));
+      for (const output of [page, row, item]) {
+        assert.ok(!output.includes('future_status'));
+        assert.ok(!output.includes('Conflicting patch'));
+        assert.ok(!output.includes('#эксплуатируется'));
+      }
+      if (card.includes(`>Synthetic ${name}</a>`)) {
+        assert.ok(card.includes(`--accent: var(--${accent})`));
+        for (const label of labels) assert.ok(card.includes(`>${label}</span>`));
+      }
+    }
+  });
 });
