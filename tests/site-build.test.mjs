@@ -14,6 +14,11 @@ import { z } from 'astro/zod';
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const REPOSITORY = dirname(ROOT);
 const PRODUCER_FIXTURE_ID = 'fixture-2026-09-05-producer-alert';
+const PRODUCER_REVISION = '936392aa52d8c72060bb3baf5568ae0b2167886e';
+const NEW_PRODUCERS = [
+  ['tags', 'a1cfc1379675680d3aee74c1a5d582b626f432d7ac2f7d67cfacfc15dfbabad3', ['exploitation_confirmed', 'patch_available']],
+  ['empty', '63faf211ed8b350ae1e8ba8944d208cba54ea2c295765db7c0cc494c04e2a072', []],
+];
 const PRODUCER_SHA256 = '4703b93ff04788c0833c670ee9d5d93ccedf1425229f4846c9274c996a56ea21';
 
 const INCIDENT_IDS = [
@@ -292,6 +297,20 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
     const site = join(directory, 'site');
     await copySite(site);
     const producer = await installProducer(site);
+    const newProducers = [];
+    for (const [name, digest, tags] of NEW_PRODUCERS) {
+      const bytes = await readFile(join(ROOT, `fixtures/site-generated-alert-${name}.md`));
+      assert.equal(createHash('sha256').update(bytes).digest('hex'), digest, `${PRODUCER_REVISION}: ${name}`);
+      const id = `fixture-2026-09-05-producer-${name}`;
+      await writeFile(join(site, 'src/content/incidents', `${id}.md`), bytes);
+      assert.deepEqual(await readFile(join(site, 'src/content/incidents', `${id}.md`)), bytes);
+      const data = frontmatter(bytes.toString('utf8'));
+      assert.deepEqual(data.statusTags, tags);
+      for (const field of ['urgency', 'exploitationStatus', 'fixStatus', 'updateSufficiency', 'actionTiming', 'reason', 'linkRefs', 'telegramUrl', 'sourceUrl']) {
+        assert.ok(!(field in data), `${field} leaked into new producer ${name}`);
+      }
+      newProducers.push({ name, id, data });
+    }
 
     const fixtureDirectory = join(site, 'src/content/incidents');
     await writeFile(join(fixtureDirectory, `${ROOT_FIXTURE_ID}.md`), rootFixture);
@@ -445,6 +464,36 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
       assert.ok(output.includes('coldcard.com'));
       for (const field of ['reason', 'linkRefs', 'telegramUrl']) assert.ok(!output.includes(field));
     }
+    for (const { name, id, data } of newProducers) {
+      const page = await text(join(site, 'dist/incidents', id, 'index.html'));
+      const { canonical, item } = rssItemFor(rss, id);
+      assert.ok(item.includes(`<guid isPermaLink="true">${canonical}</guid>`));
+      assert.ok(item.includes('<pubDate>Sat, 05 Sep 2026 23:59:59 GMT</pubDate>'));
+      assert.ok(page.includes('5 сентября 2026'));
+      assert.ok(page.includes(`content="${canonical}"`));
+      assert.ok(page.includes(`/og/${name === 'tags' ? 'critical' : 'default'}.png`));
+      for (const output of [page, rssContent(item)]) {
+        assert.ok(output.includes(data.description));
+        assert.ok(output.includes(data.action));
+        assert.ok(output.includes('href="https://coldcard.com/security"'));
+        assert.ok(!output.includes('reason'));
+        assert.ok(!output.includes('Статус угрозы'));
+      }
+      assert.ok(page.includes('Ходлеры'));
+      assert.ok(item.includes('<category>Ходлеры</category>'));
+      for (const label of ['Эксплуатация подтверждена', 'Патч есть', 'Патча нет']) {
+        const expected = name === 'tags' && label !== 'Патча нет';
+        assert.equal(page.includes(`>${label}</span>`), expected);
+        assert.equal(item.includes(`<category>${label}</category>`), expected);
+      }
+      if (data.parent) {
+        assert.equal(data.parent, producer.parent);
+        assert.ok(page.includes(`/incidents/${data.parent}/`));
+        assert.ok(producerRoot.includes(`/incidents/${id}/`));
+      } else {
+        assert.ok(!page.includes('Апдейт инцидента:'));
+      }
+    }
     assert.ok(!producerPage.includes('#патч_частичный'));
     assert.ok(!producerRss.includes('<category>#патч_частичный</category>'));
     for (const label of ['Эксплуатация подтверждена']) {
@@ -513,12 +562,13 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
     EMPTY_AUDIENCE_FIXTURE_ID,
     MISSING_AUDIENCE_FIXTURE_ID,
     PRODUCER_FIXTURE_ID,
+    ...NEW_PRODUCERS.map(([name]) => `fixture-2026-09-05-producer-${name}`),
   ]) {
     assert.equal(existsSync(join(REPOSITORY, 'src/content/incidents', `${id}.md`)), false);
   }
 });
 
-// Synthetic reader cases only. The pinned producer fixture above remains exact legacy evidence.
+// Synthetic reader cases only; these are separate from the exact producer evidence above.
 test('synthetic optional facts share labels and accents across cards, rows, pages, RSS and OG', async () => {
   const cases = [
     ['empty', [], [], 'dim', 'default'],
@@ -586,6 +636,99 @@ links: [{label: Source, url: "https://source.example/advice"}]
       if (card.includes(`>Synthetic ${name}</a>`)) {
         assert.ok(card.includes(`--accent: var(--${accent})`));
         for (const label of labels) assert.ok(card.includes(`>${label}</span>`));
+      }
+    }
+  });
+});
+
+// Authored timeline scenarios, not producer byte evidence. Insertion order deliberately
+// differs from publication time: a frozen legacy update can arrive after new posts.
+test('mixed-format history keeps each publication own facts and frozen identity', async () => {
+  const cases = [
+    ['legacy-root', '2034-09-01', null, null, ['Эксплуатация подтверждена'], 'critical'],
+    ['new-tagged', '2034-09-02', 'legacy-root', ['patch_available'], ['Патч есть'], 'patched'],
+    ['new-empty', '2034-09-06', 'legacy-root', [], [], 'default'],
+    ['new-root', '2034-09-03', null, ['patch_unavailable'], ['Патча нет'], 'unpatched'],
+    ['legacy-queued', '2034-09-05', 'new-root', null, ['Эксплуатация подтверждена'], 'critical'],
+  ];
+  await withTemporaryDirectory(async (directory) => {
+    const site = join(directory, 'site');
+    await copySite(site);
+    for (const [name, date, parent, tags] of cases) {
+      await writeFile(join(site, `src/content/incidents/mixed-${name}.md`), `---
+title: "Mixed ${name}"
+description: "A separately recorded publication"
+pubDate: ${date}T23:59:59.000Z
+${tags === null ? '' : `statusTags: ${JSON.stringify(tags)}`}
+urgency: ["#эксплуатируется", "#патча_нет"]
+exploitationStatus: observed
+fixStatus: partial
+audience: [holders, держатели]
+incidentKey: "${parent ?? name}"
+${parent ? `parent: mixed-${parent}` : ''}
+action: "Follow this publication's advice"
+links: [{label: Source, url: "https://source.example/advice"}]
+---
+`);
+    }
+    const build = buildSite(site);
+    assert.equal(build.status, 0, `${build.stdout}\n${build.stderr}`);
+    const feed = await text(join(site, 'dist/feed/index.html'));
+    const rss = await text(join(site, 'dist/rss.xml'));
+    const index = await text(join(site, 'dist/index.html'));
+    const card = index.match(/<article class="card panel"[\s\S]*?<\/article>/)?.[0];
+    assert.ok(card?.includes('Mixed new-empty'));
+    assert.ok(card.includes('--accent: var(--dim)'));
+    for (const label of ['Эксплуатация подтверждена', 'Патча нет', 'Патч есть']) assert.ok(!card.includes(label));
+    assert.ok(index.includes('data-since="2034-09-03T23:59:59.000Z"'), 'late updates must not reset the root counter');
+    const entries = await corpus(join(site, 'src/content'));
+    const own = entries.filter(({ data }) => !data.external && !data.draft);
+    const recentRoots = own.filter(({ data }) => !data.parent && data.pubDate.valueOf() >= Date.now() - 365 * 864e5);
+    assert.ok(index.includes(`<span>за год<b>${recentRoots.length}</b></span>`));
+    assert.ok(index.includes(`<span>всего<b>${own.length}</b></span>`));
+    for (const output of [index, feed, rss]) assert.doesNotMatch(output, /Без патча|без патча/);
+    for (const [name, date, parent, , labels, og] of cases) {
+      const id = `mixed-${name}`;
+      const page = await text(join(site, `dist/incidents/${id}/index.html`));
+      const { canonical, item } = rssItemFor(rss, id);
+      const row = feed.split('<div class="row">').find((part) => part.includes(`>Mixed ${name}</a>`));
+      assert.ok(row, id);
+      assert.ok(page.includes(`content="${canonical}"`));
+      assert.ok(page.includes(`/og/${og}.png`));
+      assert.ok(page.includes(`${Number(date.slice(-2))} сентября 2034`));
+      assert.ok(item.includes(`<guid isPermaLink="true">${canonical}</guid>`));
+      assert.ok(item.includes(`<pubDate>${new Date(`${date}T23:59:59.000Z`).toUTCString()}</pubDate>`));
+      for (const label of ['Эксплуатация подтверждена', 'Патча нет', 'Патч есть']) {
+        for (const output of [page, row]) {
+          assert.equal(output.split(`>${label}</span>`).length - 1, labels.includes(label) ? 1 : 0, `${id}: ${label}`);
+        }
+        assert.equal(item.includes(`<category>${label}</category>`), labels.includes(label), id);
+      }
+      assert.equal(page.split('class="aud">Ходлеры</span>').length - 1, 1);
+      assert.equal(item.split('<category>Ходлеры</category>').length - 1, 1);
+      for (const output of [page, rssContent(item)]) {
+        assert.ok(output.includes('href="https://source.example/advice"'));
+        assert.ok(output.includes('Follow this publication'));
+        assert.doesNotMatch(output, /status-note|Статус угрозы|Срочность действий/);
+      }
+      if (parent) assert.ok(page.includes(`Апдейт инцидента: <a href="/incidents/mixed-${parent}/"`));
+      const members = cases.filter(([member, , memberParent]) => (parent ?? name) === (memberParent ?? member));
+      const history = page.match(/<div class="thread">[\s\S]*?<\/div>/)?.[0];
+      assert.ok(history);
+      let position = -1;
+      for (const [member] of members.sort((a, b) => a[1].localeCompare(b[1]))) {
+        const next = history.indexOf(`Mixed ${member}`);
+        assert.ok(next > position, `${id}: thread order ${member}`);
+        position = next;
+        if (member !== name) assert.ok(history.includes(`/incidents/mixed-${member}/`));
+      }
+    }
+    for (const output of [feed, rss]) {
+      let position = -1;
+      for (const [name] of [...cases].sort((a, b) => b[1].localeCompare(a[1]))) {
+        const next = output.indexOf(`/incidents/mixed-${name}/`);
+        assert.ok(next > position, `publication order ${name}`);
+        position = next;
       }
     }
   });
