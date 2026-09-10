@@ -35,7 +35,22 @@ above is unchanged (and matches the producer's `site-generated-alert-legacy.md` 
 this revision). File names in the temporary website identify test publications only;
 their frontmatter bytes, frozen timestamps and parent links are not edited.
 
-The harness builds all three exact files together. Authored mixed-history fixtures
+## Multi-audience producer output
+
+Exact byte copy from merged `sec-watcher-bot` revision
+`332fba83203d2a80daabfd91c33f351fb6fb106a` (central issue #92):
+
+| Local file | Committed producer source | SHA-256 |
+| --- | --- | --- |
+| `site-generated-alert-audiences.md` | [`fixtures/site-generated-alert.md`](https://github.com/21ideas-org/sec-watcher-bot/blob/332fba83203d2a80daabfd91c33f351fb6fb106a/fixtures/site-generated-alert.md) | `300a4d43eb0a3981876d75a4591777a1983fbed3fc107a273fd0e055647f4eee` |
+
+This is the first producer output naming several reader groups in one alert
+(`holders` and `developers`). `tests/site-build.test.mjs` verifies the digest, the
+untouched `audience` bytes, both rendered badges with their `/feed?audience=<id>`
+links, the row filter metadata and both RSS categories. The earlier revisions above
+are kept as explicit legacy coverage and are not replaced by it.
+
+The harness builds all four exact files together. Authored mixed-history fixtures
 separately exercise new tagged/empty updates of legacy roots and a late legacy queued
 update of a new root. Each publication uses its own format and facts, including an
 explicit empty array overriding contradictory legacy metadata. These synthetic
