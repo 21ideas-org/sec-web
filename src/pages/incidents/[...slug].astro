@@ -1,11 +1,11 @@
 ---
 import { render } from 'astro:content';
+import Audience from '../../components/Audience.astro';
 import Base from '../../layouts/Base.astro';
 import Urgency from '../../components/Urgency.astro';
 import Thread from '../../components/Thread.astro';
 import { allIncidents, dateLong, keepFlags, own, thread, threadStart } from '../../lib.ts';
 import { displayUrgency, ogFor } from '../../status.ts';
-import { displayAudience } from '../../audience.ts';
 
 export async function getStaticPaths() {
   const list = await allIncidents();
@@ -28,7 +28,6 @@ const date = dateLong(d.pubDate);
 // когда совпадает с продуктом: «Core Lightning · Core Lightning» — не строка.
 const subject = [d.product, d.vendor !== d.product ? d.vendor : null].filter(Boolean).join(' · ');
 const urgency = displayUrgency(d);
-const audience = displayAudience(d.audience);
 ---
 <Base
   title={d.title}
@@ -41,7 +40,7 @@ const audience = displayAudience(d.audience);
     {subject && <div class="eyebrow">{subject}</div>}
     <div class="tags">
       <Urgency tags={urgency} />
-      {audience.map((a) => <span class="aud">{a.label}</span>)}
+      <Audience values={d.audience} />
       <span class="aud when">{date}</span>
     </div>
     {

@@ -1,8 +1,17 @@
 ---
 import Base from '../layouts/Base.astro';
 import Row from '../components/Row.astro';
+import AudienceFilter from '../components/AudienceFilter.astro';
 import { allIncidents, own, archive } from '../lib.ts';
 import { SITE_NAME } from '../consts.ts';
+import {
+  EMPTY_RESULT_MESSAGE,
+  FEED_PATH,
+  HISTORY_LIMITATION_MESSAGE,
+  INVALID_QUERY_MESSAGE,
+  NO_JS_MESSAGE,
+  RESET_LABEL,
+} from '../audience-filter.ts';
 
 const list = await allIncidents();
 const posts = own(list);
@@ -12,25 +21,53 @@ const hist = archive(list);
   title={`Инциденты · ${SITE_NAME}`}
   description="Все публикации канала: уязвимости, патчи и активная эксплуатация."
 >
+  {/* ⚠️ Страница остаётся статической: сервер отдаёт ПОЛНУЮ ленту, а фильтр
+      прячет строки на клиенте. Никакого бэкенда и никакой подгрузки. */}
   <section class="sec">
-    <div class="sec-h"><h1>Инциденты</h1><a class="more" href="/rss.xml">RSS</a></div>
+    <div class="sec-h">
+      <h1>Инциденты</h1>
+      <AudienceFilter />
+      <a class="more" href="/rss.xml">RSS</a>
+    </div>
+
+    <noscript>
+      <p class="note" data-audience-nojs>{NO_JS_MESSAGE}</p>
+    </noscript>
+
+    <p class="note" data-audience-invalid hidden>
+      {INVALID_QUERY_MESSAGE} <a href={FEED_PATH}>{RESET_LABEL}</a>
+    </p>
+
     {
       posts.length > 0
-        ? <div class="rows">{posts.map((e) => <Row entry={e} />)}</div>
+        ? <div class="rows" data-audience-rows>{posts.map((e) => <Row entry={e} />)}</div>
         : <p class="note">Публикаций пока нет. Канал ждёт первого критического сигнала.</p>
     }
+
+    <p class="note" data-audience-empty hidden>
+      {EMPTY_RESULT_MESSAGE} <a href={FEED_PATH}>{RESET_LABEL}</a>
+    </p>
+
+    {/* Оговорка стоит рядом с отфильтрованной выдачей, а не в отдельной справке:
+        читатель обязан видеть границы разметки там, где он на неё смотрит. */}
+    <p class="note" data-audience-history hidden>{HISTORY_LIMITATION_MESSAGE}</p>
   </section>
 
   {
     hist.length > 0 && (
-      <section class="sec" id="archive">
-        <div class="sec-h"><h2>Хроники</h2></div>
-        <div class="rows arch">{hist.map((e) => <Row entry={e} />)}</div>
-        <p class="note">
-          Ведётся руками: заметные уязвимости биткоин-софта до появления канала. Ссылки
-          ведут на первоисточники. В RSS не попадает и счётчик не обнуляет.
+      <>
+        <p class="note" data-audience-archive-link hidden>
+          Хроники в фильтр по аудитории не входят: <a href="/feed#archive">все хроники</a>
         </p>
-      </section>
+        <section class="sec" id="archive" data-audience-archive>
+          <div class="sec-h"><h2>Хроники</h2></div>
+          <div class="rows arch">{hist.map((e) => <Row entry={e} />)}</div>
+          <p class="note">
+            Ведётся руками: заметные уязвимости биткоин-софта до появления канала. Ссылки
+            ведут на первоисточники. В RSS не попадает и счётчик не обнуляет.
+          </p>
+        </section>
+      </>
     )
   }
 </Base>

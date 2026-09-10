@@ -1,0 +1,21 @@
+---
+import { displayAudience } from '../audience.ts';
+import { audienceHref } from '../audience-filter.ts';
+
+interface Props { values: readonly string[]; }
+const { values } = Astro.props;
+const items = displayAudience(values);
+---
+{/* A known audience is always a link into the filtered feed, wherever the badge
+    appears. Legacy and unknown values stay plain: they have no canonical ID, and
+    sending the reader into a filter that excludes those very posts would invent a
+    membership they never had. */}
+{
+  items.map((a) =>
+    a.id ? (
+      <a class="aud aud-link" href={audienceHref(a.id)}>{a.label}</a>
+    ) : (
+      <span class="aud aud-badge">{a.label}</span>
+    ),
+  )
+}

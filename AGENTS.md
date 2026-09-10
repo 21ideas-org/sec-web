@@ -47,6 +47,14 @@ Issue обязан содержать применимые решения websit
   пустой набор не означает безопасность. Не добавлять статусную статистику или фильтры.
 - `audience[]` остаётся free-string списком; reader нормализует только явные aliases.
   Audience, identity, thread links и source provenance независимы от status facts.
+- Единственная нормализация audience — `src/audience.ts` (`normalizeAudience`), единственная
+  логика фильтра — `src/audience-filter.ts`; браузерный скрипт импортирует их, а не заводит
+  свой словарь. Состояние фильтра живёт в URL (`/feed?audience=<id>`, повторяющийся ключ,
+  OR-совпадение, все четыре ID = лента без фильтра, нераспознанное значение = явное
+  invalid-состояние со сбросом). Фильтрация клиентская, поверх уже отрендеренных строк:
+  без backend, без подгрузки, без filtered RSS и audience landing pages. Legacy `all`,
+  пустые и неизвестные audience видны только в полной ленте и не получают выдуманной
+  принадлежности; `external` хроника в фильтр не входит.
 - Website — роль общего crash-safe outbox. Slug, Markdown bytes и logical `pubDate`
   замораживаются до первого сетевого вызова; GitHub write создаёт только отсутствующий
   файл и не перезаписывает его после Telegram delivery. `telegramUrl` остаётся optional

@@ -1,15 +1,20 @@
 ---
+import Audience from './Audience.astro';
 import Urgency from './Urgency.astro';
 import { dateShort, type Incident } from '../lib.ts';
 import { displayUrgency } from '../status.ts';
+import { postAudienceIds } from '../audience-filter.ts';
 interface Props { entry: Incident; }
 const { entry } = Astro.props;
 const d = entry.data;
 const date = dateShort(d.pubDate);
 const href = d.external ? d.sourceUrl : `/incidents/${entry.id}/`;
 const urgency = displayUrgency(d);
+// Только собственные публикации участвуют в фильтре: хроника — соседний раздел,
+// и её значения не должны попадать в результат фильтрации.
+const audience = d.external ? [] : postAudienceIds(d.audience);
 ---
-<div class="row">
+<div class="row" data-audience={d.external ? undefined : audience.join(' ')}>
   <span class="dt">{date}</span>
   <div>
     <div class="ti">
@@ -19,6 +24,11 @@ const urgency = displayUrgency(d);
       {href ? <a href={href} rel={d.external ? 'noopener' : undefined}>{d.title}</a> : d.title}
     </div>
     {d.description && <div class="de">{d.description}</div>}
+    {/* Тот же бейдж-ссылка, что на карточке и на странице инцидента: читатель
+        уходит в отфильтрованную ленту прямо из строки. */}
+    {!d.external && d.audience.length > 0 && (
+      <div class="row-aud"><Audience values={d.audience} /></div>
+    )}
   </div>
   {
     d.external

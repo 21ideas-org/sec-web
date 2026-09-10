@@ -1,4 +1,5 @@
 ---
+import Audience from '../components/Audience.astro';
 import Base from '../layouts/Base.astro';
 import Counter from '../components/Counter.astro';
 import Row from '../components/Row.astro';
@@ -6,7 +7,6 @@ import Urgency from '../components/Urgency.astro';
 import { SITE_NAME, SITE_DESCRIPTION } from '../consts.ts';
 import { allIncidents, own, archive, counterAnchor, dateShort, stats } from '../lib.ts';
 import { displayUrgency, urgencyAccent } from '../status.ts';
-import { displayAudience } from '../audience.ts';
 
 const list = await allIncidents();
 const posts = own(list);
@@ -17,7 +17,6 @@ const anchor = counterAnchor(list);
 const s = stats(list);
 const latestDate = latest && dateShort(latest.data.pubDate);
 const latestUrgency = latest ? displayUrgency(latest.data) : [];
-const latestAudience = latest ? displayAudience(latest.data.audience) : [];
 ---
 <Base title={SITE_NAME} description={SITE_DESCRIPTION}>
   <section class="board panel">
@@ -41,7 +40,7 @@ const latestAudience = latest ? displayAudience(latest.data.audience) : [];
         <article class="card panel" style={`--accent: ${urgencyAccent(latestUrgency)}`}>
           <div class="tags">
             <Urgency tags={latestUrgency} />
-            {latestAudience.map((a) => <span class="aud">{a.label}</span>)}
+            <Audience values={latest.data.audience} />
             <span class="aud when">{latestDate}</span>
           </div>
           <h2><a href={`/incidents/${latest.id}/`}>{latest.data.title}</a></h2>

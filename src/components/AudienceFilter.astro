@@ -1,0 +1,252 @@
+---
+import {
+  ALL_AUDIENCES_LABEL,
+  APPLY_LABEL,
+  AUDIENCE_OPTIONS,
+  EMPTY_DRAFT_MESSAGE,
+  FILTER_ACCESSIBLE_NAME,
+  SELECT_ALL_LABEL,
+} from '../audience-filter.ts';
+---
+{/* ⚠️ Обёртка скрыта в разметке и открывается скриптом. Фильтрация идёт на
+    клиенте, и без JavaScript кнопка была бы мёртвым элементом в порядке
+    табуляции; вместо неё лента показывает честное объяснение в <noscript>. */}
+<div class="aud-filter" data-audience-filter data-audience-state="all" hidden>
+  <button
+    type="button"
+    class="aud-trigger"
+    id="aud-trigger"
+    aria-haspopup="dialog"
+    aria-expanded="false"
+    aria-controls="aud-popover"
+    data-audience-trigger
+  >
+    {/* Доступное имя называет и фильтр, и применённое состояние: «Аудитории: 2»
+        само по себе не говорит, чем это управляет. */}
+    <span class="vh">{FILTER_ACCESSIBLE_NAME}: </span>
+    <span data-audience-trigger-label>{ALL_AUDIENCES_LABEL}</span>
+    <span class="aud-caret" aria-hidden="true">▾</span>
+  </button>
+
+  {/* Одна и та же панель на десктопе и на телефоне: меняются только положение и
+      ширина. Постоянно развёрнутой полосы фильтров на широком экране нет. */}
+  <div
+    class="aud-popover panel"
+    id="aud-popover"
+    role="dialog"
+    aria-label={FILTER_ACCESSIBLE_NAME}
+    data-audience-popover
+    hidden
+  >
+    <label class="aud-opt">
+      <input type="checkbox" data-audience-all />
+      <span>{SELECT_ALL_LABEL}</span>
+    </label>
+    {/* Все четыре варианта берутся из словаря, а не из тегов текущей выдачи:
+        аудитория не исчезает и не гаснет оттого, что сегодня по ней нет постов. */}
+    {
+      AUDIENCE_OPTIONS.map((option) => (
+        <label class="aud-opt">
+          <input type="checkbox" value={option.id} data-audience-option />
+          <span>{option.label}</span>
+        </label>
+      ))
+    }
+    <p class="aud-hint" id="aud-hint" data-audience-hint hidden>{EMPTY_DRAFT_MESSAGE}</p>
+    <button
+      type="button"
+      class="aud-apply"
+      aria-describedby="aud-hint"
+      data-audience-apply
+    >{APPLY_LABEL}</button>
+  </div>
+</div>
+
+<script>
+  import { AUDIENCE_IDS, type AudienceId } from '../audience.ts';
+  import {
+    AUDIENCE_QUERY_KEY,
+    FEED_PATH,
+    canApplyDraft,
+    canonicalSelection,
+    matchesAudience,
+    parseAudienceQuery,
+    selectAllState,
+    serializeAudienceQuery,
+    toggleDraft,
+    toggleSelectAll,
+    triggerLabel,
+    type AudienceQuery,
+  } from '../audience-filter.ts';
+
+  const filter = document.querySelector<HTMLElement>('[data-audience-filter]');
+  const trigger = document.querySelector<HTMLButtonElement>('[data-audience-trigger]');
+  const popover = document.querySelector<HTMLElement>('[data-audience-popover]');
+  const label = document.querySelector<HTMLElement>('[data-audience-trigger-label]');
+  const selectAll = document.querySelector<HTMLInputElement>('[data-audience-all]');
+  const apply = document.querySelector<HTMLButtonElement>('[data-audience-apply]');
+  const hint = document.querySelector<HTMLElement>('[data-audience-hint]');
+  const options = [...document.querySelectorAll<HTMLInputElement>('[data-audience-option]')];
+  const rowsHost = document.querySelector<HTMLElement>('[data-audience-rows]');
+  const emptyNote = document.querySelector<HTMLElement>('[data-audience-empty]');
+  const invalidNote = document.querySelector<HTMLElement>('[data-audience-invalid]');
+  const historyNote = document.querySelector<HTMLElement>('[data-audience-history]');
+  const archive = document.querySelector<HTMLElement>('[data-audience-archive]');
+  const archiveLink = document.querySelector<HTMLElement>('[data-audience-archive-link]');
+
+  if (filter && trigger && popover && label && selectAll && apply && hint) {
+    const rows = rowsHost
+      ? [...rowsHost.querySelectorAll<HTMLElement>('.row[data-audience]')]
+      : [];
+    // Значения в data-audience уже канонические: разбирал их тот же словарь на сборке.
+    const rowAudiences = new Map(
+      rows.map((row) => [row, (row.dataset.audience ?? '').split(' ').filter(Boolean)]),
+    );
+
+    let applied: AudienceId[] = [];
+    let draft: AudienceId[] = [];
+
+    function show(element: HTMLElement | null, visible: boolean) {
+      if (element) element.hidden = !visible;
+    }
+
+    function render(query: AudienceQuery) {
+      applied = query.selected;
+      let visible = 0;
+      for (const row of rows) {
+        const match = matchesAudience(rowAudiences.get(row) ?? [], applied);
+        row.hidden = !match;
+        if (match) visible += 1;
+      }
+
+      const filtered = applied.length > 0;
+      const empty = filtered && visible === 0;
+      label!.textContent = triggerLabel(applied);
+      filter!.dataset.audienceState = query.invalid
+        ? 'invalid'
+        : empty
+          ? 'empty'
+          : filtered
+            ? 'filtered'
+            : 'all';
+      show(invalidNote, query.invalid);
+      show(emptyNote, empty);
+      show(historyNote, filtered);
+      // Хроника — не публикации канала: в отфильтрованной ленте её не показываем,
+      // но и не прячем молча, а даём ссылку на полную ленту с якорем.
+      show(archive, !filtered);
+      show(archiveLink, filtered);
+    }
+
+    function syncDraft() {
+      for (const option of options) {
+        option.checked = draft.includes(option.value as AudienceId);
+      }
+      const state = selectAllState(draft);
+      selectAll!.checked = state === 'all';
+      selectAll!.indeterminate = state === 'partial';
+      const valid = canApplyDraft(draft);
+      apply!.disabled = !valid;
+      hint!.hidden = valid;
+    }
+
+    function openPanel() {
+      // Применённое состояние копируется в черновик при КАЖДОМ открытии, поэтому
+      // неподтверждённая правка не переживает закрытие панели.
+      draft = applied.length > 0 ? [...applied] : [...AUDIENCE_IDS];
+      syncDraft();
+      popover!.hidden = false;
+      trigger!.setAttribute('aria-expanded', 'true');
+      selectAll!.focus();
+      document.addEventListener('pointerdown', onOutside, true);
+      document.addEventListener('keydown', onEscape, true);
+    }
+
+    function closePanel(focusTrigger: boolean) {
+      if (popover!.hidden) return;
+      popover!.hidden = true;
+      trigger!.setAttribute('aria-expanded', 'false');
+      document.removeEventListener('pointerdown', onOutside, true);
+      document.removeEventListener('keydown', onEscape, true);
+      if (focusTrigger) trigger!.focus();
+    }
+
+    function onOutside(event: Event) {
+      const target = event.target as Node | null;
+      if (target && (popover!.contains(target) || trigger!.contains(target))) return;
+      // Фокус возвращается на триггер, только если он был внутри панели:
+      // отнимать его у того, куда читатель нажал, нельзя.
+      closePanel(popover!.contains(document.activeElement as Node));
+    }
+
+    /**
+     * ⚠️ Слушатель висит на документе, а не на самой панели, и живёт ровно столько,
+     * сколько панель открыта. Tab уводит фокус за её пределы (с «Выбрать» — на
+     * соседнюю ссылку в заголовке), и привязанный к поддереву обработчик там уже
+     * не срабатывал: черновик оставался открытым, а Escape ничего не отменял.
+     */
+    function onEscape(event: KeyboardEvent) {
+      if (event.key !== 'Escape' || popover!.hidden) return;
+      event.stopPropagation();
+      closePanel(true);
+    }
+
+    trigger.addEventListener('click', () => {
+      if (popover.hidden) openPanel();
+      else closePanel(true);
+    });
+
+    selectAll.addEventListener('change', () => {
+      draft = toggleSelectAll(draft, selectAll.checked);
+      syncDraft();
+    });
+
+    for (const option of options) {
+      option.addEventListener('change', () => {
+        draft = toggleDraft(draft, option.value as AudienceId, option.checked);
+        syncDraft();
+      });
+    }
+
+    apply.addEventListener('click', () => {
+      if (!canApplyDraft(draft)) return;
+      const selected = canonicalSelection(draft);
+      const search = serializeAudienceQuery(draft);
+      history.pushState({}, '', `${FEED_PATH}${search}`);
+      render({ selected, invalid: false, search });
+      closePanel(true);
+    });
+
+    // Назад/вперёд возвращают состояние адреса и снимают открытый черновик.
+    addEventListener('popstate', () => {
+      closePanel(false);
+      render(parseAudienceQuery(location.search));
+    });
+
+    /**
+     * Приведение входящего адреса к каноническому виду.
+     *
+     * ⚠️ Только replaceState: переписывание истории здесь не должно добавлять
+     * запись, иначе «Назад» упрётся в тот же экран. Нераспознанный запрос НЕ
+     * переписывается — иначе перезагрузка стёрла бы сообщение об ошибке и
+     * ссылка выглядела бы рабочей.
+     */
+    function canonicalizeUrl(query: AudienceQuery) {
+      if (query.invalid) return;
+      const params = new URLSearchParams(location.search.replace(/^\?/, ''));
+      if (!params.has(AUDIENCE_QUERY_KEY)) return;
+      params.delete(AUDIENCE_QUERY_KEY);
+      for (const id of query.selected) params.append(AUDIENCE_QUERY_KEY, id);
+      const rest = params.toString();
+      const search = rest ? `?${rest}` : '';
+      if (search !== location.search) {
+        history.replaceState(history.state, '', `${location.pathname}${search}${location.hash}`);
+      }
+    }
+
+    filter.hidden = false;
+    const initial = parseAudienceQuery(location.search);
+    canonicalizeUrl(initial);
+    render(initial);
+  }
+</script>

@@ -13,7 +13,7 @@ export interface AudienceDisplay {
   label: string;
 }
 
-const LABELS: Record<AudienceId, string> = {
+export const AUDIENCE_LABELS: Record<AudienceId, string> = {
   holders: 'Ходлеры',
   node_operators: 'Операторы нод',
   developers: 'Разработчики',
@@ -37,6 +37,15 @@ const BROAD = new Set(['all', 'все', 'всем']);
 const BROAD_LABEL = 'Все — старая категория';
 
 /**
+ * The single normalization point: a canonical ID for a stored post value OR for a
+ * query value. No page or browser script may keep a second dictionary or parser —
+ * the audience filter resolves its URL state through this function too.
+ */
+export function normalizeAudience(value: string): AudienceId | null {
+  return ALIASES.get(value) ?? null;
+}
+
+/**
  * Website reader boundary for canonical IDs and explicit historical aliases.
  * Unknown values remain literal; callers must render the returned strings escaped.
  */
@@ -46,7 +55,7 @@ export function displayAudience(values: readonly string[]): AudienceDisplay[] {
   const neutralLabels = new Set<string>();
 
   for (const value of values) {
-    const id = ALIASES.get(value);
+    const id = normalizeAudience(value);
     if (id) {
       known.add(id);
       continue;
@@ -60,7 +69,7 @@ export function displayAudience(values: readonly string[]): AudienceDisplay[] {
   }
 
   return [
-    ...AUDIENCE_IDS.filter((id) => known.has(id)).map((id) => ({ id, label: LABELS[id] })),
+    ...AUDIENCE_IDS.filter((id) => known.has(id)).map((id) => ({ id, label: AUDIENCE_LABELS[id] })),
     ...neutral,
   ];
 }

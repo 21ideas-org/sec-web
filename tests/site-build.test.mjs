@@ -1,25 +1,61 @@
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { cp, mkdtemp, readFile, readdir, rm, symlink, writeFile } from 'node:fs/promises';
+import { readFile, readdir, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { dirname, join, relative } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import test from 'node:test';
-// Use the same parser as Astro's content loader, from its locked dependency tree.
-import { parseFrontmatter } from '@astrojs/internal-helpers/frontmatter';
-import { z } from 'astro/zod';
 
-const ROOT = dirname(fileURLToPath(import.meta.url));
-const REPOSITORY = dirname(ROOT);
+import {
+  FIXTURES,
+  REPOSITORY,
+  buildSite,
+  copySite,
+  corpus,
+  frontmatter,
+  rowAudiences,
+  rowFor,
+  rssContent,
+  rssItemFor,
+  text,
+  withTemporaryDirectory,
+} from './helpers/site.mjs';
+
 const PRODUCER_FIXTURE_ID = 'fixture-2026-09-05-producer-alert';
-const PRODUCER_REVISION = '936392aa52d8c72060bb3baf5568ae0b2167886e';
+/**
+ * Точные байты merged producer-фикстур: ревизия и SHA-256 пинятся парой.
+ * `audiences` — фикстура из issue #92 (несколько групп в одном оповещении);
+ * предыдущие ревизии остаются как явное legacy-покрытие, а не заменяются.
+ */
 const NEW_PRODUCERS = [
-  ['tags', 'a1cfc1379675680d3aee74c1a5d582b626f432d7ac2f7d67cfacfc15dfbabad3', ['exploitation_confirmed', 'patch_available']],
-  ['empty', '63faf211ed8b350ae1e8ba8944d208cba54ea2c295765db7c0cc494c04e2a072', []],
+  {
+    name: 'tags',
+    revision: '936392aa52d8c72060bb3baf5568ae0b2167886e',
+    digest: 'a1cfc1379675680d3aee74c1a5d582b626f432d7ac2f7d67cfacfc15dfbabad3',
+    tags: ['exploitation_confirmed', 'patch_available'],
+    audience: ['держатели'],
+    labels: [['holders', 'Ходлеры']],
+  },
+  {
+    name: 'empty',
+    revision: '936392aa52d8c72060bb3baf5568ae0b2167886e',
+    digest: '63faf211ed8b350ae1e8ba8944d208cba54ea2c295765db7c0cc494c04e2a072',
+    tags: [],
+    audience: ['держатели'],
+    labels: [['holders', 'Ходлеры']],
+  },
+  {
+    name: 'audiences',
+    revision: '332fba83203d2a80daabfd91c33f351fb6fb106a',
+    digest: '300a4d43eb0a3981876d75a4591777a1983fbed3fc107a273fd0e055647f4eee',
+    tags: ['exploitation_confirmed', 'patch_available'],
+    audience: ['holders', 'developers'],
+    labels: [['holders', 'Ходлеры'], ['developers', 'Разработчики']],
+  },
 ];
 const PRODUCER_SHA256 = '4703b93ff04788c0833c670ee9d5d93ccedf1425229f4846c9274c996a56ea21';
+/** Бейдж известной аудитории — всегда ссылка в отфильтрованную ленту. */
+const audienceLink = (id, label) => `<a class="aud aud-link" href="/feed?audience=${id}">${label}</a>`;
+const legacyBadge = (label) => `<span class="aud aud-badge">${label}</span>`;
 
 const INCIDENT_IDS = [
   'btcpay-2026-08-26-cln-routes-off',
@@ -164,78 +200,8 @@ links: []
 ---
 `;
 
-async function withTemporaryDirectory(run) {
-  const directory = await mkdtemp(join(tmpdir(), 'sec-web-test-'));
-  try {
-    return await run(directory);
-  } finally {
-    await rm(directory, { recursive: true, force: true });
-  }
-}
-
-async function copySite(target) {
-  const excluded = new Set(['.astro', '.git', 'dist', 'node_modules']);
-  await cp(REPOSITORY, target, {
-    recursive: true,
-    filter(source) {
-      const first = relative(REPOSITORY, source).split('/')[0];
-      return !excluded.has(first);
-    },
-  });
-  await symlink(join(REPOSITORY, 'node_modules'), join(target, 'node_modules'), 'dir');
-}
-
-async function text(path) {
-  return readFile(path, 'utf8');
-}
-
-function rssItemFor(xml, id) {
-  const canonical = `https://sec.21ideas.org/incidents/${id}/`;
-  const item = xml
-    .split('<item>')
-    .slice(1)
-    .map((part) => `<item>${part.slice(0, part.indexOf('</item>') + '</item>'.length)}`)
-    .find((part) => part.includes(`<link>${canonical}</link>`));
-  assert.ok(item, `${id} is missing from RSS`);
-  return { canonical, item };
-}
-
-function rssContent(item) {
-  const encoded = item.match(/<content:encoded>([\s\S]*?)<\/content:encoded>/)?.[1];
-  assert.ok(encoded, 'RSS item has no content:encoded');
-  return encoded
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&apos;/g, "'")
-    .replace(/&amp;/g, '&');
-}
-
-function frontmatter(source) {
-  const data = parseFrontmatter(source).frontmatter;
-  // Match the site's date coercion; missing/invalid dates must not silently skip counts.
-  return { ...data, pubDate: z.coerce.date().parse(data.pubDate) };
-}
-
-async function corpus(directory) {
-  const files = await readdir(directory, { recursive: true });
-  return Promise.all(files.filter((file) => file.endsWith('.md')).map(async (file) => ({
-    id: file.split('/').at(-1).slice(0, -3),
-    data: frontmatter(await text(join(directory, file))),
-  })));
-}
-
-function buildSite(site) {
-  return spawnSync(process.execPath, [join(REPOSITORY, 'node_modules/astro/bin/astro.mjs'), 'build'], {
-    cwd: site,
-    encoding: 'utf8',
-    env: { ...process.env, ASTRO_TELEMETRY_DISABLED: '1' },
-    timeout: 120_000,
-  });
-}
-
 async function installProducer(site) {
-  const bytes = await readFile(join(ROOT, 'fixtures/site-generated-alert.md'));
+  const bytes = await readFile(join(FIXTURES, 'site-generated-alert.md'));
   assert.equal(createHash('sha256').update(bytes).digest('hex'), PRODUCER_SHA256);
   const path = join(site, 'src/content/incidents', `${PRODUCER_FIXTURE_ID}.md`);
   await writeFile(path, bytes);
@@ -298,18 +264,21 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
     await copySite(site);
     const producer = await installProducer(site);
     const newProducers = [];
-    for (const [name, digest, tags] of NEW_PRODUCERS) {
-      const bytes = await readFile(join(ROOT, `fixtures/site-generated-alert-${name}.md`));
-      assert.equal(createHash('sha256').update(bytes).digest('hex'), digest, `${PRODUCER_REVISION}: ${name}`);
+    for (const producerSpec of NEW_PRODUCERS) {
+      const { name, revision, digest, tags, audience } = producerSpec;
+      const bytes = await readFile(join(FIXTURES, `site-generated-alert-${name}.md`));
+      assert.equal(createHash('sha256').update(bytes).digest('hex'), digest, `${revision}: ${name}`);
       const id = `fixture-2026-09-05-producer-${name}`;
       await writeFile(join(site, 'src/content/incidents', `${id}.md`), bytes);
       assert.deepEqual(await readFile(join(site, 'src/content/incidents', `${id}.md`)), bytes);
       const data = frontmatter(bytes.toString('utf8'));
       assert.deepEqual(data.statusTags, tags);
+      // Байты не правятся: аудитории проверяются такими, какими их прислал producer.
+      assert.deepEqual(data.audience, audience, `${revision}: ${name} audience`);
       for (const field of ['urgency', 'exploitationStatus', 'fixStatus', 'updateSufficiency', 'actionTiming', 'reason', 'linkRefs', 'telegramUrl', 'sourceUrl']) {
         assert.ok(!(field in data), `${field} leaked into new producer ${name}`);
       }
-      newProducers.push({ name, id, data });
+      newProducers.push({ ...producerSpec, id, data });
     }
 
     const fixtureDirectory = join(site, 'src/content/incidents');
@@ -400,32 +369,93 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
     assert.ok(!unknownPage.includes('actionTiming=future_timing_state'));
     assert.match(index, /<article class="card panel" style="--accent: var\(--dim\)">[\s\S]*?Unknown status fixture/);
 
-    const holdersPosition = unknownPage.indexOf('class="aud">Ходлеры</span>');
-    const developersPosition = unknownPage.indexOf('class="aud">Разработчики</span>');
+    const holdersPosition = unknownPage.indexOf(audienceLink('holders', 'Ходлеры'));
+    const developersPosition = unknownPage.indexOf(audienceLink('developers', 'Разработчики'));
     const unknownAudience = '&lt;audience &amp; unknown&gt;';
     assert.ok(holdersPosition >= 0, 'canonical holders label is missing');
     assert.ok(developersPosition > holdersPosition, 'known audiences are not in canonical order');
-    assert.equal(unknownPage.split('class="aud">Ходлеры</span>').length - 1, 1, 'holders alias was not deduplicated');
-    assert.equal(unknownPage.split('class="aud">Разработчики</span>').length - 1, 1, 'developers alias was not deduplicated');
-    assert.ok(unknownPage.includes(`class="aud">${unknownAudience}</span>`), 'unknown audience was not escaped');
-    assert.ok(index.includes('class="aud">Ходлеры</span>'));
-    assert.ok(index.includes('class="aud">Разработчики</span>'));
-    assert.ok(index.includes(`class="aud">${unknownAudience}</span>`));
-    assert.ok(updatePage.includes('class="aud">операторы</span>'), 'unlisted legacy alias was reclassified');
-    assert.ok(!updatePage.includes('class="aud">Операторы нод</span>'));
+    assert.equal(unknownPage.split(audienceLink('holders', 'Ходлеры')).length - 1, 1, 'holders alias was not deduplicated');
+    assert.equal(unknownPage.split(audienceLink('developers', 'Разработчики')).length - 1, 1, 'developers alias was not deduplicated');
+    assert.ok(unknownPage.includes(legacyBadge(unknownAudience)), 'unknown audience was not escaped');
+    // Неизвестное значение остаётся нейтральным бейджем: ссылки в фильтр у него нет.
+    assert.ok(!unknownPage.includes(`href="/feed?audience=${unknownAudience}"`));
+    assert.ok(index.includes(audienceLink('holders', 'Ходлеры')));
+    assert.ok(index.includes(audienceLink('developers', 'Разработчики')));
+    assert.ok(index.includes(legacyBadge(unknownAudience)));
+    assert.ok(updatePage.includes(legacyBadge('операторы')), 'unlisted legacy alias was reclassified');
+    assert.ok(!updatePage.includes(audienceLink('node_operators', 'Операторы нод')));
     assert.equal(legacyAudiencePage.split('Все — старая категория').length - 1, 1, 'broad aliases were not deduplicated');
-    assert.ok(!legacyAudiencePage.includes('class="aud">Ходлеры</span>'));
-    assert.ok(!legacyAudiencePage.includes('class="aud">Операторы нод</span>'));
-    assert.ok(!legacyAudiencePage.includes('class="aud">Разработчики</span>'));
-    assert.ok(!legacyAudiencePage.includes('class="aud">Мерчанты</span>'));
-    assert.ok(!emptyAudiencePage.includes('class="aud">'), 'empty audience invented a label');
-    assert.ok(!missingAudiencePage.includes('class="aud">'), 'missing audience invented a label');
+    assert.ok(legacyAudiencePage.includes(legacyBadge('Все — старая категория')));
+    assert.ok(!legacyAudiencePage.includes('class="aud aud-link"'), 'broad alias became a filter link');
+    assert.ok(!emptyAudiencePage.includes('class="aud aud-'), 'empty audience invented a label');
+    assert.ok(!missingAudiencePage.includes('class="aud aud-'), 'missing audience invented a label');
+    // Legacy rows carry no canonical ID, so no audience filter can ever claim them.
+    for (const legacyId of [LEGACY_AUDIENCE_FIXTURE_ID, EMPTY_AUDIENCE_FIXTURE_ID, MISSING_AUDIENCE_FIXTURE_ID]) {
+      assert.deepEqual(rowAudiences(rowFor(feed, `/incidents/${legacyId}/`)), [], legacyId);
+    }
+
+    // The static page ships the full feed plus the controls the client filter drives.
+    // Behavior itself is checked in a browser; here only the contract they share.
+    assert.ok(feed.includes('data-audience-rows'), 'the feed exposes no filterable row host');
+    assert.ok(feed.includes('aria-haspopup="dialog"'));
+    assert.ok(feed.includes('aria-controls="aud-popover"'));
+    assert.ok(feed.includes('aria-expanded="false"'), 'the trigger does not start closed');
+    assert.match(feed, /<span class="vh">Фильтр по аудитории:\s*<\/span>/, 'the trigger has no accessible name');
+    assert.ok(feed.includes('>Все аудитории</span>'), 'the trigger does not start unfiltered');
+    assert.match(feed, /<div class="aud-popover panel"[^>]*role="dialog"[^>]*hidden/);
+    assert.ok(feed.includes('<input type="checkbox" data-audience-all>'), 'the select-all control is missing');
+    // All four options come from the fixed dictionary, never from current result tags.
+    for (const [audienceId, label] of [
+      ['holders', 'Ходлеры'],
+      ['node_operators', 'Операторы нод'],
+      ['developers', 'Разработчики'],
+      ['merchant_infra', 'Мерчанты'],
+    ]) {
+      assert.ok(feed.includes(`<input type="checkbox" value="${audienceId}" data-audience-option>`), audienceId);
+      assert.ok(feed.includes(`<span>${label}</span>`), label);
+      assert.ok(feed.includes(`href="/feed?audience=${audienceId}"`), `${audienceId} has no feed link`);
+    }
+    assert.ok(feed.includes('>Выбрать</button>'));
+    assert.ok(feed.includes('Выберите хотя бы одну аудиторию'));
+    // Every filter state ships hidden: the build cannot know the reader query.
+    for (const marker of ['data-audience-filter', 'data-audience-popover', 'data-audience-hint',
+      'data-audience-invalid', 'data-audience-empty', 'data-audience-history', 'data-audience-archive-link']) {
+      assert.match(feed, new RegExp(`${marker}[^>]*hidden`), marker);
+    }
+    assert.ok(feed.includes('id="archive"'), 'chronicles are missing from the unfiltered feed');
+    assert.ok(feed.includes('href="/feed#archive"'), 'a filtered view cannot reach the chronicles');
+    // Without JavaScript the page keeps the full feed and says filtering is unavailable.
+    const noscript = feed.match(/<noscript>([\s\S]*?)<\/noscript>/)?.[1];
+    assert.ok(noscript, 'the feed has no no-JavaScript notice');
+    assert.ok(noscript.includes('фильтр по аудитории не работает'), noscript);
+    assert.ok(!noscript.includes('Выбрано'), 'the no-JavaScript notice claims an applied filter');
+    // The filter belongs to the feed only; the home page keeps plain audience badges.
+    assert.ok(!index.includes('data-audience-filter'));
+    assert.ok(!index.includes('data-audience-rows'));
+
+    /**
+     * Escape must be heard by the document while the panel is open.
+     *
+     * ⚠️ A listener bound to the filter subtree stops firing as soon as Tab moves
+     * focus out of the popover — from `Выбрать` to the neighboring RSS link — and the
+     * unconfirmed draft stayed open. Checked on the shipped bundle, because the
+     * deterministic layer has no DOM; real key handling is covered in a browser.
+     */
+    const assets = join(site, 'dist/_astro');
+    const bundles = await Promise.all(
+      (await readdir(assets))
+        .filter((file) => file.endsWith('.js'))
+        .map((file) => text(join(assets, file))),
+    );
+    const filterScript = [feed, ...bundles].find((code) => code.includes('data-audience-popover') && code.includes('keydown'));
+    assert.ok(filterScript, 'the audience filter script never listens for keys');
+    assert.match(filterScript, /document\.addEventListener\(\s*[`'"]keydown[`'"]/);
 
     const nodeOperatorPage = await text(join(site, 'dist/incidents/cln-2026-08-27-offline-guidance/index.html'));
     const merchantPage = await text(join(site, 'dist/incidents/btcpay-2026-08-26-cln-routes-off/index.html'));
-    assert.ok(rootPage.includes('class="aud">Ходлеры</span>'));
-    assert.ok(nodeOperatorPage.includes('class="aud">Операторы нод</span>'));
-    assert.ok(merchantPage.includes('class="aud">Мерчанты</span>'));
+    assert.ok(rootPage.includes(audienceLink('holders', 'Ходлеры')));
+    assert.ok(nodeOperatorPage.includes(audienceLink('node_operators', 'Операторы нод')));
+    assert.ok(merchantPage.includes(audienceLink('merchant_infra', 'Мерчанты')));
     const entries = await corpus(join(site, 'src/content'));
     const own = entries.filter(({ data }) => !data.external && !data.draft);
     const roots = own.filter(({ data }) => !data.parent);
@@ -464,14 +494,14 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
       assert.ok(output.includes('coldcard.com'));
       for (const field of ['reason', 'linkRefs', 'telegramUrl']) assert.ok(!output.includes(field));
     }
-    for (const { name, id, data } of newProducers) {
+    for (const { name, id, data, tags, labels } of newProducers) {
       const page = await text(join(site, 'dist/incidents', id, 'index.html'));
       const { canonical, item } = rssItemFor(rss, id);
       assert.ok(item.includes(`<guid isPermaLink="true">${canonical}</guid>`));
       assert.ok(item.includes('<pubDate>Sat, 05 Sep 2026 23:59:59 GMT</pubDate>'));
       assert.ok(page.includes('5 сентября 2026'));
       assert.ok(page.includes(`content="${canonical}"`));
-      assert.ok(page.includes(`/og/${name === 'tags' ? 'critical' : 'default'}.png`));
+      assert.ok(page.includes(`/og/${tags.length > 0 ? 'critical' : 'default'}.png`));
       for (const output of [page, rssContent(item)]) {
         assert.ok(output.includes(data.description));
         assert.ok(output.includes(data.action));
@@ -479,10 +509,22 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
         assert.ok(!output.includes('reason'));
         assert.ok(!output.includes('Статус угрозы'));
       }
-      assert.ok(page.includes('Ходлеры'));
-      assert.ok(item.includes('<category>Ходлеры</category>'));
+      // Каждая аудитория producer-байтов рендерится ровно один раз и ведёт в свой фильтр.
+      const feedRow = rowFor(feed, `/incidents/${id}/`);
+      for (const [audienceId, label] of labels) {
+        assert.equal(page.split(audienceLink(audienceId, label)).length - 1, 1, `${name}: ${label}`);
+        assert.equal(feedRow.split(audienceLink(audienceId, label)).length - 1, 1, `${name} row: ${label}`);
+        assert.equal(item.split(`<category>${label}</category>`).length - 1, 1, `${name} rss: ${label}`);
+      }
+      // A multi-audience post matches every applicable filter and no other one.
+      assert.deepEqual(rowAudiences(feedRow), labels.map(([audienceId]) => audienceId), name);
+      for (const [absentId, absentLabel] of [['node_operators', 'Операторы нод'], ['merchant_infra', 'Мерчанты']]) {
+        if (labels.some(([audienceId]) => audienceId === absentId)) continue;
+        assert.ok(!page.includes(audienceLink(absentId, absentLabel)), `${name} invented ${absentLabel}`);
+        assert.ok(!item.includes(`<category>${absentLabel}</category>`), `${name} rss invented ${absentLabel}`);
+      }
       for (const label of ['Эксплуатация подтверждена', 'Патч есть', 'Патча нет']) {
-        const expected = name === 'tags' && label !== 'Патча нет';
+        const expected = tags.length > 0 && label !== 'Патча нет';
         assert.equal(page.includes(`>${label}</span>`), expected);
         assert.equal(item.includes(`<category>${label}</category>`), expected);
       }
@@ -562,7 +604,7 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
     EMPTY_AUDIENCE_FIXTURE_ID,
     MISSING_AUDIENCE_FIXTURE_ID,
     PRODUCER_FIXTURE_ID,
-    ...NEW_PRODUCERS.map(([name]) => `fixture-2026-09-05-producer-${name}`),
+    ...NEW_PRODUCERS.map(({ name }) => `fixture-2026-09-05-producer-${name}`),
   ]) {
     assert.equal(existsSync(join(REPOSITORY, 'src/content/incidents', `${id}.md`)), false);
   }
@@ -613,8 +655,7 @@ links: [{label: Source, url: "https://source.example/advice"}]
     for (const output of [index, feed, rss]) assert.ok(!output.includes('Synthetic draft'));
     for (const [name, , labels, accent, og] of cases) {
       const page = await text(join(site, `dist/incidents/synthetic-${name}/index.html`));
-      const row = feed.split('<div class="row">').find((part) => part.includes(`>Synthetic ${name}</a>`));
-      assert.ok(row, name);
+      const row = rowFor(feed, `/incidents/synthetic-${name}/`);
       const { item } = rssItemFor(rss, `synthetic-${name}`);
       for (const label of ['Эксплуатация подтверждена', 'Патча нет', 'Патч есть']) {
         for (const output of [page, row]) {
@@ -623,7 +664,10 @@ links: [{label: Source, url: "https://source.example/advice"}]
         assert.equal(item.split(`<category>${label}</category>`).length - 1, labels.includes(label) ? 1 : 0, name + label);
       }
       assert.ok(page.includes(`/og/${og}.png`), name);
-      assert.ok(page.includes('Операторы нод'));
+      // The same audience badge links to the same filtered feed from page and row.
+      assert.ok(page.includes(audienceLink('node_operators', 'Операторы нод')), name);
+      assert.ok(row.includes(audienceLink('node_operators', 'Операторы нод')), name);
+      assert.deepEqual(rowAudiences(row), ['node_operators'], name);
       assert.ok(page.includes('Read the source advice'));
       assert.ok(page.includes('href="https://source.example/advice"'));
       assert.ok(!page.includes('Апдейт инцидента:'));
@@ -691,8 +735,7 @@ links: [{label: Source, url: "https://source.example/advice"}]
       const id = `mixed-${name}`;
       const page = await text(join(site, `dist/incidents/${id}/index.html`));
       const { canonical, item } = rssItemFor(rss, id);
-      const row = feed.split('<div class="row">').find((part) => part.includes(`>Mixed ${name}</a>`));
-      assert.ok(row, id);
+      const row = rowFor(feed, `/incidents/${id}/`);
       assert.ok(page.includes(`content="${canonical}"`));
       assert.ok(page.includes(`/og/${og}.png`));
       assert.ok(page.includes(`${Number(date.slice(-2))} сентября 2034`));
@@ -704,8 +747,11 @@ links: [{label: Source, url: "https://source.example/advice"}]
         }
         assert.equal(item.includes(`<category>${label}</category>`), labels.includes(label), id);
       }
-      assert.equal(page.split('class="aud">Ходлеры</span>').length - 1, 1);
+      // The canonical ID and its Russian alias collapse into one badge, link and row ID.
+      assert.equal(page.split(audienceLink('holders', 'Ходлеры')).length - 1, 1);
+      assert.equal(row.split(audienceLink('holders', 'Ходлеры')).length - 1, 1);
       assert.equal(item.split('<category>Ходлеры</category>').length - 1, 1);
+      assert.deepEqual(rowAudiences(row), ['holders'], id);
       for (const output of [page, rssContent(item)]) {
         assert.ok(output.includes('href="https://source.example/advice"'));
         assert.ok(output.includes('Follow this publication'));
