@@ -280,10 +280,10 @@ a:focus-visible { outline: 2px solid var(--sig); outline-offset: 2px; }
   font-family: inherit; font-size: var(--fs-xs); line-height: var(--lh-ui);
 }
 .aud-link:hover, .aud-link:focus-visible { color: var(--tx); border-color: currentColor; }
-.aud-link:focus-visible, .aud-trigger:focus-visible, .aud-apply:focus-visible,
-.aud-opt input:focus-visible {
+.aud-link:focus-visible, .aud-trigger:focus-visible, .aud-apply:focus-visible {
   outline: 2px solid currentColor; outline-offset: 2px; color: var(--tx);
 }
+.aud-opt input:focus-visible { outline: 2px solid var(--tx); outline-offset: 2px; }
 .row-aud { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
 
 .aud-filter { position: relative; }
@@ -306,7 +306,24 @@ a:focus-visible { outline: 2px solid var(--sig); outline-offset: 2px; }
   min-height: 32px; padding: 0 2px; cursor: pointer;
   font-size: var(--fs-sm); color: var(--tx);
 }
-.aud-opt input { width: 16px; height: 16px; margin: 0; accent-color: var(--mut); }
+/* Нативный checkbox оставляем в DOM ради семантики и клавиатуры, но рисуем как
+   часть «приборной» системы: жёсткий квадрат, 2px контур, без системной галочки
+   или скругления. Indeterminate у «Все» получает короткую горизонталь, а не
+   выглядит ошибочно как пустой выбор. */
+.aud-opt input {
+  appearance: none; display: grid; place-content: center;
+  width: 16px; height: 16px; margin: 0;
+  border: 2px solid var(--mut); border-radius: 0; background: var(--bg);
+  color: var(--bg); cursor: pointer;
+}
+.aud-opt input::before { content: ""; display: block; }
+.aud-opt input:checked, .aud-opt input:indeterminate { border-color: var(--sig); background: var(--sig); }
+.aud-opt input:checked::before {
+  width: 8px; height: 4px;
+  border-bottom: 2px solid currentColor; border-left: 2px solid currentColor;
+  transform: rotate(-45deg) translateY(-1px);
+}
+.aud-opt input:indeterminate::before { width: 8px; height: 2px; background: currentColor; }
 .aud-hint { margin: 4px 0 0; font-size: var(--fs-xs); color: var(--mut); }
 .aud-apply { justify-content: center; margin-top: 8px; min-height: 32px; }
 .aud-apply[disabled] { cursor: not-allowed; color: var(--dim); }
