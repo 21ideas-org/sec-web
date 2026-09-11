@@ -280,10 +280,10 @@ a:focus-visible { outline: 2px solid var(--sig); outline-offset: 2px; }
   font-family: inherit; font-size: var(--fs-xs); line-height: var(--lh-ui);
 }
 .aud-link:hover, .aud-link:focus-visible { color: var(--tx); border-color: currentColor; }
-.aud-link:focus-visible, .aud-trigger:focus-visible, .aud-apply:focus-visible,
-.aud-opt input:focus-visible {
+.aud-link:focus-visible, .aud-trigger:focus-visible, .aud-apply:focus-visible {
   outline: 2px solid currentColor; outline-offset: 2px; color: var(--tx);
 }
+.aud-opt input:focus-visible { outline: 2px solid var(--tx); outline-offset: 2px; }
 .row-aud { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
 
 .aud-filter { position: relative; }
