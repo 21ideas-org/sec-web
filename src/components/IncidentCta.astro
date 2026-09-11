@@ -1,0 +1,15 @@
+---
+import { TELEGRAM_URL } from '../consts.ts';
+---
+<section class="incident-cta" aria-label="Поддержка и подписка">
+  <p class="cta-copy">Оповещение оказалось полезным? Поддержи проект!</p>
+  <div class="cta-actions">
+    <a class="cta-btn cta-btn-primary" href="/support">поддержать <span aria-hidden="true">→</span></a>
+  </div>
+
+  <p class="cta-copy cta-subscribe">Не пропусти следующее оповещение.</p>
+  <div class="cta-actions">
+    <a class="cta-btn" href={TELEGRAM_URL} rel="noopener">telegram <span aria-hidden="true">→</span></a>
+    <a class="cta-btn" href="/rss.xml">rss <span aria-hidden="true">→</span></a>
+  </div>
+</section>

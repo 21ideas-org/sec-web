@@ -337,6 +337,26 @@ a:focus-visible { outline: 2px solid var(--sig); outline-offset: 2px; }
   .aud-opt input { width: 20px; height: 20px; }
 }
 
+/* ─── Поддержка и подписка под текстом инцидента ───
+   Это спокойный footer самой публикации, а не status/action panel: CTA не отделяем
+   линейками ни от источников, ни от следующего хода инцидента. */
+.incident-cta { margin-top: 32px; }
+.incident-cta .cta-copy { margin: 0; }
+.incident-cta .cta-subscribe { margin-top: 32px; }
+.incident-cta .cta-copy > span { color: var(--dim); }
+.incident-cta .cta-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.incident-cta .cta-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 12px; border: 1px solid var(--bd); border-radius: 0;
+  color: var(--tx); font-size: var(--fs-sm); line-height: var(--lh-ui);
+}
+.incident-cta .cta-btn > span { color: var(--dim); }
+.incident-cta .cta-btn:hover { border-color: var(--sig); color: var(--sig); }
+.incident-cta .cta-btn:hover > span { color: inherit; }
+.incident-cta .cta-btn:focus-visible { outline: 2px solid var(--sig); outline-offset: 2px; }
+.incident-cta .cta-btn-primary { border-color: var(--sig); }
+.incident-cta + .thread { border-top: 0; }
+
 /* ─── Карточка последнего инцидента ─── */
 .eyebrow { margin-bottom: 12px; }
 /* ⚠️ Цветная кромка — ПОЛОСА ВНУТРИ рамки, а не толстый border-left. Border
