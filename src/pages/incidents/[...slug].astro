@@ -1,6 +1,7 @@
 ---
 import { render } from 'astro:content';
 import Audience from '../../components/Audience.astro';
+import IncidentCta from '../../components/IncidentCta.astro';
 import Base from '../../layouts/Base.astro';
 import Urgency from '../../components/Urgency.astro';
 import Thread from '../../components/Thread.astro';
@@ -86,6 +87,8 @@ const urgency = displayUrgency(d);
 
     <Content />
 
+    <IncidentCta />
+
     <Thread posts={posts} current={entry.id} />
 
     {
@@ -95,5 +98,6 @@ const urgency = displayUrgency(d);
         </p>
       )
     }
+
   </article>
 </Base>
