@@ -59,6 +59,10 @@ Issue обязан содержать применимые решения websit
   замораживаются до первого сетевого вызова; GitHub write создаёт только отсутствующий
   файл и не перезаписывает его после Telegram delivery. `telegramUrl` остаётся optional
   reserved field.
+- Единственная presentation boundary для `links[]` — `src/source-links.ts`: только
+  строгие X/Twitter status permalinks получают canonical `x.com` href/label и dedup по
+  numeric status ID. Остальные validated URL и label показываются без догадок; frozen
+  Markdown при этом не переписывается.
 - Одна bounded website-попытка идёт перед парным Telegram send, но bot не ждёт retry,
   workflow, Pages, DNS или HTTP 200. Custom 404 честно покрывает build window.
 - Live и `--dry-run` одинаково пишут канонический public incident content в
