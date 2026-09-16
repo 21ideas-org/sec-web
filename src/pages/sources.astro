@@ -1,0 +1,138 @@
+---
+import Base from '../layouts/Base.astro';
+import registry from '../data/source-list.json';
+
+const groups = [
+  { id: 'A', title: 'Устройства подписи' },
+  { id: 'B', title: 'Кошельки' },
+  { id: 'C', title: 'Ноды и протокол' },
+  { id: 'D', title: 'Lightning' },
+  { id: 'E', title: 'Платежи и сервисы' },
+  { id: 'F', title: 'Вторичные источники' },
+  { id: 'G', title: 'Базы уязвимостей' },
+  { id: 'H', title: 'Ноды и смежные проекты' },
+  { id: 'I', title: 'Сервисная инфраструктура' },
+] as const;
+
+const active = registry.sources.filter((source) => source.enabled && source.verified);
+const inactive = registry.sources.filter((source) => !source.enabled || !source.verified);
+const sourceCount = active.reduce((count, source) => count + source.links.length, 0);
+const updated = new Intl.DateTimeFormat('ru-RU', {
+  day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC',
+}).format(new Date(`${registry.updatedAt}T00:00:00Z`));
+---
+
+<Base title="На радаре Bitcoin Security Watcher" description="Список проектов и каналов, которые отслеживает Bitcoin Security Watcher.">
+  <header class="sources-intro prose">
+    <h1>На радаре Bitcoin Security Watcher</h1>
+    <p>
+      Ниже приведен список проектов, которые отслеживает Bitcoin Security Watcher.
+    </p>
+    <p>
+      Заметили проект, которого нет в списке и за которым стоит следить?{' '}
+      <a href="https://github.com/21ideas-org/sec-web/discussions/new?category=ideas" rel="noopener noreferrer">Заполните форму в GitHub Discussions</a>.
+    </p>
+    <p class="sources-date">Список обновлён <time datetime={registry.updatedAt}>{updated}</time> · {active.length} активных проектов · {sourceCount} источников</p>
+  </header>
+
+  <nav class="sources-index" aria-label="Группы источников">
+    {groups.map((group) => (
+      <a href={`#group-${group.id}`}>{group.title}</a>
+    ))}
+    <a href="#not-tracked">Не отслеживаем</a>
+  </nav>
+
+  {groups.map((group) => {
+    const entries = active.filter((source) => source.group === group.id);
+    return entries.length > 0 && (
+      <section class="sec source-group" id={`group-${group.id}`} aria-labelledby={`title-${group.id}`}>
+        <div class="sec-h">
+          <h2 id={`title-${group.id}`}>{group.title}</h2>
+          <span class="source-count">{entries.length}</span>
+        </div>
+        <ul class="source-list">
+          {entries.map((source) => (
+            <li class="source-row">
+              <span class="source-name">{source.name}</span>
+              <ul class="source-links" aria-label={`Каналы: ${source.name}`}>
+                {source.links.map((link) => (
+                  <li><a href={link.url} rel="noopener noreferrer">{link.label}</a></li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ul>
+      </section>
+    );
+  })}
+
+  <section class="sec source-group" id="not-tracked" aria-labelledby="title-not-tracked">
+    <div class="sec-h">
+      <h2 id="title-not-tracked">Не отслеживаем</h2>
+      <span class="source-count">{inactive.length}</span>
+    </div>
+    <p class="source-explainer">Эти записи сохранены в реестре, но бот сейчас их не опрашивает.</p>
+    <ul class="source-list">
+      {inactive.map((source) => (
+        <li class="source-row">
+          <span class="source-name">{source.name}<small>{source.verified ? 'Выключен' : 'Канал не проверен'}</small></span>
+          {source.links.length > 0 && (
+            <ul class="source-links" aria-label={`Ссылки: ${source.name}`}>
+              {source.links.map((link) => (
+                <li><a href={link.url} rel="noopener noreferrer">{link.label}</a></li>
+              ))}
+            </ul>
+          )}
+        </li>
+      ))}
+    </ul>
+  </section>
+</Base>
+
+<style>
+  .sources-intro { padding-top: 32px; }
+  .sources-intro .sources-date { color: var(--mut); font-family: var(--font); font-size: var(--fs-xs); }
+  .sources-index {
+    display: flex; flex-wrap: nowrap; gap: 14px; margin-top: 28px;
+    overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+  }
+  .sources-index::-webkit-scrollbar { display: none; }
+  .sources-index a { flex: 0 0 auto; font-size: var(--fs-sm); }
+  .sources-index[data-fade="start"] { -webkit-mask-image: linear-gradient(90deg, transparent, #000 24px); mask-image: linear-gradient(90deg, transparent, #000 24px); }
+  .sources-index[data-fade="end"] { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 24px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 24px), transparent); }
+  .sources-index[data-fade="both"] { -webkit-mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent); mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent); }
+  .source-group { scroll-margin-top: 24px; }
+  .source-count { color: var(--mut); font-size: var(--fs-sm); font-variant-numeric: tabular-nums; }
+  .source-list, .source-links { list-style: none; margin: 0; padding: 0; }
+  .source-list { display: grid; gap: 3px; }
+  .source-row { display: grid; grid-template-columns: minmax(0, 180px) minmax(0, 1fr); gap: 14px; padding: 12px 14px; background: var(--rowbg); }
+  .source-name { font-size: var(--fs-base); font-weight: 600; line-height: 1.4; }
+  .source-name small { display: block; margin-top: 5px; color: var(--mut); font-size: var(--fs-xs); font-weight: 400; }
+  .source-links { display: flex; flex-wrap: wrap; align-items: center; gap: 5px 13px; }
+  .source-links a { font-size: var(--fs-sm); overflow-wrap: anywhere; }
+  .source-explainer { margin: 0 0 14px; color: var(--mut); font-family: var(--font-text); font-size: var(--fs-body); line-height: var(--lh-prose); }
+  @media (max-width: 560px) {
+    .sources-intro { padding-top: 16px; }
+    .source-row { grid-template-columns: 1fr; gap: 6px; }
+  }
+</style>
+
+<script>
+  const scroller = document.querySelector<HTMLElement>('.sources-index');
+  if (scroller) {
+    const sync = () => {
+      const max = scroller.scrollWidth - scroller.clientWidth;
+      if (max <= 1) {
+        scroller.removeAttribute('data-fade');
+        return;
+      }
+      const start = scroller.scrollLeft > 1;
+      const end = scroller.scrollLeft < max - 1;
+      scroller.dataset.fade = start && end ? 'both' : start ? 'start' : 'end';
+    };
+    sync();
+    scroller.addEventListener('scroll', sync, { passive: true });
+    if ('ResizeObserver' in window) new ResizeObserver(sync).observe(scroller);
+  }
+</script>
