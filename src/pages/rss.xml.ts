@@ -4,6 +4,7 @@ import { SITE_DESCRIPTION, SITE_NAME } from '../consts.ts';
 import { allIncidents, own, type Incident } from '../lib.ts';
 import { displayUrgency } from '../status.ts';
 import { displayAudience } from '../audience.ts';
+import { displaySourceLinks } from '../source-links.ts';
 
 const esc = (t: string) =>
   t
@@ -13,12 +14,18 @@ const esc = (t: string) =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 
-const sources = (e: Incident) =>
-  !e.data.hijacked && e.data.links.length > 0
-    ? `<p><strong>Первоисточники:</strong><br>${e.data.links
-        .map(({ label, url }) => `<a href="${esc(url)}">${esc(label)}</a>`)
-        .join('<br>')}</p>`
-    : false;
+const sources = (e: Incident) => {
+  if (e.data.hijacked) return false;
+  const links = displaySourceLinks(e.data.links);
+  if (links.length === 0) return false;
+  if (links.length === 1) {
+    const [{ label, url }] = links;
+    return `<p><strong>Источник:</strong> <a href="${esc(url)}">${esc(label)}</a></p>`;
+  }
+  return `<p><strong>Источники:</strong></p><ul>${links
+    .map(({ label, url }) => `<li><a href="${esc(url)}">${esc(label)}</a></li>`)
+    .join('')}</ul>`;
+};
 
 /**
  * Тело элемента фида.

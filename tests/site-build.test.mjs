@@ -225,6 +225,117 @@ test('temporary fixture cleanup also runs after a failed assertion', async () =>
   assert.equal(existsSync(join(REPOSITORY, 'src/content/incidents', `${PRODUCER_FIXTURE_ID}.md`)), false);
 });
 
+test('source display semantics are shared by incident pages and RSS', async () => {
+  const cases = [
+    {
+      id: 'source-single-x',
+      links: [{ label: 'twitter.com', url: 'https://twitter.com/Single_Handle/status/100' }],
+      page: '<p><strong>Источник:</strong> <a href="https://x.com/Single_Handle/status/100" rel="noopener">x.com - Single_Handle</a></p>',
+      rss: '<p><strong>Источник:</strong> <a href="https://x.com/Single_Handle/status/100">x.com - Single_Handle</a></p>',
+    },
+    {
+      id: 'source-mixed-x',
+      links: [
+        { label: 'twitter.com', url: 'https://twitter.com/First/status/200' },
+        { label: 'x.com', url: 'https://x.com/Second/status/201' },
+      ],
+      expected: [
+        ['https://x.com/First/status/200', 'x.com - First'],
+        ['https://x.com/Second/status/201', 'x.com - Second'],
+      ],
+    },
+    {
+      id: 'source-duplicate-x',
+      links: [
+        { label: 'first', url: 'https://twitter.com/Original/status/300' },
+        { label: 'duplicate', url: 'https://x.com/Renamed/status/300' },
+      ],
+      expected: [['https://x.com/Original/status/300', 'x.com - Original']],
+    },
+    {
+      id: 'source-distinct-x',
+      links: [
+        { label: 'first', url: 'https://x.com/SameHandle/status/400' },
+        { label: 'second', url: 'https://twitter.com/SameHandle/status/401' },
+      ],
+      expected: [
+        ['https://x.com/SameHandle/status/400', 'x.com - SameHandle'],
+        ['https://x.com/SameHandle/status/401', 'x.com - SameHandle'],
+      ],
+    },
+    {
+      id: 'source-fallbacks',
+      links: [
+        { label: 'Safe article', url: 'https://example.com/advisory' },
+        { label: 'Lookalike X', url: 'https://x.com.example/Fake/status/500' },
+      ],
+      expected: [
+        ['https://example.com/advisory', 'Safe article'],
+        ['https://x.com.example/Fake/status/500', 'Lookalike X'],
+      ],
+    },
+    { id: 'source-empty', links: [] },
+    {
+      id: 'source-hijacked',
+      hijacked: true,
+      links: [{ label: 'must stay hidden', url: 'https://x.com/Compromised/status/600' }],
+    },
+  ];
+
+  await withTemporaryDirectory(async (directory) => {
+    const site = join(directory, 'site');
+    await copySite(site);
+    for (const [index, fixture] of cases.entries()) {
+      await writeFile(join(site, `src/content/incidents/${fixture.id}.md`), `---
+title: "${fixture.id}"
+description: "Source display fixture"
+pubDate: 2039-01-${String(index + 1).padStart(2, '0')}T00:00:00.000Z
+hijacked: ${fixture.hijacked ?? false}
+links: ${JSON.stringify(fixture.links)}
+---
+`);
+    }
+
+    const build = buildSite(site);
+    assert.equal(build.status, 0, `${build.stdout}\n${build.stderr}`);
+    const rss = await text(join(site, 'dist/rss.xml'));
+
+    for (const fixture of cases) {
+      const page = await text(join(site, `dist/incidents/${fixture.id}/index.html`));
+      const content = rssContent(rssItemFor(rss, fixture.id).item);
+      if (fixture.page) {
+        assert.ok(page.includes(fixture.page), fixture.id);
+        assert.ok(content.includes(fixture.rss), `${fixture.id} RSS`);
+        assert.ok(!page.includes('<ul>'), `${fixture.id} page became plural`);
+        assert.ok(!content.includes('<ul>'), `${fixture.id} RSS became plural`);
+      } else if (fixture.expected) {
+        for (const [url, label] of fixture.expected) {
+          assert.ok(page.includes(`<a href="${url}" rel="noopener">${label}</a>`), `${fixture.id} page ${url}`);
+          assert.ok(content.includes(`<a href="${url}">${label}</a>`), `${fixture.id} RSS ${url}`);
+        }
+        if (fixture.expected.length === 1) {
+          assert.ok(page.includes('<strong>Источник:</strong>'), fixture.id);
+          assert.ok(content.includes('<strong>Источник:</strong>'), `${fixture.id} RSS`);
+          assert.ok(!page.includes('<ul>'), `${fixture.id} page duplicate was not singular`);
+          assert.ok(!content.includes('<ul>'), `${fixture.id} RSS duplicate was not singular`);
+        } else {
+          assert.ok(page.includes('<strong>Источники:</strong>'), fixture.id);
+          assert.match(page, /<ul>[\s\S]*<li>/, fixture.id);
+          assert.ok(content.includes('<strong>Источники:</strong>'), `${fixture.id} RSS`);
+          assert.match(content, /<ul>[\s\S]*<li>/, `${fixture.id} RSS`);
+        }
+      } else {
+        assert.ok(!page.includes('class="links"'), fixture.id);
+        assert.ok(!content.includes('<strong>Источник'), `${fixture.id} RSS`);
+        for (const link of fixture.links) {
+          assert.ok(!page.includes(link.url), `${fixture.id} page leaked a source`);
+          assert.ok(!content.includes(link.url), `${fixture.id} RSS leaked a source`);
+        }
+      }
+    }
+  });
+});
+
 test('frontmatter accepts equivalent key styles and rejects invalid required dates', () => {
   assert.deepEqual(
     frontmatter('---\n"pubDate": "2026-09-06T00:00:00Z"\n"parent": "root"\n---\n'),
@@ -358,7 +469,7 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
     assert.ok(actionPosition >= 0, 'threaded fixture action is missing');
     assert.ok(sourcesPosition > actionPosition, 'sources must render after the action');
     assert.ok(threadPosition > sourcesPosition, 'sources must render before incident history');
-    assert.ok(!unknownPage.includes('<h2>Первоисточники</h2>'), 'empty links rendered a source block');
+    assert.ok(!unknownPage.includes('class="links"'), 'empty links rendered a source block');
 
     assert.ok(!unknownPage.includes('class="u u-ok"'));
     assert.ok(!unknownPage.includes('#патч_есть'));
@@ -555,7 +666,7 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
     assert.ok(updateRssItem.includes(`<guid isPermaLink="true">${canonical}</guid>`));
     const updateRssContent = rssContent(updateRssItem);
     const rssActionPosition = updateRssContent.indexOf('<strong>Что делать:</strong>');
-    const rssSourcesPosition = updateRssContent.indexOf('<strong>Первоисточники:</strong>');
+    const rssSourcesPosition = updateRssContent.indexOf('<strong>Источники:</strong>');
     assert.ok(rssSourcesPosition > rssActionPosition, 'RSS sources must render after the action');
     assert.ok(!updateRssContent.includes(SOURCE_FIXTURE_LABEL), 'RSS source label was not escaped');
     assert.ok(!updateRssContent.includes(SOURCE_FIXTURE_URL), 'RSS source URL was not escaped');
@@ -567,7 +678,7 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
     );
     assert.ok(updateRssContent.includes(`href="${SECOND_SOURCE_FIXTURE_URL.replace('&', '&amp;')}"`));
     const { item: audienceRssItem } = rssItemFor(rss, UNKNOWN_FIXTURE_ID);
-    assert.ok(!rssContent(audienceRssItem).includes('<strong>Первоисточники:</strong>'));
+    assert.ok(!rssContent(audienceRssItem).includes('<strong>Источник'));
     assert.equal(audienceRssItem.split('<category>Ходлеры</category>').length - 1, 1);
     assert.equal(audienceRssItem.split('<category>Разработчики</category>').length - 1, 1);
     assert.ok(audienceRssItem.includes('<category>&lt;audience &amp; unknown&gt;</category>'));

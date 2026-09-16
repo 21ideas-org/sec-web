@@ -471,10 +471,11 @@ a:focus-visible { outline: 2px solid var(--sig); outline-offset: 2px; }
 .action p { margin: 8px 0 0; }
 
 .links { margin-top: 28px; }
-/* Подзаголовки ВНУТРИ статьи — ярус ниже заголовков разделов (.sec-h) сознательно:
-   «Ход инцидента» подчинён заголовку инцидента, а «Хроники» не подчинены ничему.
-   Правило общее с .thread h2 — вид у них обязан быть один. */
-.links h2, .thread h2 { font-size: var(--fs-sm); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin: 0 0 10px; }
+/* Подписи источников и «Ход инцидента» — один служебный ярус ниже заголовков
+   разделов (.sec-h). У singular-ссылки uppercase применяется только к подписи,
+   иначе он исказит reader-facing label источника. */
+.links > p, .thread h2 { font-family: var(--font); font-size: var(--fs-sm); margin: 0 0 10px; }
+.links > p > strong, .thread h2 { font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
 .links ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .links li { font-size: var(--fs-sm); }
 

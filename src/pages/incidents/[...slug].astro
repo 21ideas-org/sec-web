@@ -7,6 +7,7 @@ import Urgency from '../../components/Urgency.astro';
 import Thread from '../../components/Thread.astro';
 import { allIncidents, dateLong, keepFlags, own, thread, threadStart } from '../../lib.ts';
 import { displayUrgency, ogFor } from '../../status.ts';
+import { displaySourceLinks } from '../../source-links.ts';
 
 export async function getStaticPaths() {
   const list = await allIncidents();
@@ -29,6 +30,7 @@ const date = dateLong(d.pubDate);
 // когда совпадает с продуктом: «Core Lightning · Core Lightning» — не строка.
 const subject = [d.product, d.vendor !== d.product ? d.vendor : null].filter(Boolean).join(' · ');
 const urgency = displayUrgency(d);
+const sourceLinks = displaySourceLinks(d.links);
 ---
 <Base
   title={d.title}
@@ -73,14 +75,20 @@ const urgency = displayUrgency(d);
     }
 
     {
-      !d.hijacked && d.links.length > 0 && (
+      !d.hijacked && sourceLinks.length > 0 && (
         <div class="links">
-          <h2>Первоисточники</h2>
-          <ul>
-            {d.links.map((l) => (
-              <li><a href={l.url} rel="noopener">{l.label}</a></li>
-            ))}
-          </ul>
+          {sourceLinks.length === 1 ? (
+            <p><strong>Источник:</strong> <a href={sourceLinks[0]!.url} rel="noopener">{sourceLinks[0]!.label}</a></p>
+          ) : (
+            <>
+              <p><strong>Источники:</strong></p>
+              <ul>
+                {sourceLinks.map((link) => (
+                  <li><a href={link.url} rel="noopener">{link.label}</a></li>
+                ))}
+              </ul>
+            </>
+          )}
         </div>
       )
     }
