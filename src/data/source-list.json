@@ -1,0 +1,1178 @@
+{
+  "updatedAt": "2026-09-16",
+  "sources": [
+    {
+      "id": "coldcard",
+      "name": "Coinkite / Coldcard",
+      "group": "A",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · Coldcard/firmware",
+          "url": "https://github.com/Coldcard/firmware"
+        },
+        {
+          "label": "RSS · blog.coinkite.com",
+          "url": "https://blog.coinkite.com/feed"
+        },
+        {
+          "label": "X · @Coinkite",
+          "url": "https://x.com/Coinkite"
+        },
+        {
+          "label": "X · @COLDCARDwallet",
+          "url": "https://x.com/COLDCARDwallet"
+        }
+      ]
+    },
+    {
+      "id": "trezor",
+      "name": "Trezor / SatoshiLabs",
+      "group": "A",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · trezor/trezor-suite",
+          "url": "https://github.com/trezor/trezor-suite"
+        },
+        {
+          "label": "X · @Trezor",
+          "url": "https://x.com/Trezor"
+        },
+        {
+          "label": "Карта блога · trezor.io",
+          "url": "https://trezor.io/content/sitemaps/production/blog_posts-en.xml"
+        }
+      ]
+    },
+    {
+      "id": "ledger",
+      "name": "Ledger",
+      "group": "A",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "Бюллетени · donjon.ledger.com",
+          "url": "https://donjon.ledger.com/lsb/"
+        },
+        {
+          "label": "X · @Ledger",
+          "url": "https://x.com/Ledger"
+        }
+      ]
+    },
+    {
+      "id": "bitbox02",
+      "name": "Shift Crypto / BitBox02",
+      "group": "A",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · digitalbitbox/bitbox02-firmware",
+          "url": "https://github.com/digitalbitbox/bitbox02-firmware"
+        },
+        {
+          "label": "RSS · blog.bitbox.swiss",
+          "url": "https://blog.bitbox.swiss/en/rss/"
+        },
+        {
+          "label": "X · @BitBoxSwiss",
+          "url": "https://x.com/BitBoxSwiss"
+        }
+      ]
+    },
+    {
+      "id": "jade",
+      "name": "Blockstream / Jade",
+      "group": "A",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · Blockstream/Jade",
+          "url": "https://github.com/Blockstream/Jade"
+        }
+      ]
+    },
+    {
+      "id": "passport",
+      "name": "Foundation Devices / Passport",
+      "group": "A",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · Foundation-Devices/passport2",
+          "url": "https://github.com/Foundation-Devices/passport2"
+        },
+        {
+          "label": "RSS · foundation.xyz",
+          "url": "https://foundation.xyz/feed"
+        }
+      ]
+    },
+    {
+      "id": "keystone",
+      "name": "Keystone",
+      "group": "A",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · KeystoneHQ/keystone3-firmware",
+          "url": "https://github.com/KeystoneHQ/keystone3-firmware"
+        },
+        {
+          "label": "X · @KeystoneWallet",
+          "url": "https://x.com/KeystoneWallet"
+        }
+      ]
+    },
+    {
+      "id": "seedsigner",
+      "name": "SeedSigner",
+      "group": "A",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · SeedSigner/seedsigner",
+          "url": "https://github.com/SeedSigner/seedsigner"
+        },
+        {
+          "label": "X · @sesi_the_man",
+          "url": "https://x.com/sesi_the_man"
+        }
+      ]
+    },
+    {
+      "id": "electrum",
+      "name": "Electrum",
+      "group": "B",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · spesmilo/electrum",
+          "url": "https://github.com/spesmilo/electrum"
+        },
+        {
+          "label": "X · @ElectrumWallet",
+          "url": "https://x.com/ElectrumWallet"
+        }
+      ]
+    },
+    {
+      "id": "sparrow",
+      "name": "Sparrow Wallet",
+      "group": "B",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · sparrowwallet/sparrow",
+          "url": "https://github.com/sparrowwallet/sparrow"
+        },
+        {
+          "label": "Atom · sparrowwallet.com",
+          "url": "https://sparrowwallet.com/feed.xml"
+        },
+        {
+          "label": "X · @SparrowWallet",
+          "url": "https://x.com/SparrowWallet"
+        }
+      ]
+    },
+    {
+      "id": "wasabi",
+      "name": "Wasabi Wallet",
+      "group": "B",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · WalletWasabi/WalletWasabi",
+          "url": "https://github.com/WalletWasabi/WalletWasabi"
+        },
+        {
+          "label": "X · @wasabiwallet",
+          "url": "https://x.com/wasabiwallet"
+        }
+      ]
+    },
+    {
+      "id": "specter",
+      "name": "Specter Desktop",
+      "group": "B",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · cryptoadvance/specter-desktop",
+          "url": "https://github.com/cryptoadvance/specter-desktop"
+        },
+        {
+          "label": "X · @SpecterDIY",
+          "url": "https://x.com/SpecterDIY"
+        }
+      ]
+    },
+    {
+      "id": "nunchuk-desktop",
+      "name": "Nunchuk Desktop",
+      "group": "B",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · nunchuk-io/nunchuk-desktop",
+          "url": "https://github.com/nunchuk-io/nunchuk-desktop"
+        },
+        {
+          "label": "RSS · nunchuk.io",
+          "url": "https://nunchuk.io/rss.xml"
+        }
+      ]
+    },
+    {
+      "id": "nunchuk-android",
+      "name": "Nunchuk Android",
+      "group": "B",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · nunchuk-io/nunchuk-android",
+          "url": "https://github.com/nunchuk-io/nunchuk-android"
+        }
+      ]
+    },
+    {
+      "id": "aqua",
+      "name": "Aqua Wallet",
+      "group": "B",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · AquaWallet/aqua-wallet",
+          "url": "https://github.com/AquaWallet/aqua-wallet"
+        },
+        {
+          "label": "X · @AquaBitcoin",
+          "url": "https://x.com/AquaBitcoin"
+        }
+      ]
+    },
+    {
+      "id": "bluewallet",
+      "name": "BlueWallet",
+      "group": "B",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · BlueWallet/BlueWallet",
+          "url": "https://github.com/BlueWallet/BlueWallet"
+        },
+        {
+          "label": "X · @bluewalletio",
+          "url": "https://x.com/bluewalletio"
+        }
+      ]
+    },
+    {
+      "id": "muun",
+      "name": "Muun",
+      "group": "B",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · muun/libwallet",
+          "url": "https://github.com/muun/libwallet"
+        },
+        {
+          "label": "RSS · blog.muun.com",
+          "url": "https://blog.muun.com/rss/"
+        }
+      ]
+    },
+    {
+      "id": "phoenix",
+      "name": "ACINQ / Phoenix",
+      "group": "B",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · ACINQ/phoenix",
+          "url": "https://github.com/ACINQ/phoenix"
+        },
+        {
+          "label": "X · @PhoenixWallet",
+          "url": "https://x.com/PhoenixWallet"
+        },
+        {
+          "label": "X · @acinq_co",
+          "url": "https://x.com/acinq_co"
+        }
+      ]
+    },
+    {
+      "id": "zeus",
+      "name": "Zeus",
+      "group": "B",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · ZeusLN/zeus",
+          "url": "https://github.com/ZeusLN/zeus"
+        },
+        {
+          "label": "RSS · zeusln.com",
+          "url": "https://zeusln.com/blog/rss/"
+        }
+      ]
+    },
+    {
+      "id": "blixt",
+      "name": "Blixt Wallet",
+      "group": "B",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · smolcars/blixt-wallet",
+          "url": "https://github.com/smolcars/blixt-wallet"
+        },
+        {
+          "label": "X · @BlixtWallet",
+          "url": "https://x.com/BlixtWallet"
+        }
+      ]
+    },
+    {
+      "id": "blitz",
+      "name": "Blitz Wallet",
+      "group": "B",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · BlitzWallet/BlitzWallet",
+          "url": "https://github.com/BlitzWallet/BlitzWallet"
+        },
+        {
+          "label": "X · @BlitzWalletApp",
+          "url": "https://x.com/BlitzWalletApp"
+        }
+      ]
+    },
+    {
+      "id": "lnbits",
+      "name": "LNBits",
+      "group": "B",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · lnbits/lnbits",
+          "url": "https://github.com/lnbits/lnbits"
+        },
+        {
+          "label": "X · @lnbits",
+          "url": "https://x.com/lnbits"
+        }
+      ]
+    },
+    {
+      "id": "blockstream-green",
+      "name": "Blockstream Green",
+      "group": "B",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · Blockstream/gdk",
+          "url": "https://github.com/Blockstream/gdk"
+        }
+      ]
+    },
+    {
+      "id": "blockstream-blog",
+      "name": "Blockstream — блог",
+      "group": "B",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "RSS · blog.blockstream.com",
+          "url": "https://blog.blockstream.com/feed/"
+        },
+        {
+          "label": "X · @Blockstream",
+          "url": "https://x.com/Blockstream"
+        }
+      ]
+    },
+    {
+      "id": "alby-go",
+      "name": "Alby Go",
+      "group": "B",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · getAlby/go",
+          "url": "https://github.com/getAlby/go"
+        },
+        {
+          "label": "X · @getAlby",
+          "url": "https://x.com/getAlby"
+        }
+      ]
+    },
+    {
+      "id": "minibits",
+      "name": "Minibits",
+      "group": "B",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · minibits-cash/minibits_wallet",
+          "url": "https://github.com/minibits-cash/minibits_wallet"
+        },
+        {
+          "label": "X · @MinibitsCash",
+          "url": "https://x.com/MinibitsCash"
+        }
+      ]
+    },
+    {
+      "id": "bitcoin-core",
+      "name": "Bitcoin Core",
+      "group": "C",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · bitcoin/bitcoin",
+          "url": "https://github.com/bitcoin/bitcoin"
+        },
+        {
+          "label": "RSS · bitcoincore.org",
+          "url": "https://bitcoincore.org/en/rss.xml"
+        },
+        {
+          "label": "Atom · bitcoincore.org",
+          "url": "https://bitcoincore.org/en/feed.xml"
+        }
+      ]
+    },
+    {
+      "id": "bitcoin-knots",
+      "name": "Bitcoin Knots",
+      "group": "C",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · bitcoinknots/bitcoin",
+          "url": "https://github.com/bitcoinknots/bitcoin"
+        },
+        {
+          "label": "X · @BitcoinKnots",
+          "url": "https://x.com/BitcoinKnots"
+        }
+      ]
+    },
+    {
+      "id": "bitcoin-dev",
+      "name": "bitcoin-dev mailing list",
+      "group": "C",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "Atom · mailing-list.bitcoindevs.xyz",
+          "url": "https://mailing-list.bitcoindevs.xyz/bitcoindev/new.atom"
+        }
+      ]
+    },
+    {
+      "id": "delving-bitcoin",
+      "name": "Delving Bitcoin",
+      "group": "C",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "RSS · delvingbitcoin.org",
+          "url": "https://delvingbitcoin.org/latest.rss"
+        },
+        {
+          "label": "RSS · delvingbitcoin.org",
+          "url": "https://delvingbitcoin.org/posts.rss"
+        }
+      ]
+    },
+    {
+      "id": "lnd",
+      "name": "LND",
+      "group": "D",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · lightningnetwork/lnd",
+          "url": "https://github.com/lightningnetwork/lnd"
+        },
+        {
+          "label": "X · @lightning",
+          "url": "https://x.com/lightning"
+        }
+      ]
+    },
+    {
+      "id": "core-lightning",
+      "name": "Core Lightning (CLN)",
+      "group": "D",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · ElementsProject/lightning",
+          "url": "https://github.com/ElementsProject/lightning"
+        },
+        {
+          "label": "X · @Core_LN",
+          "url": "https://x.com/Core_LN"
+        }
+      ]
+    },
+    {
+      "id": "eclair",
+      "name": "ACINQ / Eclair",
+      "group": "D",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · ACINQ/eclair",
+          "url": "https://github.com/ACINQ/eclair"
+        }
+      ]
+    },
+    {
+      "id": "ldk",
+      "name": "LDK",
+      "group": "D",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · lightningdevkit/rust-lightning",
+          "url": "https://github.com/lightningdevkit/rust-lightning"
+        },
+        {
+          "label": "X · @lightningdevkit",
+          "url": "https://x.com/lightningdevkit"
+        }
+      ]
+    },
+    {
+      "id": "phoenixd",
+      "name": "ACINQ / phoenixd",
+      "group": "D",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · ACINQ/phoenixd",
+          "url": "https://github.com/ACINQ/phoenixd"
+        }
+      ]
+    },
+    {
+      "id": "btcpay",
+      "name": "BTCPay Server",
+      "group": "E",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · btcpayserver/btcpayserver",
+          "url": "https://github.com/btcpayserver/btcpayserver"
+        },
+        {
+          "label": "RSS · blog.btcpayserver.org",
+          "url": "https://blog.btcpayserver.org/rss.xml"
+        },
+        {
+          "label": "X · @BtcpayServer",
+          "url": "https://x.com/BtcpayServer"
+        }
+      ]
+    },
+    {
+      "id": "casa",
+      "name": "Casa",
+      "group": "E",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "RSS · blog.casa.io",
+          "url": "https://blog.casa.io/feed/"
+        },
+        {
+          "label": "X · @CasaHODL",
+          "url": "https://x.com/CasaHODL"
+        }
+      ]
+    },
+    {
+      "id": "unchained",
+      "name": "Unchained Capital",
+      "group": "E",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "X · @unchained",
+          "url": "https://x.com/unchained"
+        }
+      ]
+    },
+    {
+      "id": "liana",
+      "name": "Liana / Wizardsardine",
+      "group": "E",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · wizardsardine/liana",
+          "url": "https://github.com/wizardsardine/liana"
+        },
+        {
+          "label": "X · @lianabitcoin",
+          "url": "https://x.com/lianabitcoin"
+        },
+        {
+          "label": "X · @Wizardsardine",
+          "url": "https://x.com/Wizardsardine"
+        }
+      ]
+    },
+    {
+      "id": "mempool",
+      "name": "mempool.space",
+      "group": "E",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · mempool/mempool",
+          "url": "https://github.com/mempool/mempool"
+        },
+        {
+          "label": "X · @mempool",
+          "url": "https://x.com/mempool"
+        }
+      ]
+    },
+    {
+      "id": "robosats",
+      "name": "RoboSats",
+      "group": "E",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · RoboSats/robosats",
+          "url": "https://github.com/RoboSats/robosats"
+        },
+        {
+          "label": "X · @RoboSats",
+          "url": "https://x.com/RoboSats"
+        }
+      ]
+    },
+    {
+      "id": "bisq",
+      "name": "Bisq 1",
+      "group": "E",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · bisq-network/bisq",
+          "url": "https://github.com/bisq-network/bisq"
+        },
+        {
+          "label": "X · @bisq_network",
+          "url": "https://x.com/bisq_network"
+        }
+      ]
+    },
+    {
+      "id": "bisq2",
+      "name": "Bisq 2",
+      "group": "E",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · bisq-network/bisq2",
+          "url": "https://github.com/bisq-network/bisq2"
+        }
+      ]
+    },
+    {
+      "id": "stacker-news-security",
+      "name": "Stacker News",
+      "group": "F",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "RSS · stacker.news",
+          "url": "https://stacker.news/~security/rss"
+        }
+      ]
+    },
+    {
+      "id": "bitcoin-optech",
+      "name": "Bitcoin Optech",
+      "group": "F",
+      "enabled": false,
+      "verified": false,
+      "links": []
+    },
+    {
+      "id": "blockthreat",
+      "name": "BlockThreat (Peter Kacherginsky)",
+      "group": "F",
+      "enabled": false,
+      "verified": false,
+      "links": []
+    },
+    {
+      "id": "thehackernews",
+      "name": "The Hacker News",
+      "group": "F",
+      "enabled": false,
+      "verified": false,
+      "links": []
+    },
+    {
+      "id": "seal-911",
+      "name": "SEAL / Security Alliance",
+      "group": "F",
+      "enabled": false,
+      "verified": false,
+      "links": []
+    },
+    {
+      "id": "ghsa-malware",
+      "name": "GitHub Advisory Database",
+      "group": "G",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GHSA · API",
+          "url": "https://api.github.com/advisories"
+        }
+      ]
+    },
+    {
+      "id": "osv-bulk",
+      "name": "OSV.dev",
+      "group": "G",
+      "enabled": false,
+      "verified": true,
+      "links": [
+        {
+          "label": "OSV · CSV",
+          "url": "https://storage.googleapis.com/osv-vulnerabilities/npm/modified_id.csv"
+        }
+      ]
+    },
+    {
+      "id": "cvelist-v5",
+      "name": "CVE Project",
+      "group": "G",
+      "enabled": false,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · CVEProject/cvelistV5",
+          "url": "https://github.com/CVEProject/cvelistV5"
+        }
+      ]
+    },
+    {
+      "id": "umbrel",
+      "name": "Umbrel",
+      "group": "H",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · getumbrel/umbrel",
+          "url": "https://github.com/getumbrel/umbrel"
+        },
+        {
+          "label": "X · @umbrel",
+          "url": "https://x.com/umbrel"
+        }
+      ]
+    },
+    {
+      "id": "raspiblitz",
+      "name": "RaspiBlitz",
+      "group": "H",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · raspiblitz/raspiblitz",
+          "url": "https://github.com/raspiblitz/raspiblitz"
+        },
+        {
+          "label": "X · @RaspiBlitz",
+          "url": "https://x.com/RaspiBlitz"
+        }
+      ]
+    },
+    {
+      "id": "start9",
+      "name": "Start9 / StartOS",
+      "group": "H",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · Start9Labs/start-os",
+          "url": "https://github.com/Start9Labs/start-os"
+        },
+        {
+          "label": "X · @start9labs",
+          "url": "https://x.com/start9labs"
+        }
+      ]
+    },
+    {
+      "id": "mynode",
+      "name": "myNode",
+      "group": "H",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · mynodebtc/mynode",
+          "url": "https://github.com/mynodebtc/mynode"
+        },
+        {
+          "label": "X · @mynodebtc",
+          "url": "https://x.com/mynodebtc"
+        }
+      ]
+    },
+    {
+      "id": "fedimint",
+      "name": "Fedimint",
+      "group": "H",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · fedimint/fedimint",
+          "url": "https://github.com/fedimint/fedimint"
+        },
+        {
+          "label": "RSS · fedimint.org",
+          "url": "https://fedimint.org/blog/rss.xml"
+        }
+      ]
+    },
+    {
+      "id": "cashu-nutshell",
+      "name": "Cashu / Nutshell",
+      "group": "H",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · cashubtc/nutshell",
+          "url": "https://github.com/cashubtc/nutshell"
+        },
+        {
+          "label": "X · @CashuBTC",
+          "url": "https://x.com/CashuBTC"
+        }
+      ]
+    },
+    {
+      "id": "bitaxe",
+      "name": "BitAxe",
+      "group": "H",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · bitaxeorg/ESP-Miner",
+          "url": "https://github.com/bitaxeorg/ESP-Miner"
+        }
+      ]
+    },
+    {
+      "id": "albyhub",
+      "name": "Alby Hub",
+      "group": "H",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · getAlby/hub",
+          "url": "https://github.com/getAlby/hub"
+        },
+        {
+          "label": "RSS · api.feedifyrss.com",
+          "url": "https://api.feedifyrss.com/getalby/blog/feed.xml"
+        }
+      ]
+    },
+    {
+      "id": "boltz-backend",
+      "name": "Boltz — backend",
+      "group": "H",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · BoltzExchange/boltz-backend",
+          "url": "https://github.com/BoltzExchange/boltz-backend"
+        },
+        {
+          "label": "RSS · blog.boltz.exchange",
+          "url": "https://blog.boltz.exchange/feed"
+        }
+      ]
+    },
+    {
+      "id": "boltz-web-app",
+      "name": "Boltz — web app",
+      "group": "H",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · BoltzExchange/boltz-web-app",
+          "url": "https://github.com/BoltzExchange/boltz-web-app"
+        }
+      ]
+    },
+    {
+      "id": "voltage",
+      "name": "Voltage",
+      "group": "I",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "Статус · status.voltage.cloud",
+          "url": "https://status.voltage.cloud/history.rss"
+        },
+        {
+          "label": "X · @voltage_cloud",
+          "url": "https://x.com/voltage_cloud"
+        }
+      ]
+    },
+    {
+      "id": "breez",
+      "name": "Breez",
+      "group": "I",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · breez/breez-sdk-liquid",
+          "url": "https://github.com/breez/breez-sdk-liquid"
+        },
+        {
+          "label": "GitHub · breez/spark-sdk",
+          "url": "https://github.com/breez/spark-sdk"
+        },
+        {
+          "label": "RSS · medium.com",
+          "url": "https://medium.com/feed/breez-technology"
+        },
+        {
+          "label": "X · @Breez_Tech",
+          "url": "https://x.com/Breez_Tech"
+        }
+      ]
+    },
+    {
+      "id": "strike",
+      "name": "Strike",
+      "group": "I",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "Статус · status.strike.me",
+          "url": "https://status.strike.me/history.rss"
+        },
+        {
+          "label": "X · @Strike",
+          "url": "https://x.com/Strike"
+        }
+      ]
+    },
+    {
+      "id": "river",
+      "name": "River Financial",
+      "group": "I",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "Статус · status.river.com",
+          "url": "https://status.river.com/history.rss"
+        },
+        {
+          "label": "X · @River",
+          "url": "https://x.com/River"
+        }
+      ]
+    },
+    {
+      "id": "blockstream-esplora",
+      "name": "Blockstream Esplora",
+      "group": "I",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · Blockstream/esplora",
+          "url": "https://github.com/Blockstream/esplora"
+        }
+      ]
+    },
+    {
+      "id": "blockstream-electrs",
+      "name": "Blockstream electrs",
+      "group": "I",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · Blockstream/electrs",
+          "url": "https://github.com/Blockstream/electrs"
+        }
+      ]
+    },
+    {
+      "id": "electrs-romanz",
+      "name": "electrs (romanz)",
+      "group": "I",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · romanz/electrs",
+          "url": "https://github.com/romanz/electrs"
+        },
+        {
+          "label": "X · @roman_zeyde",
+          "url": "https://x.com/roman_zeyde"
+        }
+      ]
+    },
+    {
+      "id": "fulcrum",
+      "name": "Fulcrum",
+      "group": "I",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · cculianu/Fulcrum",
+          "url": "https://github.com/cculianu/Fulcrum"
+        }
+      ]
+    },
+    {
+      "id": "electrumx",
+      "name": "ElectrumX",
+      "group": "I",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · spesmilo/electrumx",
+          "url": "https://github.com/spesmilo/electrumx"
+        }
+      ]
+    },
+    {
+      "id": "amboss",
+      "name": "Amboss / Magma",
+      "group": "I",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · AmbossTech/sdk",
+          "url": "https://github.com/AmbossTech/sdk"
+        },
+        {
+          "label": "X · @ambosstech",
+          "url": "https://x.com/ambosstech"
+        }
+      ]
+    },
+    {
+      "id": "bitrefill",
+      "name": "Bitrefill",
+      "group": "I",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "X · @bitrefill",
+          "url": "https://x.com/bitrefill"
+        }
+      ]
+    },
+    {
+      "id": "coinos",
+      "name": "Coinos",
+      "group": "I",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · coinos/coinos-server",
+          "url": "https://github.com/coinos/coinos-server"
+        },
+        {
+          "label": "GitHub · coinos/coinos-ui",
+          "url": "https://github.com/coinos/coinos-ui"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+title: "[Источник] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Предложите публичный источник, за которым Bitcoin Security Watcher стоит следить.
+        Не публикуйте здесь детали ещё не раскрытых уязвимостей. О них сообщайте напрямую затронутому проекту по его каналу безопасности.
+  - type: input
+    id: project
+    attributes:
+      label: Проект
+      placeholder: Название проекта
+    validations:
+      required: true
+  - type: input
+    id: channel
+    attributes:
+      label: Официальный канал
+      description: Ссылка на блог, страницу бюллетеней, репозиторий GitHub, аккаунт X или страницу статуса.
+      placeholder: https://example.org/security
+    validations:
+      required: true
+  - type: textarea
+    id: reason
+    attributes:
+      label: Почему за этим проектом стоит следить
+      description: Какие события этого проекта могут быть важны для безопасности биткоинеров?
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Пример публичного сигнала
+      description: Необязательно. Ссылка на уже опубликованный advisory или инцидент поможет оценить предложение.
+    validations:
+      required: false
