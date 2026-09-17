@@ -1,9 +1,9 @@
 {
-  "updatedAt": "2026-09-16",
+  "updatedAt": "2026-09-17",
   "sources": [
     {
       "id": "coldcard",
-      "name": "Coinkite / Coldcard",
+      "name": "Coldcard / Coinkite",
       "group": "A",
       "enabled": true,
       "verified": true,
@@ -66,7 +66,7 @@
     },
     {
       "id": "bitbox02",
-      "name": "Shift Crypto / BitBox02",
+      "name": "BitBox02 / Shift Crypto",
       "group": "A",
       "enabled": true,
       "verified": true,
@@ -87,7 +87,7 @@
     },
     {
       "id": "jade",
-      "name": "Blockstream / Jade",
+      "name": "Jade / Blockstream",
       "group": "A",
       "enabled": true,
       "verified": true,
@@ -100,7 +100,7 @@
     },
     {
       "id": "passport",
-      "name": "Foundation Devices / Passport",
+      "name": "Passport / Foundation Devices",
       "group": "A",
       "enabled": true,
       "verified": true,
@@ -304,7 +304,7 @@
     },
     {
       "id": "phoenix",
-      "name": "ACINQ / Phoenix",
+      "name": "Phoenix / ACINQ",
       "group": "B",
       "enabled": true,
       "verified": true,
@@ -406,8 +406,8 @@
     },
     {
       "id": "blockstream-blog",
-      "name": "Blockstream — блог",
-      "group": "B",
+      "name": "Blockstream",
+      "group": "I",
       "enabled": true,
       "verified": true,
       "links": [
@@ -514,11 +514,11 @@
       "verified": true,
       "links": [
         {
-          "label": "RSS · delvingbitcoin.org",
+          "label": "RSS · новые темы",
           "url": "https://delvingbitcoin.org/latest.rss"
         },
         {
-          "label": "RSS · delvingbitcoin.org",
+          "label": "RSS · сообщения и ответы",
           "url": "https://delvingbitcoin.org/posts.rss"
         }
       ]
@@ -559,7 +559,7 @@
     },
     {
       "id": "eclair",
-      "name": "ACINQ / Eclair",
+      "name": "Eclair / ACINQ",
       "group": "D",
       "enabled": true,
       "verified": true,
@@ -589,7 +589,7 @@
     },
     {
       "id": "phoenixd",
-      "name": "ACINQ / phoenixd",
+      "name": "phoenixd / ACINQ",
       "group": "D",
       "enabled": true,
       "verified": true,
@@ -856,7 +856,7 @@
     },
     {
       "id": "start9",
-      "name": "Start9 / StartOS",
+      "name": "StartOS / Start9",
       "group": "H",
       "enabled": true,
       "verified": true,
@@ -907,7 +907,7 @@
     },
     {
       "id": "cashu-nutshell",
-      "name": "Cashu / Nutshell",
+      "name": "Nutshell / Cashu",
       "group": "H",
       "enabled": true,
       "verified": true,
@@ -1129,7 +1129,7 @@
     },
     {
       "id": "amboss",
-      "name": "Amboss / Magma",
+      "name": "Magma / Amboss",
       "group": "I",
       "enabled": true,
       "verified": true,
@@ -1160,7 +1160,7 @@
     {
       "id": "coinos",
       "name": "Coinos",
-      "group": "I",
+      "group": "B",
       "enabled": true,
       "verified": true,
       "links": [
