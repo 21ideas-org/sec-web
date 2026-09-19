@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-17",
+  "updatedAt": "2026-09-19",
   "sources": [
     {
       "id": "coldcard",
@@ -146,6 +146,31 @@
         {
           "label": "X · @sesi_the_man",
           "url": "https://x.com/sesi_the_man"
+        }
+      ]
+    },
+    {
+      "id": "blink",
+      "name": "Blink Wallet",
+      "group": "B",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · blinkbitcoin/blink-mobile",
+          "url": "https://github.com/blinkbitcoin/blink-mobile"
+        },
+        {
+          "label": "GitHub · blinkbitcoin/blink",
+          "url": "https://github.com/blinkbitcoin/blink"
+        },
+        {
+          "label": "Статус · blink.statuspage.io",
+          "url": "https://blink.statuspage.io/history.rss"
+        },
+        {
+          "label": "X · @blinkbtc",
+          "url": "https://x.com/blinkbtc"
         }
       ]
     },
