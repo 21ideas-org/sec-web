@@ -5,20 +5,26 @@ import IncidentCta from '../../components/IncidentCta.astro';
 import Base from '../../layouts/Base.astro';
 import Urgency from '../../components/Urgency.astro';
 import Thread from '../../components/Thread.astro';
-import { allIncidents, dateLong, keepFlags, own, thread, threadStart } from '../../lib.ts';
+import { allEnIncidents, allIncidents, dateLong, keepFlags, own, thread, threadStart } from '../../lib.ts';
 import { displayUrgency, ogFor } from '../../status.ts';
 import { displaySourceLinks } from '../../source-links.ts';
 
 export async function getStaticPaths() {
-  const list = await allIncidents();
+  const [list, english] = await Promise.all([allIncidents(), allEnIncidents()]);
   // Хроника собственной страницы не получает: её ссылка ведёт на первоисточник.
   return own(list).map((entry) => ({
     params: { slug: entry.id },
-    props: { entry, posts: thread(list, threadStart(list, entry)) },
+    props: {
+      entry,
+      posts: thread(list, threadStart(list, entry)),
+      counterpartUrl: english.some((candidate) => candidate.id === entry.id)
+        ? `/en/incidents/${entry.id}/`
+        : undefined,
+    },
   }));
 }
 
-const { entry, posts } = Astro.props;
+const { entry, posts, counterpartUrl } = Astro.props;
 const d = entry.data;
 const start = posts[0];
 // Крошка нужна только апдейту: на начале треда она указывала бы на саму страницу.
@@ -38,6 +44,7 @@ const sourceLinks = displaySourceLinks(d.links);
   image={ogFor(urgency)}
   type="article"
   pubDate={d.pubDate}
+  counterpartUrl={counterpartUrl}
 >
   <article class="prose" style="padding-top: 32px">
     {subject && <div class="eyebrow">{subject}</div>}

@@ -1,0 +1,116 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { enIncidentGroups } from '../../../en-incidents.ts';
+import { allEnIncidents, allIncidents, dateDayEn, dateLongEn, keepFlags, own } from '../../../lib.ts';
+import { displaySourceLinks } from '../../../source-links.ts';
+
+export async function getStaticPaths() {
+  const [english, russian] = await Promise.all([allEnIncidents(), allIncidents()]);
+  const russianPages = own(russian);
+  const groups = enIncidentGroups(english, russian);
+  return groups.flatMap((group) => group.posts.map((entry) => ({
+    params: { slug: entry.id },
+    props: {
+      entry,
+      group,
+      hasRussianHistory: russianPages.some((candidate) => candidate.id === group.rootSlug),
+      counterpartUrl: russianPages.some((candidate) => candidate.id === entry.id)
+        ? `/incidents/${entry.id}/`
+        : undefined,
+    },
+  })));
+}
+
+const { entry, group, hasRussianHistory, counterpartUrl } = Astro.props;
+const d = entry.data;
+const isUpdate = Boolean(d.parent);
+const root = group.posts.find((post) => post.id === group.rootSlug);
+const historyUrl = group.hasEnglishRoot
+  ? `/en/incidents/${group.rootSlug}/`
+  : hasRussianHistory
+    ? `/incidents/${group.rootSlug}/`
+    : undefined;
+const historyLabel = group.hasEnglishRoot
+  ? (root?.data.title ?? 'Incident history')
+  : 'Russian incident history';
+const subject = [d.product, d.vendor !== d.product ? d.vendor : null].filter(Boolean).join(' · ');
+const sourceLinks = displaySourceLinks(d.links);
+---
+<Base
+  locale="en"
+  title={d.title}
+  description={d.description}
+  type="article"
+  pubDate={d.pubDate}
+  counterpartUrl={counterpartUrl}
+>
+  <article
+    class="prose"
+    style="padding-top: 32px"
+    data-incident-root={group.rootSlug}
+    data-incident-date={group.date.toISOString()}
+  >
+    {subject && <div class="eyebrow">{subject}</div>}
+    <div class="tags"><span class="aud when">{dateLongEn(d.pubDate)}</span></div>
+    {
+      isUpdate && (
+        <p class="up-of">
+          Update to incident{historyUrl ? <>: <a href={historyUrl}>{historyLabel}</a></> : '.'}
+        </p>
+      )
+    }
+    <h1 set:html={keepFlags(d.title)} />
+    {d.description && <p set:html={keepFlags(d.description)} />}
+
+    {
+      d.hijacked && (
+        <aside class="hijack panel" role="alert">
+          <strong>The official {d.vendor ?? 'vendor'} account appears to be compromised.</strong>
+          <p>Do not follow links from its posts or enter your seed anywhere.</p>
+        </aside>
+      )
+    }
+
+    {
+      d.action && (
+        <div class="action panel">
+          <div class="k">What to do</div>
+          <p set:html={keepFlags(d.action)} />
+        </div>
+      )
+    }
+
+    {
+      !d.hijacked && sourceLinks.length > 0 && (
+        <div class="links">
+          {sourceLinks.length === 1 ? (
+            <p><strong>Source:</strong> <a href={sourceLinks[0]!.url} rel="noopener">{sourceLinks[0]!.label}</a></p>
+          ) : (
+            <>
+              <p><strong>Sources:</strong></p>
+              <ul>{sourceLinks.map((link) => <li><a href={link.url} rel="noopener">{link.label}</a></li>)}</ul>
+            </>
+          )}
+        </div>
+      )
+    }
+
+    {
+      group.posts.length > 1 && (
+        <div class="thread">
+          <h2>Incident history</h2>
+          <ol>
+            {group.posts.map((post) => (
+              <li aria-current={post.id === entry.id ? 'true' : undefined}>
+                <span class="dt">{dateDayEn(post.data.pubDate)}</span>
+                {post.id === entry.id
+                  ? <span class="self">{post.data.title}</span>
+                  : <a href={`/en/incidents/${post.id}/`}>{post.data.title}</a>}
+              </li>
+            ))}
+          </ol>
+        </div>
+      )
+    }
+  </article>
+</Base>

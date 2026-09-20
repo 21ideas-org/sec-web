@@ -56,3 +56,23 @@ update of a new root. Each publication uses its own format and facts, including 
 explicit empty array overriding contradictory legacy metadata. These synthetic
 scenarios are compatibility evidence, not model judgment or historical producer output.
 No test or build reads the producer repository or fetches these links.
+
+## English artifact contract v1
+
+`site-generated-alert-en-v1.md` is the authored, versioned EN artifact contract from
+central issue #189. It follows the RU producer's current double-quoted YAML
+serialization and field order, with `enPublishedAt` inserted immediately before
+`links`. EN v1 is frontmatter-only: a non-empty Markdown body is rejected by the
+reader so private evidence or producer drift cannot be silently discarded. Its paired
+authored RU fixture is `site-generated-alert-ru-en-v1.md`; shared
+identity, classification, audience, timestamps and verified links are byte-for-byte
+equivalent after parsing, while only `title`, `description` and `action` are localized.
+
+The paired fixture SHA-256 values are:
+
+- RU: `ceb973f94ba52cebd20b323e95d919e7f45e6a6afe7ac6a41b5195a22a745beb`;
+- EN: `19a7306f50bdd9d62d6fa37f523bf69b7db3325658fdfe3114cc9dfe996f742b`.
+
+It is contract evidence, not public incident content and not a claim that the later
+bot renderer already exists. Any intentional serialization change must re-pin the
+fixture bytes and hash in both repositories in one reviewed change.

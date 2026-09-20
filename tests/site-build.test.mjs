@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { readFile, readdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -53,6 +53,9 @@ const NEW_PRODUCERS = [
   },
 ];
 const PRODUCER_SHA256 = '4703b93ff04788c0833c670ee9d5d93ccedf1425229f4846c9274c996a56ea21';
+const EN_V1_FIXTURE_ID = 'fixture-2026-09-05-en-contract-v1';
+const RU_EN_V1_SHA256 = 'ceb973f94ba52cebd20b323e95d919e7f45e6a6afe7ac6a41b5195a22a745beb';
+const EN_V1_SHA256 = '19a7306f50bdd9d62d6fa37f523bf69b7db3325658fdfe3114cc9dfe996f742b';
 /** Бейдж известной аудитории — всегда ссылка в отфильтрованную ленту. */
 const audienceLink = (id, label) => `<a class="aud aud-link" href="/feed?audience=${id}">${label}</a>`;
 const legacyBadge = (label) => `<span class="aud aud-badge">${label}</span>`;
@@ -887,6 +890,315 @@ links: [{label: Source, url: "https://source.example/advice"}]
         assert.ok(next > position, `publication order ${name}`);
         position = next;
       }
+    }
+  });
+});
+
+test('versioned English contract bytes stay paired with the authored Russian fixture', async () => {
+  const ruBytes = await readFile(join(FIXTURES, 'site-generated-alert-ru-en-v1.md'));
+  const enBytes = await readFile(join(FIXTURES, 'site-generated-alert-en-v1.md'));
+  assert.equal(createHash('sha256').update(ruBytes).digest('hex'), RU_EN_V1_SHA256);
+  assert.equal(createHash('sha256').update(enBytes).digest('hex'), EN_V1_SHA256);
+  const enSource = enBytes.toString('utf8');
+  assert.doesNotMatch(enSource, /^\s*[A-Za-z][A-Za-z]+:/m, 'fixture keys must stay double-quoted');
+  assert.doesNotMatch(enSource, /:\s*[>|]\s*$/m, 'fixture strings must not use YAML folding');
+
+  const ru = frontmatter(ruBytes.toString('utf8'));
+  const en = frontmatter(enSource);
+  for (const field of [
+    'pubDate',
+    'statusTags',
+    'audience',
+    'product',
+    'vendor',
+    'hijacked',
+    'incidentKey',
+    'parent',
+    'links',
+  ]) {
+    assert.deepEqual(en[field], ru[field], field);
+  }
+  assert.deepEqual(Object.keys(en), [
+    'title',
+    'description',
+    'pubDate',
+    'statusTags',
+    'audience',
+    'product',
+    'vendor',
+    'action',
+    'hijacked',
+    'incidentKey',
+    'parent',
+    'enPublishedAt',
+    'links',
+  ]);
+  const enPublishedAt = new Date(en.enPublishedAt);
+  assert.ok(Number.isFinite(enPublishedAt.valueOf()));
+  assert.ok(enPublishedAt.valueOf() >= en.pubDate.valueOf());
+  assert.notEqual(en.title, ru.title);
+  assert.notEqual(en.description, ru.description);
+  assert.notEqual(en.action, ru.action);
+});
+
+test('English and Russian collections isolate equal basenames and emit only real alternates', async () => {
+  await withTemporaryDirectory(async (directory) => {
+    const site = join(directory, 'site');
+    await copySite(site);
+    await mkdir(join(site, 'src/content/en/incidents'), { recursive: true });
+
+    const ruBytes = await readFile(join(FIXTURES, 'site-generated-alert-ru-en-v1.md'));
+    const enBytes = await readFile(join(FIXTURES, 'site-generated-alert-en-v1.md'));
+    await writeFile(join(site, 'src/content/incidents', `${EN_V1_FIXTURE_ID}.md`), ruBytes);
+    await writeFile(join(site, 'src/content/en/incidents', `${EN_V1_FIXTURE_ID}.md`), enBytes);
+
+    let build = buildSite(site);
+    assert.equal(build.status, 0, `${build.stdout}\n${build.stderr}`);
+
+    const ruRoute = await text(join(site, 'dist/incidents', EN_V1_FIXTURE_ID, 'index.html'));
+    const enRoute = await text(join(site, 'dist/en/incidents', EN_V1_FIXTURE_ID, 'index.html'));
+    const feed = await text(join(site, 'dist/feed/index.html'));
+    const rss = await text(join(site, 'dist/rss.xml'));
+    assert.match(ruRoute, /<html lang="ru">/);
+    assert.match(enRoute, /<html lang="en">/);
+    assert.ok(ruRoute.includes('Coldcard: обновление рекомендации'));
+    assert.ok(!ruRoute.includes('Coldcard advisory update'));
+    assert.ok(enRoute.includes('Coldcard advisory update'));
+    assert.ok(!enRoute.includes('Coldcard: обновление рекомендации'));
+    assert.ok(feed.includes('Coldcard: обновление рекомендации'));
+    assert.ok(!feed.includes('Coldcard advisory update'));
+    assert.ok(rss.includes('Coldcard: обновление рекомендации'));
+    assert.ok(!rss.includes('Coldcard advisory update'));
+    assert.ok(enRoute.includes(`rel="canonical" href="https://sec.21ideas.org/en/incidents/${EN_V1_FIXTURE_ID}/"`));
+    assert.ok(ruRoute.includes(
+      `rel="alternate" hreflang="ru" href="https://sec.21ideas.org/incidents/${EN_V1_FIXTURE_ID}/"`,
+    ));
+    assert.ok(ruRoute.includes(
+      `rel="alternate" hreflang="en" href="https://sec.21ideas.org/en/incidents/${EN_V1_FIXTURE_ID}/"`,
+    ));
+    assert.ok(enRoute.includes(
+      `rel="alternate" hreflang="en" href="https://sec.21ideas.org/en/incidents/${EN_V1_FIXTURE_ID}/"`,
+    ));
+    assert.ok(enRoute.includes(
+      `rel="alternate" hreflang="ru" href="https://sec.21ideas.org/incidents/${EN_V1_FIXTURE_ID}/"`,
+    ));
+    assert.ok(ruRoute.includes('rel="alternate" type="application/rss+xml"'));
+    assert.ok(!enRoute.includes('type="application/rss+xml"'));
+
+    await writeFile(join(site, 'src/content/en/incidents', `${EN_V1_FIXTURE_ID}.md`), '');
+    build = buildSite(site);
+    assert.notEqual(build.status, 0, 'an empty English artifact must fail instead of creating a route');
+  });
+
+  await withTemporaryDirectory(async (directory) => {
+    const site = join(directory, 'site');
+    await copySite(site);
+    const build = buildSite(site);
+    assert.equal(build.status, 0, `${build.stdout}\n${build.stderr}`);
+    assert.equal(existsSync(join(site, 'dist/en/incidents/blink-2026-09-19-security-alert/index.html')), false);
+    const enRoutes = existsSync(join(site, 'dist/en/incidents'))
+      ? (await readdir(join(site, 'dist/en/incidents'), { recursive: true })).filter((path) => path.endsWith('index.html'))
+      : [];
+    assert.deepEqual(enRoutes, []);
+    const ruOnly = await text(join(site, 'dist/incidents/blink-2026-09-19-security-alert/index.html'));
+    assert.ok(!ruOnly.includes('hreflang="en"'));
+  });
+});
+
+test('English orphan updates keep one RU-anchored incident before and after their English root arrives', async () => {
+  await withTemporaryDirectory(async (directory) => {
+    const site = join(directory, 'site');
+    await copySite(site);
+    const enDirectory = join(site, 'src/content/en/incidents');
+    await mkdir(enDirectory, { recursive: true });
+    const root = 'fixture-en-thread-root';
+    const enArtifact = ({ title, pubDate, parent }) => `---
+"title": "${title}"
+"description": "Public English description"
+"pubDate": "${pubDate}"
+"statusTags": []
+"audience":
+  - "future_audience"
+"product": "Fixture"
+"vendor": "Fixture Vendor"
+"action": "Use the safe release."
+"hijacked": false
+"incidentKey": "fixture|english-thread"
+${parent ? `"parent": "${parent}"\n` : ''}"enPublishedAt": "2036-01-10T00:00:00.000Z"
+"links": []
+---
+`;
+    await writeFile(join(site, 'src/content/incidents', `${root}.md`), `---
+title: "Russian root title"
+description: "Russian root description"
+pubDate: 2035-12-31T23:59:59.000Z
+statusTags: []
+audience: []
+incidentKey: "fixture|english-thread"
+links: []
+---
+`);
+    await writeFile(join(site, 'src/content/archive/fixture-external-root.md'), `---
+title: "External Russian root"
+pubDate: 2035-12-30T00:00:00.000Z
+external: true
+source: "example.com"
+sourceUrl: "https://example.com/history"
+---
+`);
+    const firstUpdate = enArtifact({
+      title: 'English update one',
+      pubDate: '2036-01-01T00:00:00.000Z',
+      parent: root,
+    });
+    const secondUpdate = enArtifact({
+      title: 'English update two',
+      pubDate: '2036-01-02T00:00:00.000Z',
+      parent: root,
+    });
+    await writeFile(join(enDirectory, 'fixture-en-thread-update-1.md'), firstUpdate);
+    await writeFile(join(enDirectory, 'fixture-en-thread-update-2.md'), secondUpdate);
+    await writeFile(join(enDirectory, 'fixture-en-true-orphan.md'), enArtifact({
+      title: 'English true orphan',
+      pubDate: '2036-01-04T00:00:00.000Z',
+      parent: 'fixture-missing-in-both-locales',
+    }));
+    await writeFile(join(enDirectory, 'fixture-en-external-root-update.md'), enArtifact({
+      title: 'English update with external RU root',
+      pubDate: '2036-01-05T00:00:00.000Z',
+      parent: 'fixture-external-root',
+    }));
+
+    let build = buildSite(site);
+    assert.equal(build.status, 0, `${build.stdout}\n${build.stderr}`);
+    assert.equal(existsSync(join(site, 'dist/en/incidents', root, 'index.html')), false);
+    for (const id of ['fixture-en-thread-update-1', 'fixture-en-thread-update-2']) {
+      const page = await text(join(site, 'dist/en/incidents', id, 'index.html'));
+      assert.ok(page.includes('Update to incident'));
+      assert.ok(page.includes(`href="/incidents/${root}/"`));
+      assert.ok(page.includes('Russian incident history'));
+      assert.ok(page.includes(`data-incident-root="${root}"`));
+      assert.ok(page.includes('data-incident-date="2035-12-31T23:59:59.000Z"'));
+    }
+    const trueOrphan = await text(join(site, 'dist/en/incidents/fixture-en-true-orphan/index.html'));
+    assert.ok(trueOrphan.includes('Update to incident.'));
+    assert.ok(!trueOrphan.includes('href="/incidents/fixture-missing-in-both-locales/"'));
+    const externalRootUpdate = await text(join(site, 'dist/en/incidents/fixture-en-external-root-update/index.html'));
+    assert.ok(externalRootUpdate.includes('Update to incident.'));
+    assert.ok(!externalRootUpdate.includes('href="/incidents/fixture-external-root/"'));
+    assert.ok(externalRootUpdate.includes('data-incident-date="2035-12-30T00:00:00.000Z"'));
+
+    await writeFile(join(enDirectory, `${root}.md`), enArtifact({
+      title: 'English root',
+      pubDate: '2035-12-31T12:00:00.000Z',
+    }));
+    await writeFile(join(enDirectory, 'fixture-en-thread-update-3.md'), enArtifact({
+      title: 'English update three',
+      pubDate: '2036-01-03T00:00:00.000Z',
+      parent: root,
+    }));
+    build = buildSite(site);
+    assert.equal(build.status, 0, `${build.stdout}\n${build.stderr}`);
+    assert.equal(await text(join(enDirectory, 'fixture-en-thread-update-1.md')), firstUpdate);
+    assert.equal(await text(join(enDirectory, 'fixture-en-thread-update-2.md')), secondUpdate);
+    const ids = [root, 'fixture-en-thread-update-1', 'fixture-en-thread-update-2', 'fixture-en-thread-update-3'];
+    const titles = new Map([
+      [root, 'English root'],
+      ['fixture-en-thread-update-1', 'English update one'],
+      ['fixture-en-thread-update-2', 'English update two'],
+      ['fixture-en-thread-update-3', 'English update three'],
+    ]);
+    for (const id of ids) {
+      const page = await text(join(site, 'dist/en/incidents', id, 'index.html'));
+      assert.equal(page.split(`data-incident-root="${root}"`).length - 1, 1, id);
+      assert.ok(page.includes('data-incident-date="2035-12-31T23:59:59.000Z"'), id);
+      for (const member of ids) assert.ok(page.includes(member === id ? `>${titles.get(member)}<` : `/en/incidents/${member}/`), `${id}: ${member}`);
+      assert.ok(!page.includes('future_audience'));
+    }
+  });
+});
+
+test('English v1 artifacts reject non-empty Markdown bodies', async () => {
+  await withTemporaryDirectory(async (directory) => {
+    const site = join(directory, 'site');
+    await copySite(site);
+    const enDirectory = join(site, 'src/content/en/incidents');
+    await mkdir(enDirectory, { recursive: true });
+    await writeFile(join(enDirectory, 'fixture-en-body.md'), `---
+"title": "English body fixture"
+"description": "Public description"
+"pubDate": "2036-01-01T00:00:00.000Z"
+"statusTags": []
+"audience": []
+"hijacked": false
+"incidentKey": "fixture|body"
+"enPublishedAt": "2036-01-01T00:00:01.000Z"
+"links": []
+---
+private source evidence must not be silently discarded
+`);
+
+    const build = buildSite(site);
+    assert.notEqual(build.status, 0);
+    assert.match(`${build.stdout}\n${build.stderr}`, /EN v1 artifact body must be empty/);
+  });
+});
+
+test('English schema rejects malformed or private artifact fields while unknown IDs remain neutral', async () => {
+  const valid = `
+"title": "English fixture"
+"description": "Public description"
+"pubDate": "2036-01-01T00:00:00.000Z"
+"statusTags": ["future_status"]
+"audience": ["future_audience"]
+"hijacked": false
+"incidentKey": "fixture|shape"
+"enPublishedAt": "2036-01-01T00:00:01.000Z"
+"links": []
+`;
+  const cases = [
+    [valid.replace('"statusTags": ["future_status"]\n', '"statusTags": "future_status"\n'), 'statusTags'],
+    [valid.replace('"audience": ["future_audience"]\n', '"audience": "future_audience"\n'), 'audience'],
+    [valid.replace('"pubDate": "2036-01-01T00:00:00.000Z"', '"pubDate": "2036-02-31T00:00:00.000Z"'), 'pubDate'],
+    [valid.replace('"enPublishedAt": "2036-01-01T00:00:01.000Z"\n', ''), 'enPublishedAt'],
+    [valid.replace('2036-01-01T00:00:01.000Z', '2035-12-31T23:59:59.000Z'), 'enPublishedAt'],
+    [valid.replace('2036-01-01T00:00:01.000Z', '2036-01-01T04:00:01.000+04:00'), 'enPublishedAt'],
+    [valid.replace('2036-01-01T00:00:01.000Z', '2036-99-99T99:99:99.999Z'), 'enPublishedAt'],
+    [valid.replace('2036-01-01T00:00:01.000Z', '2036-02-31T00:00:01.000Z'), 'enPublishedAt'],
+    [valid.replace('"links": []', '"links": [{"label": "unsafe"}]'), 'links'],
+    [valid.replace('"links": []', '"links": [{"label": "unsafe", "url": "javascript:alert(1)"}]'), 'links'],
+    [valid.replace('"links": []', '"links": [{"label": "source", "url": "https://example.com", "reason": "private"}]'), 'reason'],
+    [`${valid}"reason": "private model reasoning"\n`, 'reason'],
+    [`${valid}"rawModelUrl": "https://model.invalid/unverified"\n`, 'rawModelUrl'],
+    [`${valid}"privateEvidence": "raw source text"\n`, 'privateEvidence'],
+  ];
+  for (const [fields, expectedField] of cases) {
+    await withTemporaryDirectory(async (directory) => {
+      const site = join(directory, 'site');
+      await copySite(site);
+      const enDirectory = join(site, 'src/content/en/incidents');
+      await mkdir(enDirectory, { recursive: true });
+      await writeFile(join(enDirectory, 'fixture-invalid-en.md'), `---${fields}---\n`);
+      const build = buildSite(site);
+      assert.notEqual(build.status, 0);
+      assert.match(`${build.stdout}\n${build.stderr}`, new RegExp(expectedField));
+      assert.match(`${build.stdout}\n${build.stderr}`, /InvalidContentEntryDataError/);
+    });
+  }
+
+  await withTemporaryDirectory(async (directory) => {
+    const site = join(directory, 'site');
+    await copySite(site);
+    const enDirectory = join(site, 'src/content/en/incidents');
+    await mkdir(enDirectory, { recursive: true });
+    await writeFile(join(enDirectory, 'fixture-neutral-en.md'), `---${valid}---\n`);
+    const build = buildSite(site);
+    assert.equal(build.status, 0, `${build.stdout}\n${build.stderr}`);
+    const page = await text(join(site, 'dist/en/incidents/fixture-neutral-en/index.html'));
+    assert.ok(!page.includes('future_status'));
+    assert.ok(!page.includes('future_audience'));
+    for (const privateValue of ['reason', 'private model reasoning', 'rawModelUrl', 'private evidence']) {
+      assert.ok(!page.includes(privateValue));
     }
   });
 });
