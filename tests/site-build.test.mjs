@@ -970,10 +970,18 @@ test('English and Russian collections isolate equal basenames and emit only real
     assert.ok(rss.includes('Coldcard: обновление рекомендации'));
     assert.ok(!rss.includes('Coldcard advisory update'));
     assert.ok(enRoute.includes(`rel="canonical" href="https://sec.21ideas.org/en/incidents/${EN_V1_FIXTURE_ID}/"`));
-    for (const route of [ruRoute, enRoute]) {
-      assert.ok(route.includes('hreflang="ru"'));
-      assert.ok(route.includes('hreflang="en"'));
-    }
+    assert.ok(ruRoute.includes(
+      `rel="alternate" hreflang="ru" href="https://sec.21ideas.org/incidents/${EN_V1_FIXTURE_ID}/"`,
+    ));
+    assert.ok(ruRoute.includes(
+      `rel="alternate" hreflang="en" href="https://sec.21ideas.org/en/incidents/${EN_V1_FIXTURE_ID}/"`,
+    ));
+    assert.ok(enRoute.includes(
+      `rel="alternate" hreflang="en" href="https://sec.21ideas.org/en/incidents/${EN_V1_FIXTURE_ID}/"`,
+    ));
+    assert.ok(enRoute.includes(
+      `rel="alternate" hreflang="ru" href="https://sec.21ideas.org/incidents/${EN_V1_FIXTURE_ID}/"`,
+    ));
     assert.ok(!enRoute.includes('type="application/rss+xml"'));
 
     await writeFile(join(site, 'src/content/en/incidents', `${EN_V1_FIXTURE_ID}.md`), '');
