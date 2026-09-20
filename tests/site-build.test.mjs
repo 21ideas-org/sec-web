@@ -1027,6 +1027,14 @@ incidentKey: "fixture|english-thread"
 links: []
 ---
 `);
+    await writeFile(join(site, 'src/content/archive/fixture-external-root.md'), `---
+title: "External Russian root"
+pubDate: 2035-12-30T00:00:00.000Z
+external: true
+source: "example.com"
+sourceUrl: "https://example.com/history"
+---
+`);
     const firstUpdate = enArtifact({
       title: 'English update one',
       pubDate: '2036-01-01T00:00:00.000Z',
@@ -1039,6 +1047,16 @@ links: []
     });
     await writeFile(join(enDirectory, 'fixture-en-thread-update-1.md'), firstUpdate);
     await writeFile(join(enDirectory, 'fixture-en-thread-update-2.md'), secondUpdate);
+    await writeFile(join(enDirectory, 'fixture-en-true-orphan.md'), enArtifact({
+      title: 'English true orphan',
+      pubDate: '2036-01-04T00:00:00.000Z',
+      parent: 'fixture-missing-in-both-locales',
+    }));
+    await writeFile(join(enDirectory, 'fixture-en-external-root-update.md'), enArtifact({
+      title: 'English update with external RU root',
+      pubDate: '2036-01-05T00:00:00.000Z',
+      parent: 'fixture-external-root',
+    }));
 
     let build = buildSite(site);
     assert.equal(build.status, 0, `${build.stdout}\n${build.stderr}`);
@@ -1051,6 +1069,13 @@ links: []
       assert.ok(page.includes(`data-incident-root="${root}"`));
       assert.ok(page.includes('data-incident-date="2035-12-31T23:59:59.000Z"'));
     }
+    const trueOrphan = await text(join(site, 'dist/en/incidents/fixture-en-true-orphan/index.html'));
+    assert.ok(trueOrphan.includes('Update to incident.'));
+    assert.ok(!trueOrphan.includes('href="/incidents/fixture-missing-in-both-locales/"'));
+    const externalRootUpdate = await text(join(site, 'dist/en/incidents/fixture-en-external-root-update/index.html'));
+    assert.ok(externalRootUpdate.includes('Update to incident.'));
+    assert.ok(!externalRootUpdate.includes('href="/incidents/fixture-external-root/"'));
+    assert.ok(externalRootUpdate.includes('data-incident-date="2035-12-30T00:00:00.000Z"'));
 
     await writeFile(join(enDirectory, `${root}.md`), enArtifact({
       title: 'English root',

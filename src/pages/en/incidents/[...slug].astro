@@ -6,13 +6,14 @@ import { displaySourceLinks } from '../../../source-links.ts';
 
 export async function getStaticPaths() {
   const [english, russian] = await Promise.all([allEnIncidents(), allIncidents()]);
-  const groups = enIncidentGroups(english, russian);
   const russianPages = own(russian);
+  const groups = enIncidentGroups(english, russian);
   return groups.flatMap((group) => group.posts.map((entry) => ({
     params: { slug: entry.id },
     props: {
       entry,
       group,
+      hasRussianHistory: russianPages.some((candidate) => candidate.id === group.rootSlug),
       counterpartUrl: russianPages.some((candidate) => candidate.id === entry.id)
         ? `/incidents/${entry.id}/`
         : undefined,
@@ -20,14 +21,18 @@ export async function getStaticPaths() {
   })));
 }
 
-const { entry, group, counterpartUrl } = Astro.props;
+const { entry, group, hasRussianHistory, counterpartUrl } = Astro.props;
 const d = entry.data;
 const isUpdate = Boolean(d.parent);
 const root = group.posts.find((post) => post.id === group.rootSlug);
 const historyUrl = group.hasEnglishRoot
   ? `/en/incidents/${group.rootSlug}/`
-  : `/incidents/${group.rootSlug}/`;
-const historyLabel = group.hasEnglishRoot ? (root?.data.title ?? 'Incident history') : 'Russian incident history';
+  : hasRussianHistory
+    ? `/incidents/${group.rootSlug}/`
+    : undefined;
+const historyLabel = group.hasEnglishRoot
+  ? (root?.data.title ?? 'Incident history')
+  : 'Russian incident history';
 const subject = [d.product, d.vendor !== d.product ? d.vendor : null].filter(Boolean).join(' · ');
 const sourceLinks = displaySourceLinks(d.links);
 ---
@@ -50,7 +55,7 @@ const sourceLinks = displaySourceLinks(d.links);
     {
       isUpdate && (
         <p class="up-of">
-          Update to incident: <a href={historyUrl}>{historyLabel}</a>
+          Update to incident{historyUrl ? <>: <a href={historyUrl}>{historyLabel}</a></> : '.'}
         </p>
       )
     }

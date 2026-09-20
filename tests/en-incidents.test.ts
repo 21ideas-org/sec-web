@@ -17,6 +17,7 @@ test('English thread groups count a shared root once and prefer the known Russia
   assert.equal(orphanGroups.length, 1);
   assert.equal(orphanGroups[0]!.rootSlug, root);
   assert.equal(orphanGroups[0]!.hasEnglishRoot, false);
+  assert.equal(orphanGroups[0]!.hasRussianRoot, true);
   assert.equal(orphanGroups[0]!.date.toISOString(), '2035-12-31T23:59:59.000Z');
   assert.deepEqual(orphanGroups[0]!.posts.map(({ id }) => id), ['update-one', 'update-two']);
 
@@ -25,6 +26,24 @@ test('English thread groups count a shared root once and prefer the known Russia
   const completeGroups = enIncidentGroups([second, third, englishRoot, first], russian);
   assert.equal(completeGroups.length, 1);
   assert.equal(completeGroups[0]!.hasEnglishRoot, true);
+  assert.equal(completeGroups[0]!.hasRussianRoot, true);
   assert.equal(completeGroups[0]!.date.toISOString(), '2035-12-31T23:59:59.000Z');
   assert.deepEqual(completeGroups[0]!.posts.map(({ id }) => id), [root, 'update-one', 'update-two', 'update-three']);
+});
+
+test('English groups do not claim a Russian root that is absent', () => {
+  const groups = enIncidentGroups([
+    post('orphan-update', '2036-01-01T00:00:00.000Z', 'missing-root'),
+  ], []);
+  assert.equal(groups.length, 1);
+  assert.equal(groups[0]!.hasEnglishRoot, false);
+  assert.equal(groups[0]!.hasRussianRoot, false);
+});
+
+test('a known non-routable Russian root still anchors English chronology', () => {
+  const groups = enIncidentGroups([
+    post('orphan-update', '2036-01-03T00:00:00.000Z', 'external-root'),
+  ], [post('external-root', '2035-12-30T00:00:00.000Z')]);
+  assert.equal(groups[0]!.hasRussianRoot, true);
+  assert.equal(groups[0]!.date.toISOString(), '2035-12-30T00:00:00.000Z');
 });

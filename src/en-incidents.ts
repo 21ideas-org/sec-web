@@ -9,6 +9,7 @@ export interface EnIncidentGroup<T extends ThreadEntry = EnIncident> {
   date: Date;
   posts: T[];
   hasEnglishRoot: boolean;
+  hasRussianRoot: boolean;
 }
 
 export const enRootSlug = (entry: ThreadEntry) => entry.data.parent ?? entry.id;
@@ -40,6 +41,7 @@ export function enIncidentGroups<T extends ThreadEntry, R extends ThreadEntry>(
         date: russianRoot?.data.pubDate ?? englishRoot?.data.pubDate ?? posts[0]!.data.pubDate,
         posts,
         hasEnglishRoot: Boolean(englishRoot),
+        hasRussianRoot: Boolean(russianRoot),
       };
     })
     .sort((a, b) => b.date.valueOf() - a.date.valueOf());

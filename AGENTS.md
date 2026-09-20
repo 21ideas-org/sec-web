@@ -41,8 +41,10 @@ Issue обязан содержать применимые решения websit
 - Counter считает от первого post последнего thread; facts описывают отдельную
   публикацию, а не агрегированное текущее состояние инцидента.
 - EN thread identity — общий root slug (`parent ?? id`). Пока локального EN root нет,
-  update остаётся видимым и ведёт к RU history; известный RU root `pubDate` фиксирует
-  дату incident, поэтому поздний EN root не меняет count или chronology.
+  update остаётся видимым и ведёт к RU history только при существующей RU root page;
+  иначе он остаётся видимым без битой ссылки. Известный RU root `pubDate` фиксирует
+  дату incident даже без собственной RU page, поэтому поздний EN root не меняет count
+  или chronology.
 
 ## Current schema и delivery
 
