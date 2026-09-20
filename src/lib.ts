@@ -72,7 +72,13 @@ export async function allIncidents(): Promise<Incident[]> {
 }
 
 export async function allEnIncidents(): Promise<EnIncident[]> {
-  return (await getCollection('enIncidents')).sort(byDateDesc);
+  const entries = await getCollection('enIncidents');
+  for (const entry of entries) {
+    if (entry.body?.trim()) {
+      throw new Error(`[en-content] ${entry.id}: EN v1 artifact body must be empty`);
+    }
+  }
+  return entries.sort(byDateDesc);
 }
 
 /** Собственные публикации сайта: имеют страницу и входят в RSS. */

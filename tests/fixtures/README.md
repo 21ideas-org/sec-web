@@ -62,7 +62,9 @@ No test or build reads the producer repository or fetches these links.
 `site-generated-alert-en-v1.md` is the authored, versioned EN artifact contract from
 central issue #189. It follows the RU producer's current double-quoted YAML
 serialization and field order, with `enPublishedAt` inserted immediately before
-`links`. Its paired authored RU fixture is `site-generated-alert-ru-en-v1.md`; shared
+`links`. EN v1 is frontmatter-only: a non-empty Markdown body is rejected by the
+reader so private evidence or producer drift cannot be silently discarded. Its paired
+authored RU fixture is `site-generated-alert-ru-en-v1.md`; shared
 identity, classification, audience, timestamps and verified links are byte-for-byte
 equivalent after parsing, while only `title`, `description` and `action` are localized.
 

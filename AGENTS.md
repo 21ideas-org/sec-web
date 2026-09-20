@@ -29,8 +29,10 @@ Issue обязан содержать применимые решения websit
   `/en/incidents/<slug>/` без утечки контента между ними.
 - EN v1 artifact — строгий immutable frontmatter contract с обязательным
   `enPublishedAt >= pubDate`; private evidence и неизвестные поля останавливают build.
-  EN RSS пока не существует и не рекламируется. `hreflang` выводится только когда
-  реально существуют оба locale artifacts с одинаковым basename.
+  Artifact frontmatter-only: непустое Markdown body также останавливает build, а не
+  публикуется и не отбрасывается молча. EN RSS пока не существует и не рекламируется.
+  `hreflang` выводится только когда реально существуют оба locale artifacts с
+  одинаковым basename.
 - Incident filename: `<product>-<YYYY-MM-DD>-<short>.md`; date — UTC frozen logical
   publication time, известное до GitHub/Telegram network calls. Archive сохраняет свой
   `<YYYY-MM-DD>-<name>` naming.

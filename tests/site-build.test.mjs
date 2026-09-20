@@ -1081,7 +1081,7 @@ sourceUrl: "https://example.com/history"
 
     await writeFile(join(enDirectory, `${root}.md`), enArtifact({
       title: 'English root',
-      pubDate: '2035-12-31T23:59:59.000Z',
+      pubDate: '2035-12-31T12:00:00.000Z',
     }));
     await writeFile(join(enDirectory, 'fixture-en-thread-update-3.md'), enArtifact({
       title: 'English update three',
@@ -1106,6 +1106,32 @@ sourceUrl: "https://example.com/history"
       for (const member of ids) assert.ok(page.includes(member === id ? `>${titles.get(member)}<` : `/en/incidents/${member}/`), `${id}: ${member}`);
       assert.ok(!page.includes('future_audience'));
     }
+  });
+});
+
+test('English v1 artifacts reject non-empty Markdown bodies', async () => {
+  await withTemporaryDirectory(async (directory) => {
+    const site = join(directory, 'site');
+    await copySite(site);
+    const enDirectory = join(site, 'src/content/en/incidents');
+    await mkdir(enDirectory, { recursive: true });
+    await writeFile(join(enDirectory, 'fixture-en-body.md'), `---
+"title": "English body fixture"
+"description": "Public description"
+"pubDate": "2036-01-01T00:00:00.000Z"
+"statusTags": []
+"audience": []
+"hijacked": false
+"incidentKey": "fixture|body"
+"enPublishedAt": "2036-01-01T00:00:01.000Z"
+"links": []
+---
+private source evidence must not be silently discarded
+`);
+
+    const build = buildSite(site);
+    assert.notEqual(build.status, 0);
+    assert.match(`${build.stdout}\n${build.stderr}`, /EN v1 artifact body must be empty/);
   });
 });
 
