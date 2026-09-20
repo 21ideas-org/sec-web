@@ -66,8 +66,11 @@ serialization and field order, with `enPublishedAt` inserted immediately before
 identity, classification, audience, timestamps and verified links are byte-for-byte
 equivalent after parsing, while only `title`, `description` and `action` are localized.
 
-The EN fixture SHA-256 is
-`19a7306f50bdd9d62d6fa37f523bf69b7db3325658fdfe3114cc9dfe996f742b`.
+The paired fixture SHA-256 values are:
+
+- RU: `ceb973f94ba52cebd20b323e95d919e7f45e6a6afe7ac6a41b5195a22a745beb`;
+- EN: `19a7306f50bdd9d62d6fa37f523bf69b7db3325658fdfe3114cc9dfe996f742b`.
+
 It is contract evidence, not public incident content and not a claim that the later
 bot renderer already exists. Any intentional serialization change must re-pin the
 fixture bytes and hash in both repositories in one reviewed change.

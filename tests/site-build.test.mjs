@@ -54,6 +54,7 @@ const NEW_PRODUCERS = [
 ];
 const PRODUCER_SHA256 = '4703b93ff04788c0833c670ee9d5d93ccedf1425229f4846c9274c996a56ea21';
 const EN_V1_FIXTURE_ID = 'fixture-2026-09-05-en-contract-v1';
+const RU_EN_V1_SHA256 = 'ceb973f94ba52cebd20b323e95d919e7f45e6a6afe7ac6a41b5195a22a745beb';
 const EN_V1_SHA256 = '19a7306f50bdd9d62d6fa37f523bf69b7db3325658fdfe3114cc9dfe996f742b';
 /** Бейдж известной аудитории — всегда ссылка в отфильтрованную ленту. */
 const audienceLink = (id, label) => `<a class="aud aud-link" href="/feed?audience=${id}">${label}</a>`;
@@ -896,6 +897,7 @@ links: [{label: Source, url: "https://source.example/advice"}]
 test('versioned English contract bytes stay paired with the authored Russian fixture', async () => {
   const ruBytes = await readFile(join(FIXTURES, 'site-generated-alert-ru-en-v1.md'));
   const enBytes = await readFile(join(FIXTURES, 'site-generated-alert-en-v1.md'));
+  assert.equal(createHash('sha256').update(ruBytes).digest('hex'), RU_EN_V1_SHA256);
   assert.equal(createHash('sha256').update(enBytes).digest('hex'), EN_V1_SHA256);
   const enSource = enBytes.toString('utf8');
   assert.doesNotMatch(enSource, /^\s*[A-Za-z][A-Za-z]+:/m, 'fixture keys must stay double-quoted');
