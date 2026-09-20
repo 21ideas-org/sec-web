@@ -23,7 +23,7 @@ export async function withTemporaryDirectory(run) {
 }
 
 export async function copySite(target) {
-  const excluded = new Set(['.astro', '.git', 'dist', 'node_modules']);
+  const excluded = new Set(['.astro', '.astro-cache', '.git', 'dist', 'node_modules']);
   await cp(REPOSITORY, target, {
     recursive: true,
     filter(source) {

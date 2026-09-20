@@ -1,4 +1,5 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
+import type { EnIncident } from './en-incidents.ts';
 import { statusDiagnostic } from './status.ts';
 
 export type Incident = CollectionEntry<'incidents'>;
@@ -29,6 +30,10 @@ export const dateLong = (d: Date) =>
   d
     .toLocaleDateString('ru-RU', { ...UTC, day: 'numeric', month: 'long', year: 'numeric' })
     .replace(/\s*г\.$/, '');
+export const dateDayEn = (d: Date) =>
+  d.toLocaleDateString('en-GB', { ...UTC, day: '2-digit', month: 'short' });
+export const dateLongEn = (d: Date) =>
+  d.toLocaleDateString('en-GB', { ...UTC, day: 'numeric', month: 'long', year: 'numeric' });
 
 const escapeHtml = (t: string) =>
   t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -54,7 +59,7 @@ export function keepFlags(text: string): string {
 }
 
 const live = (e: Incident) => !e.data.draft;
-const byDateDesc = (a: Incident, b: Incident) =>
+const byDateDesc = <T extends { data: { pubDate: Date } }>(a: T, b: T) =>
   b.data.pubDate.valueOf() - a.data.pubDate.valueOf();
 
 export async function allIncidents(): Promise<Incident[]> {
@@ -64,6 +69,10 @@ export async function allIncidents(): Promise<Incident[]> {
     if (diagnostic) console.warn(`[status] ${diagnostic}`);
   }
   return entries;
+}
+
+export async function allEnIncidents(): Promise<EnIncident[]> {
+  return (await getCollection('enIncidents')).sort(byDateDesc);
 }
 
 /** Собственные публикации сайта: имеют страницу и входят в RSS. */

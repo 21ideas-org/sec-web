@@ -9,18 +9,24 @@ interface Props {
   image?: string;
   type?: 'website' | 'article';
   pubDate?: Date;
+  locale?: 'ru' | 'en';
+  siteName?: string;
+  rssUrl?: string | null;
+  rssTitle?: string;
+  counterpartUrl?: string;
 }
 const props = Astro.props;
+const locale = props.locale ?? 'ru';
 ---
-<html lang="ru">
+<html lang={locale}>
   <head>
     <BaseHead {...props} />
   </head>
   <body>
     <div class="shell">
-      <Nav />
+      {locale === 'ru' && <Nav />}
       <slot />
-      <Footer />
+      {locale === 'ru' && <Footer />}
     </div>
   </body>
 </html>

@@ -23,6 +23,14 @@ Issue обязан содержать применимые решения websit
   `sourceUrl`; не переносить этот путь в автоматическую доставку.
 - Slug равен basename Markdown file. Папка не входит в route. Никогда не переименовывать
   опубликованный basename/permalink.
+- RU reader загружает только `src/content/incidents/` и `src/content/archive/`; EN v1
+  загружает только `src/content/en/incidents/`. Одинаковый basename в локалях обязан
+  давать независимые collection IDs и routes `/incidents/<slug>/` и
+  `/en/incidents/<slug>/` без утечки контента между ними.
+- EN v1 artifact — строгий immutable frontmatter contract с обязательным
+  `enPublishedAt >= pubDate`; private evidence и неизвестные поля останавливают build.
+  EN RSS пока не существует и не рекламируется. `hreflang` выводится только когда
+  реально существуют оба locale artifacts с одинаковым basename.
 - Incident filename: `<product>-<YYYY-MM-DD>-<short>.md`; date — UTC frozen logical
   publication time, известное до GitHub/Telegram network calls. Archive сохраняет свой
   `<YYYY-MM-DD>-<name>` naming.
@@ -32,6 +40,9 @@ Issue обязан содержать применимые решения websit
   запись из counter и направляет link на `sourceUrl`. Не разъединять эти следствия.
 - Counter считает от первого post последнего thread; facts описывают отдельную
   публикацию, а не агрегированное текущее состояние инцидента.
+- EN thread identity — общий root slug (`parent ?? id`). Пока локального EN root нет,
+  update остаётся видимым и ведёт к RU history; известный RU root `pubDate` фиксирует
+  дату incident, поэтому поздний EN root не меняет count или chronology.
 
 ## Current schema и delivery
 
