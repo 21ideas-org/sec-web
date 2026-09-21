@@ -4,7 +4,6 @@ import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
-import { runInNewContext } from 'node:vm';
 
 import {
   FIXTURES,
@@ -282,42 +281,29 @@ test('English routes stay honest with an empty corpus and a paired artifact', as
     for (const route of ['/en/', '/en/feed/', '/en/about/', '/en/sources/', '/en/support/']) {
       assert.ok(sitemap.includes(`https://sec.21ideas.org${route}`), route);
     }
-    for (const route of ['about', 'sources', 'support', '404']) {
+    for (const route of ['about', 'sources', 'support']) {
       const page = await text(join(site, `dist/en/${route}/index.html`));
       assert.match(page, /<html lang="en">/);
       assert.ok(page.includes(`https://sec.21ideas.org/en/${route}/`));
     }
+    // Pages serves the root 404.html for every missing path, /en/incidents/<slug>/ included:
+    // it is the only fallback artifact, and nothing builds a separate /en/404.
+    const artifacts = await readdir(join(site, 'dist'), { recursive: true });
+    assert.deepEqual(artifacts.filter((path) => /(^|\/)404(\.html|\/|$)/.test(path)), ['404.html']);
+    assert.ok(!sitemap.includes('/404'));
+    assert.equal(existsSync(join(site, 'dist/en/incidents/fixture-missing-en/index.html')), false);
     const fallback = await text(join(site, 'dist/404.html'));
-    assert.match(fallback, /location\.pathname\.startsWith\('\/en\/'\)/);
+    // Served under nested missing URLs, so every local link and asset must be root-absolute.
+    assert.doesNotMatch(fallback, /(?:href|src)="(?!https?:\/\/|\/|#)/);
+    assertLocaleOg(fallback, EN_OG, 'shared 404');
+    assert.match(fallback, /<html lang="en">/);
+    assert.match(fallback, /<title>Page unavailable · Bitcoin Security Watcher<\/title>/);
+    assert.match(fallback, /rel="canonical" href="https:\/\/sec\.21ideas\.org\/404\.html"/);
+    assert.match(fallback, /property="og:url" content="https:\/\/sec\.21ideas\.org\/404\.html"/);
     assert.match(fallback, /English incident feed/);
-    assert.match(fallback, /<noscript>[\s\S]*English page unavailable[\s\S]*English incident feed[\s\S]*<\/noscript>/);
-    const fallbackScript = fallback.match(/<script>\s*(document\.addEventListener\('DOMContentLoaded'[\s\S]*?)<\/script>/)?.[1];
-    assert.ok(fallbackScript, 'English 404 selector is missing from built 404.html');
-    const nodes = new Map();
-    const node = (selector) => {
-      if (!nodes.has(selector)) nodes.set(selector, {
-        removed: false, hidden: true, attrs: {}, innerHTML: '',
-        remove() { this.removed = true; },
-        removeAttribute(name) { if (name === 'hidden') this.hidden = false; },
-        setAttribute(name, value) { this.attrs[name] = value; },
-      });
-      return nodes.get(selector);
-    };
-    let onReady;
-    const document = { documentElement: { lang: 'ru' }, title: '', querySelector: node,
-      addEventListener(name, callback) { if (name === 'DOMContentLoaded') onReady = callback; },
-    };
-    runInNewContext(fallbackScript, { document, location: { pathname: '/en/incidents/unknown-issue-191/' } });
-    assert.equal(document.documentElement.lang, 'ru', 'locale rewrite must wait until the footer exists');
-    assert.equal(typeof onReady, 'function');
-    onReady();
-    assert.equal(document.documentElement.lang, 'en');
-    assert.equal(node('[data-ru-404]').removed, true);
-    assert.equal(node('[data-en-404]').hidden, false);
-    assert.match(node('.nav').innerHTML, /href="\/en\/feed"/);
-    assert.match(node('.foot').innerHTML, /href="\/en\/rss\.xml"/);
-    assert.equal(node('meta[property="og:title"]').attrs.content, document.title);
-    assert.equal(node('meta[property="og:url"]').attrs.content, 'https://sec.21ideas.org/en/404/');
+    assert.match(fallback, /href="https:\/\/sec\.21ideas\.org\/en\/rss\.xml"/);
+    assert.match(fallback, /href="\/en\/feed"/);
+    assert.doesNotMatch(fallback, /Страница собирается|data-ru-404|DOMContentLoaded|<noscript>/);
 
     const ru = await readFile(join(FIXTURES, 'site-generated-alert-ru-en-v1.md'));
     const en = await readFile(join(FIXTURES, 'site-generated-alert-en-v1.md'));
@@ -1139,9 +1125,11 @@ test('English and Russian collections isolate equal basenames and emit only real
     assert.deepEqual(enRoutes, []);
     const ruOnly = await text(join(site, 'dist/incidents/blink-2026-09-19-security-alert/index.html'));
     assert.ok(!ruOnly.includes('hreflang="en"'));
-    for (const route of ['index.html', 'feed/index.html', 'about/index.html', 'sources/index.html', 'support/index.html', '404.html']) {
+    for (const route of ['index.html', 'feed/index.html', 'about/index.html', 'sources/index.html', 'support/index.html']) {
       assertLocaleOg(await text(join(site, 'dist', route)), RU_OG, route);
     }
+    // The shared host-level 404 is English-only.
+    assertLocaleOg(await text(join(site, 'dist/404.html')), EN_OG, '404.html');
     assertLocaleOg(ruOnly, RU_OG, 'RU-only incident');
     // Legacy cards stay at their URLs for previews that were already scraped.
     for (const file of [...LEGACY_OG, 'ru', 'en']) {

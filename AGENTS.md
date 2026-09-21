@@ -81,7 +81,9 @@ Issue обязан содержать применимые решения websit
   numeric status ID. Остальные validated URL и label показываются без догадок; frozen
   Markdown при этом не переписывается.
 - Одна bounded website-попытка идёт перед парным Telegram send, но bot не ждёт retry,
-  workflow, Pages, DNS или HTTP 200. Custom 404 честно покрывает build window.
+  workflow, Pages, DNS или HTTP 200. Custom 404 честно покрывает build window: это один
+  общий English-only `src/pages/404.astro` (`/404.html`) для всех missing paths, включая
+  `/en/incidents/<slug>/`; отдельного `/en/404` и RU/client-side locale fallback нет.
 - Live и `--dry-run` одинаково пишут канонический public incident content в
   `sec-web/main` для `https://sec.21ideas.org`. Runtime mode меняет только парный
   Telegram target (`channel` или `dry_channel`) и не выбирает другой website, staging

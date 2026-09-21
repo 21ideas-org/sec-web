@@ -13,6 +13,7 @@ interface Props {
   rssUrl?: string | null;
   rssTitle?: string;
   counterpartUrl?: string;
+  canonicalPath?: string;
 }
 const {
   title,
@@ -25,8 +26,9 @@ const {
   rssUrl = locale === 'ru' ? '/rss.xml' : '/en/rss.xml',
   rssTitle = siteName,
   counterpartUrl,
+  canonicalPath,
 } = Astro.props;
-const canonical = new URL(Astro.url.pathname, SITE_URL);
+const canonical = new URL(canonicalPath ?? Astro.url.pathname, SITE_URL);
 // Одна статичная карточка на локаль. Legacy /og/{critical,unpatched,patched,default}.png
 // остаются в public только ради старых превью и кодом больше не выбираются.
 const og = new URL(image ?? `/og/${locale}.png`, SITE_URL);
