@@ -328,9 +328,11 @@ test('English routes stay honest with an empty corpus and a paired artifact', as
     await writeFile(join(site, 'src/content/en/incidents', `${hijackId}.md`), en.toString('utf8')
       .replace('Coldcard advisory update', 'English hijack warning')
       .replace('"hijacked": false', '"hijacked": true')
+      .replace('  - "patch_available"', '  - "patch_available"\n  - "patch_unavailable"')
       .replace('"enPublishedAt": "2026-09-06T00:04:59.000Z"', '"enPublishedAt": "2026-09-06T00:05:00.000Z"'));
     build = buildSite(site);
     assert.equal(build.status, 0, `${build.stdout}\n${build.stderr}`);
+    assert.match(`${build.stdout}\n${build.stderr}`, /Conflicting patch status tags: both patch claims omitted/);
     const enPage = await text(join(site, 'dist/en/incidents', EN_V1_FIXTURE_ID, 'index.html'));
     const hijackPage = await text(join(site, 'dist/en/incidents', hijackId, 'index.html'));
     const ruPage = await text(join(site, 'dist/incidents', EN_V1_FIXTURE_ID, 'index.html'));
@@ -349,6 +351,7 @@ test('English routes stay honest with an empty corpus and a paired artifact', as
     assert.match(rss, /<channel>.*<link>https:\/\/sec\.21ideas\.org\/en\/<\/link>/s);
     assert.match(rss, /<category>Holders<\/category>/);
     assert.doesNotMatch(rssItemFor(rss, hijackId, 'en').item, /coldcard\.com\/security/);
+    assert.doesNotMatch(rssItemFor(rss, hijackId, 'en').item, /<category>Patch available<\/category>|<category>No patch available<\/category>/);
     assert.match(rss, /<category>Exploitation confirmed<\/category>/);
     assert.match(rss, /<category>Patch available<\/category>/);
     assert.match(rss, /<pubDate>Sun, 06 Sep 2026 00:04:59 GMT<\/pubDate>/);

@@ -76,6 +76,8 @@ export async function allIncidents(): Promise<Incident[]> {
 export async function allEnIncidents(): Promise<EnIncident[]> {
   const entries = await getCollection('enIncidents');
   for (const entry of entries) {
+    const diagnostic = statusDiagnostic(entry.data);
+    if (diagnostic) console.warn(`[status] ${diagnostic}`);
     if (entry.body?.trim()) {
       throw new Error(`[en-content] ${entry.id}: EN v1 artifact body must be empty`);
     }
