@@ -13,7 +13,7 @@ import { SITE_NAME } from '../consts.ts';
     Цена решения: опечатка в адресе покажет то же самое. Принято сознательно —
     честнее сказать «подожди» о странице, которая появится, чем «нет такой».
   -->
-  <section class="sec">
+  <section class="sec" data-ru-404>
     <div class="eyebrow">Страница пока недоступна</div>
     <article class="card panel" style="--accent: var(--warn-fg)">
       <h2>Страница собирается</h2>
@@ -31,7 +31,50 @@ import { SITE_NAME } from '../consts.ts';
       </button>
     </article>
   </section>
+  <noscript>
+    <section class="sec" lang="en">
+      <div class="eyebrow">English page unavailable</div>
+      <article class="card panel" style="--accent: var(--warn-fg)">
+        <h2>This page may still be publishing</h2>
+        <p>If you followed a recent English alert link, try again in a minute. The URL may also contain a typo.</p>
+        <p>Browse the <a href="/en/feed">English incident feed</a>.</p>
+      </article>
+    </section>
+  </noscript>
+  <section class="sec" data-en-404 hidden>
+    <div class="eyebrow">Page unavailable</div>
+    <article class="card panel" style="--accent: var(--warn-fg)">
+      <h2>This page may still be publishing</h2>
+      <p>If you followed a recent alert link, try refreshing in a minute. The URL may also contain a typo.</p>
+      <p>Browse the <a href="/en/feed">English incident feed</a> or the <a href="/feed">Russian history</a>.</p>
+      <button class="go" type="button" data-reload style="background:none;border:0;padding:0;font:inherit;color:var(--sig);cursor:pointer;border-bottom:1px solid var(--sig)">Refresh page</button>
+    </article>
+  </section>
+  <script is:inline>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (location.pathname.startsWith('/en/')) {
+        document.documentElement.lang = 'en';
+        document.querySelector('[data-ru-404]')?.remove();
+        document.querySelector('[data-en-404]')?.removeAttribute('hidden');
+        document.title = 'Page unavailable · Bitcoin Security Watcher';
+        document.querySelector('meta[name="description"]')?.setAttribute('content', 'The page may still be publishing or the URL may be incorrect.');
+        document.querySelector('link[rel="canonical"]')?.setAttribute('href', 'https://sec.21ideas.org/en/404/');
+        document.querySelector('meta[property="og:title"]')?.setAttribute('content', document.title);
+        document.querySelector('meta[property="og:description"]')?.setAttribute('content', 'The page may still be publishing or the URL may be incorrect.');
+        document.querySelector('meta[property="og:url"]')?.setAttribute('content', 'https://sec.21ideas.org/en/404/');
+        document.querySelector('link[rel="alternate"][type="application/rss+xml"]')?.setAttribute('href', 'https://sec.21ideas.org/en/rss.xml');
+        const nav = document.querySelector('.nav');
+        if (nav) nav.innerHTML = '<a href="/en/">Overview</a><a href="/en/feed">Incidents</a><a href="/en/about">About</a><a href="/en/sources">Sources</a><a href="/en/support">Support</a><a href="/">Русский</a>';
+        const foot = document.querySelector('.foot');
+        if (foot) foot.innerHTML = '<span>Bitcoin Security Watcher · by <a href="https://21ideas.org">21ideas</a></span><span><a href="/en/rss.xml">RSS</a> · <a href="/en/about">about</a> · <a href="/en/support">support</a></span>';
+        document.querySelector('[data-theme-toggle]')?.setAttribute('data-locale', 'en');
+        document.querySelector('[data-theme-toggle]')?.setAttribute('aria-label', 'Change theme');
+      } else {
+        document.querySelector('[data-en-404]')?.remove();
+      }
+    });
+  </script>
   <script>
-    document.querySelector('[data-reload]')?.addEventListener('click', () => location.reload());
+    document.querySelectorAll('[data-reload]').forEach((button) => button.addEventListener('click', () => location.reload()));
   </script>
 </Base>

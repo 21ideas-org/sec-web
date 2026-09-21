@@ -32,6 +32,8 @@ export const dateLong = (d: Date) =>
     .replace(/\s*г\.$/, '');
 export const dateDayEn = (d: Date) =>
   d.toLocaleDateString('en-GB', { ...UTC, day: '2-digit', month: 'short' });
+export const dateShortEn = (d: Date) =>
+  d.toLocaleDateString('en-GB', { ...UTC, day: '2-digit', month: 'short', year: 'numeric' });
 export const dateLongEn = (d: Date) =>
   d.toLocaleDateString('en-GB', { ...UTC, day: 'numeric', month: 'long', year: 'numeric' });
 

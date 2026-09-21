@@ -24,9 +24,9 @@ const locale = props.locale ?? 'ru';
   </head>
   <body>
     <div class="shell">
-      {locale === 'ru' && <Nav />}
+      <Nav locale={locale} />
       <slot />
-      {locale === 'ru' && <Footer />}
+      <Footer locale={locale} />
     </div>
   </body>
 </html>

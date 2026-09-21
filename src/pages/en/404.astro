@@ -1,0 +1,16 @@
+---
+import Base from '../../layouts/Base.astro';
+import { SITE_NAME } from '../../consts.ts';
+---
+<Base locale="en" title={`Page unavailable · ${SITE_NAME}`} description="The page may still be publishing or the URL may be incorrect.">
+  <section class="sec">
+    <div class="eyebrow">Page unavailable</div>
+    <article class="card panel" style="--accent: var(--warn-fg)">
+      <h2>This page may still be publishing</h2>
+      <p>If you followed a recent alert link, try refreshing in a minute. The URL may also contain a typo.</p>
+      <p>Browse the <a href="/en/feed">English incident feed</a> or the <a href="/feed">Russian history</a>.</p>
+      <button class="go" type="button" data-reload style="background:none;border:0;padding:0;font:inherit;color:var(--sig);cursor:pointer;border-bottom:1px solid var(--sig)">Refresh page</button>
+    </article>
+  </section>
+  <script>document.querySelector('[data-reload]')?.addEventListener('click', () => location.reload());</script>
+</Base>

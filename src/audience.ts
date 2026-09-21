@@ -19,6 +19,12 @@ export const AUDIENCE_LABELS: Record<AudienceId, string> = {
   developers: 'Разработчики',
   merchant_infra: 'Мерчанты',
 };
+export const AUDIENCE_LABELS_EN: Record<AudienceId, string> = {
+  holders: 'Holders',
+  node_operators: 'Node operators',
+  developers: 'Developers',
+  merchant_infra: 'Merchants and infrastructure',
+};
 
 const ALIASES = new Map<string, AudienceId>([
   ['holders', 'holders'],
@@ -49,7 +55,7 @@ export function normalizeAudience(value: string): AudienceId | null {
  * Website reader boundary for canonical IDs and explicit historical aliases.
  * Unknown values remain literal; callers must render the returned strings escaped.
  */
-export function displayAudience(values: readonly string[]): AudienceDisplay[] {
+export function displayAudience(values: readonly string[], locale: 'ru' | 'en' = 'ru'): AudienceDisplay[] {
   const known = new Set<AudienceId>();
   const neutral: AudienceDisplay[] = [];
   const neutralLabels = new Set<string>();
@@ -61,7 +67,7 @@ export function displayAudience(values: readonly string[]): AudienceDisplay[] {
       continue;
     }
 
-    const label = BROAD.has(value) ? BROAD_LABEL : value;
+    const label = BROAD.has(value) ? (locale === 'en' ? 'All — legacy category' : BROAD_LABEL) : value;
     if (!neutralLabels.has(label)) {
       neutral.push({ id: null, label });
       neutralLabels.add(label);
@@ -69,7 +75,7 @@ export function displayAudience(values: readonly string[]): AudienceDisplay[] {
   }
 
   return [
-    ...AUDIENCE_IDS.filter((id) => known.has(id)).map((id) => ({ id, label: AUDIENCE_LABELS[id] })),
+    ...AUDIENCE_IDS.filter((id) => known.has(id)).map((id) => ({ id, label: (locale === 'en' ? AUDIENCE_LABELS_EN : AUDIENCE_LABELS)[id] })),
     ...neutral,
   ];
 }
