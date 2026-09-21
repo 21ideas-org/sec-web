@@ -20,7 +20,7 @@ export const AUDIENCE_LABELS: Record<AudienceId, string> = {
   merchant_infra: 'Мерчанты',
 };
 export const AUDIENCE_LABELS_EN: Record<AudienceId, string> = {
-  holders: 'Holders',
+  holders: 'Hodlers',
   node_operators: 'Node operators',
   developers: 'Developers',
   merchant_infra: 'Merchants and infrastructure',

@@ -15,9 +15,9 @@ This draft does not approve deployment or historical English incident roots.
 | Эксплуатация подтверждена | Exploitation confirmed | Verified status only |
 | Патча нет | No patch available | Verified status only |
 | Патч есть | Patch available | Availability only, not safety |
-| Что делать | What to do | Frozen alert action |
+| Что делать | Actions to take | Frozen alert action; does not imply every step is mandatory |
 | Источник / Источники | Source / Sources | Verified links only |
-| Ходлеры | Holders | Canonical `holders` ID |
+| Ходлеры | Hodlers | Canonical `holders` ID |
 | Операторы нод | Node operators | Canonical `node_operators` ID |
 | Разработчики | Developers | Canonical `developers` ID |
 | Мерчанты | Merchants and infrastructure | Canonical `merchant_infra` ID |

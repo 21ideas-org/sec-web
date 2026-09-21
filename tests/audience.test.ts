@@ -5,7 +5,7 @@ import { displayAudience } from '../src/audience.ts';
 
 test('English audience labels retain canonical IDs and unknowns stay neutral', () => {
   assert.deepEqual(displayAudience(['developers', 'holders', 'future_audience'], 'en'), [
-    { id: 'holders', label: 'Holders' },
+    { id: 'holders', label: 'Hodlers' },
     { id: 'developers', label: 'Developers' },
     { id: null, label: 'future_audience' },
   ]);

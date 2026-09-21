@@ -14,7 +14,7 @@ function content(entry: EnIncident): string {
   return [
     d.hijacked && `<p><strong>The official ${esc(d.vendor ?? 'vendor')} account appears to be compromised.</strong><br>Do not follow links from its posts or enter your seed anywhere.</p>`,
     d.description && `<p>${esc(d.description)}</p>`,
-    d.action && `<p><strong>What to do:</strong> ${esc(d.action)}</p>`,
+    d.action && `<p><strong>Actions to take:</strong> ${esc(d.action)}</p>`,
     links.length === 1 && `<p><strong>Source:</strong> <a href="${esc(links[0]!.url)}">${esc(links[0]!.label)}</a></p>`,
     links.length > 1 && `<p><strong>Sources:</strong></p><ul>${links.map((link) => `<li><a href="${esc(link.url)}">${esc(link.label)}</a></li>`).join('')}</ul>`,
   ].filter(Boolean).join('\n');

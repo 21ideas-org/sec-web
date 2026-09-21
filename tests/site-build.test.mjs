@@ -268,9 +268,14 @@ test('English routes stay honest with an empty corpus and a paired artifact', as
     assert.equal(build.status, 0, `${build.stdout}\n${build.stderr}`);
     const emptyFeed = await text(join(site, 'dist/en/feed/index.html'));
     const emptyHome = await text(join(site, 'dist/en/index.html'));
+    const ruHome = await text(join(site, 'dist/index.html'));
     const emptyRss = await text(join(site, 'dist/en/rss.xml'));
     assert.match(emptyFeed, /No English alerts yet/);
     assert.match(emptyHome, /No English alerts yet/);
+    assert.match(emptyHome, /data-language-switch[^>]*href="\/"[^>]*aria-label="Switch to Russian"/);
+    assert.match(ruHome, /data-language-switch[^>]*href="\/en\/"[^>]*aria-label="Switch to English"/);
+    assert.match(emptyHome, /<svg class="icon icon-world"[^>]*stroke-width="2"/);
+    assert.doesNotMatch(emptyHome.match(/<nav class="nav">([\s\S]*?)<\/nav>/)?.[1] ?? '', /Русский|English/);
     assert.doesNotMatch(emptyRss, /<item>/);
     assert.doesNotMatch(emptyFeed, /\/en\/incidents\/aqua-/);
     assert.equal(existsSync(join(site, 'dist/en/incidents/blink-2026-09-19-security-alert/index.html')), false);
@@ -325,7 +330,7 @@ test('English routes stay honest with an empty corpus and a paired artifact', as
     const feed = await text(join(site, 'dist/en/feed/index.html'));
     const rss = await text(join(site, 'dist/en/rss.xml'));
     assert.match(enPage, /hreflang="ru"/);
-    assert.match(enPage, /What to do/);
+    assert.match(enPage, /Actions to take/);
     assert.match(enPage, /<strong>Source:<\/strong>/);
     assert.doesNotMatch(enPage, /Что делать|Источник:/);
     assert.match(hijackPage, /appears to be compromised/);
@@ -335,7 +340,8 @@ test('English routes stay honest with an empty corpus and a paired artifact', as
     assert.match(feed, /\/en\/feed\?audience=holders/);
     assert.match(rss, /<language>en<\/language>/);
     assert.match(rss, /<channel>.*<link>https:\/\/sec\.21ideas\.org\/en\/<\/link>/s);
-    assert.match(rss, /<category>Holders<\/category>/);
+    assert.match(rss, /<category>Hodlers<\/category>/);
+    assert.match(rss, /&lt;strong&gt;Actions to take:&lt;\/strong&gt;/);
     assert.doesNotMatch(rssItemFor(rss, hijackId, 'en').item, /coldcard\.com\/security/);
     assert.doesNotMatch(rssItemFor(rss, hijackId, 'en').item, /<category>Patch available<\/category>|<category>No patch available<\/category>/);
     assert.match(rss, /<category>Exploitation confirmed<\/category>/);
