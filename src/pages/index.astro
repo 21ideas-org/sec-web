@@ -4,7 +4,7 @@ import Base from '../layouts/Base.astro';
 import Counter from '../components/Counter.astro';
 import Row from '../components/Row.astro';
 import Urgency from '../components/Urgency.astro';
-import { SITE_NAME, SITE_DESCRIPTION } from '../consts.ts';
+import { SITE_NAME, SITE_DESCRIPTION, TELEGRAM_URL } from '../consts.ts';
 import { allIncidents, own, archive, counterAnchor, dateShort, stats } from '../lib.ts';
 import { displayUrgency, urgencyAccent } from '../status.ts';
 
@@ -50,6 +50,14 @@ const latestUrgency = latest ? displayUrgency(latest.data) : [];
       </section>
     )
   }
+
+  <section class="subscribe panel" aria-label="Подписка на оповещения">
+    <p>Получать оповещения об анонсах можно в Telegram или по RSS.</p>
+    <div class="subscribe-actions">
+      <a class="subscribe-btn subscribe-btn-primary" href={TELEGRAM_URL} rel="noopener">telegram <span aria-hidden="true">→</span></a>
+      <a class="subscribe-btn" href="/rss.xml">rss <span aria-hidden="true">→</span></a>
+    </div>
+  </section>
 
   {
     rest.length > 0 && (

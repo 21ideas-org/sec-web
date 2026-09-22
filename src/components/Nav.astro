@@ -24,8 +24,8 @@ const here = (p: string) => (path === p || (p !== '/' && path.startsWith(p)) ? '
 <nav class="nav">
   <a href="/" aria-current={here('/')}>Сводка</a>
   <a href="/feed" aria-current={here('/feed')}>Инциденты</a>
-  <a href="/about" aria-current={here('/about')}>О проекте</a>
   <a href="/support" aria-current={here('/support')}>Поддержать</a>
+  <a href="/about" aria-current={here('/about')}>О проекте</a>
 </nav>
 
 <script>
