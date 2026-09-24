@@ -57,7 +57,7 @@ Issue обязан содержать применимые решения websit
   своего `urgency[]` значения, включая unknown. Active/observed означают подтверждённую
   эксплуатацию; partial не означает отсутствие патча. Conflicting patch tags оба
   опускаются с безопасным build diagnostic, exploitation сохраняется.
-- Приоритет card: exploitation red, patch unavailable yellow, patch available green,
+- Приоритет card/row: exploitation red, patch unavailable yellow, patch available green,
   иначе neutral. Green означает только наличие патча. Совместимые факты показаны вместе;
   пустой набор не означает безопасность. Не добавлять статусную статистику или фильтры.
 - `audience[]` остаётся free-string списком; reader нормализует только явные aliases.
