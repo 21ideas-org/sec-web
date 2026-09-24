@@ -27,20 +27,21 @@ test('conflicting patch claims are both omitted while exploitation survives', ()
   assert.deepEqual(displayUrgency({ urgency: ['#патч_есть', '#патча_нет'] }), []);
 });
 
-test('each fact combination has the agreed accent and OG priority with textual labels', async () => {
-  const { urgencyAccent, urgencyClass, ogFor, statusDiagnostic } = await import('../src/status.ts');
-  for (const [statusTags, accent, image] of [
-    [[], 'dim', 'default'],
-    [['patch_available'], 'ok-fg', 'patched'],
-    [['patch_unavailable'], 'warn-fg', 'unpatched'],
-    [['exploitation_confirmed'], 'crit-fg', 'critical'],
-    [['patch_available', 'exploitation_confirmed'], 'crit-fg', 'critical'],
-    [['patch_unavailable', 'exploitation_confirmed'], 'crit-fg', 'critical'],
-    [['patch_available', 'patch_unavailable'], 'dim', 'default'],
+test('each fact combination has the agreed accent priority with textual labels and no OG choice', async () => {
+  const status = await import('../src/status.ts');
+  const { urgencyAccent, urgencyClass, statusDiagnostic } = status;
+  assert.ok(!('ogFor' in status), 'OG image must not depend on status facts');
+  for (const [statusTags, accent] of [
+    [[], 'dim'],
+    [['patch_available'], 'ok-fg'],
+    [['patch_unavailable'], 'warn-fg'],
+    [['exploitation_confirmed'], 'crit-fg'],
+    [['patch_available', 'exploitation_confirmed'], 'crit-fg'],
+    [['patch_unavailable', 'exploitation_confirmed'], 'crit-fg'],
+    [['patch_available', 'patch_unavailable'], 'dim'],
   ] as const) {
     const labels = displayUrgency({ statusTags });
     assert.equal(urgencyAccent(labels), `var(--${accent})`);
-    assert.equal(ogFor(labels), `/og/${image}.png`);
     assert.ok(labels.every((label) => urgencyClass(label) !== 'u-neutral'));
   }
   assert.equal(urgencyClass('future'), 'u-neutral');

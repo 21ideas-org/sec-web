@@ -59,6 +59,38 @@ const EN_V1_SHA256 = '19a7306f50bdd9d62d6fa37f523bf69b7db3325658fdfe3114cc9dfe99
 /** Бейдж известной аудитории — всегда ссылка в отфильтрованную ленту. */
 const audienceLink = (id, label) => `<a class="aud aud-link" href="/feed?audience=${id}">${label}</a>`;
 const legacyBadge = (label) => `<span class="aud aud-badge">${label}</span>`;
+/** Одна статичная OG-карточка на локаль; статусные карточки кодом не выбираются. */
+const RU_OG = 'https://sec.21ideas.org/og/ru.png';
+const EN_OG = 'https://sec.21ideas.org/og/en.png';
+const LEGACY_OG = ['critical', 'unpatched', 'patched', 'default'];
+const OG_ALT = {
+  [RU_OG]: 'Карточка Bitcoin Security Watcher: проект, следящий за критическими анонсами в Биткоине.',
+  [EN_OG]: 'Bitcoin Security Watcher Open Graph card: Critical Bitcoin Alerts.',
+};
+// Все og:* и twitter:* meta страницы как [key, content].
+const shareMeta = (page) => [...page.matchAll(/<meta (?:property|name)="((?:og|twitter):[^"]*)" content="([^"]*)"/g)]
+  .map(([, key, content]) => [key, content]);
+const metaValue = (page, key) => {
+  const values = shareMeta(page).filter(([name]) => name === key).map(([, content]) => content);
+  assert.equal(values.length, 1, `page must declare exactly one ${key}`);
+  return values[0];
+};
+const assertLocaleOg = (page, expected, name) => {
+  assert.equal(metaValue(page, 'og:image'), expected, name);
+  assert.equal(metaValue(page, 'og:image:width'), '1200', name);
+  assert.equal(metaValue(page, 'og:image:height'), '630', name);
+  assert.equal(metaValue(page, 'og:image:alt'), OG_ALT[expected], name);
+  assert.equal(metaValue(page, 'twitter:image'), expected, name);
+  assert.equal(metaValue(page, 'twitter:card'), 'summary_large_image', name);
+  for (const legacy of LEGACY_OG) assert.ok(!page.includes(`/og/${legacy}.png`), `${name} references ${legacy}.png`);
+  if (expected === EN_OG) {
+    assert.ok(!page.includes('/og/ru.png'), `${name} references the Russian card`);
+    assert.equal(metaValue(page, 'og:site_name'), 'Bitcoin Security Watcher', name);
+    for (const [key, content] of shareMeta(page)) {
+      assert.doesNotMatch(content, /\p{Script=Cyrillic}/u, `${name} ${key} contains Cyrillic`);
+    }
+  }
+};
 
 const INCIDENT_IDS = [
   'btcpay-2026-08-26-cln-routes-off',
@@ -458,7 +490,10 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
     assert.ok(!rootPage.includes('#патча_нет'));
     assert.ok(!updatePage.includes('#патч_частичный'));
     assert.ok(!updatePage.includes('class="u u-warn"'));
-    assert.ok(updatePage.includes('/og/critical.png'));
+    // Exploitation colors the status UI but no longer chooses the preview card.
+    assertLocaleOg(updatePage, RU_OG, 'update');
+    assertLocaleOg(rootPage, RU_OG, 'root');
+    assertLocaleOg(index, RU_OG, 'index');
 
     const hijack = rootPage.match(/<aside class="hijack[^>]*>([\s\S]*?)<\/aside>/);
     assert.ok(hijack, 'trusted hijack banner is missing');
@@ -615,7 +650,7 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
       assert.ok(item.includes('<pubDate>Sat, 05 Sep 2026 23:59:59 GMT</pubDate>'));
       assert.ok(page.includes('5 сентября 2026'));
       assert.ok(page.includes(`content="${canonical}"`));
-      assert.ok(page.includes(`/og/${tags.length > 0 ? 'critical' : 'default'}.png`));
+      assertLocaleOg(page, RU_OG, name);
       for (const output of [page, rssContent(item)]) {
         assert.ok(output.includes(data.description));
         assert.ok(output.includes(data.action));
@@ -725,17 +760,17 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
 });
 
 // Synthetic reader cases only; these are separate from the exact producer evidence above.
-test('synthetic optional facts share labels and accents across cards, rows, pages, RSS and OG', async () => {
+test('synthetic optional facts share labels and accents across cards, rows, pages and RSS with one locale OG', async () => {
   const cases = [
-    ['empty', [], [], 'dim', 'default'],
-    ['unknown', ['future_status'], [], 'dim', 'default'],
-    ['exploited', ['exploitation_confirmed'], ['Эксплуатация подтверждена'], 'crit-fg', 'critical'],
-    ['unavailable', ['patch_unavailable'], ['Патча нет'], 'warn-fg', 'unpatched'],
-    ['available', ['patch_available'], ['Патч есть'], 'ok-fg', 'patched'],
-    ['exploited-unavailable', ['patch_unavailable', 'exploitation_confirmed'], ['Эксплуатация подтверждена', 'Патча нет'], 'crit-fg', 'critical'],
-    ['exploited-available', ['patch_available', 'exploitation_confirmed', 'patch_available'], ['Эксплуатация подтверждена', 'Патч есть'], 'crit-fg', 'critical'],
-    ['conflict', ['patch_available', 'patch_unavailable'], [], 'dim', 'default'],
-    ['exploited-conflict', ['patch_available', 'exploitation_confirmed', 'patch_unavailable'], ['Эксплуатация подтверждена'], 'crit-fg', 'critical'],
+    ['empty', [], [], 'dim'],
+    ['unknown', ['future_status'], [], 'dim'],
+    ['exploited', ['exploitation_confirmed'], ['Эксплуатация подтверждена'], 'crit-fg'],
+    ['unavailable', ['patch_unavailable'], ['Патча нет'], 'warn-fg'],
+    ['available', ['patch_available'], ['Патч есть'], 'ok-fg'],
+    ['exploited-unavailable', ['patch_unavailable', 'exploitation_confirmed'], ['Эксплуатация подтверждена', 'Патча нет'], 'crit-fg'],
+    ['exploited-available', ['patch_available', 'exploitation_confirmed', 'patch_available'], ['Эксплуатация подтверждена', 'Патч есть'], 'crit-fg'],
+    ['conflict', ['patch_available', 'patch_unavailable'], [], 'dim'],
+    ['exploited-conflict', ['patch_available', 'exploitation_confirmed', 'patch_unavailable'], ['Эксплуатация подтверждена'], 'crit-fg'],
   ];
   await withTemporaryDirectory(async (directory) => {
     const site = join(directory, 'site');
@@ -767,7 +802,7 @@ links: [{label: Source, url: "https://source.example/advice"}]
     const card = index.match(/<article class="card panel"[\s\S]*?<\/article>/)?.[0];
     assert.ok(card);
     for (const output of [index, feed, rss]) assert.ok(!output.includes('Synthetic draft'));
-    for (const [name, , labels, accent, og] of cases) {
+    for (const [name, , labels, accent] of cases) {
       const page = await text(join(site, `dist/incidents/synthetic-${name}/index.html`));
       const row = rowFor(feed, `/incidents/synthetic-${name}/`);
       const { item } = rssItemFor(rss, `synthetic-${name}`);
@@ -777,7 +812,7 @@ links: [{label: Source, url: "https://source.example/advice"}]
         }
         assert.equal(item.split(`<category>${label}</category>`).length - 1, labels.includes(label) ? 1 : 0, name + label);
       }
-      assert.ok(page.includes(`/og/${og}.png`), name);
+      assertLocaleOg(page, RU_OG, name);
       // The same audience badge links to the same filtered feed from page and row.
       assert.ok(page.includes(audienceLink('node_operators', 'Операторы нод')), name);
       assert.ok(row.includes(audienceLink('node_operators', 'Операторы нод')), name);
@@ -803,11 +838,11 @@ links: [{label: Source, url: "https://source.example/advice"}]
 // differs from publication time: a frozen legacy update can arrive after new posts.
 test('mixed-format history keeps each publication own facts and frozen identity', async () => {
   const cases = [
-    ['legacy-root', '2034-09-01', null, null, ['Эксплуатация подтверждена'], 'critical'],
-    ['new-tagged', '2034-09-02', 'legacy-root', ['patch_available'], ['Патч есть'], 'patched'],
-    ['new-empty', '2034-09-06', 'legacy-root', [], [], 'default'],
-    ['new-root', '2034-09-03', null, ['patch_unavailable'], ['Патча нет'], 'unpatched'],
-    ['legacy-queued', '2034-09-05', 'new-root', null, ['Эксплуатация подтверждена'], 'critical'],
+    ['legacy-root', '2034-09-01', null, null, ['Эксплуатация подтверждена']],
+    ['new-tagged', '2034-09-02', 'legacy-root', ['patch_available'], ['Патч есть']],
+    ['new-empty', '2034-09-06', 'legacy-root', [], []],
+    ['new-root', '2034-09-03', null, ['patch_unavailable'], ['Патча нет']],
+    ['legacy-queued', '2034-09-05', 'new-root', null, ['Эксплуатация подтверждена']],
   ];
   await withTemporaryDirectory(async (directory) => {
     const site = join(directory, 'site');
@@ -845,13 +880,13 @@ links: [{label: Source, url: "https://source.example/advice"}]
     assert.ok(index.includes(`<span>за год<b>${recentRoots.length}</b></span>`));
     assert.ok(index.includes(`<span>всего<b>${own.length}</b></span>`));
     for (const output of [index, feed, rss]) assert.doesNotMatch(output, /Без патча|без патча/);
-    for (const [name, date, parent, , labels, og] of cases) {
+    for (const [name, date, parent, , labels] of cases) {
       const id = `mixed-${name}`;
       const page = await text(join(site, `dist/incidents/${id}/index.html`));
       const { canonical, item } = rssItemFor(rss, id);
       const row = rowFor(feed, `/incidents/${id}/`);
       assert.ok(page.includes(`content="${canonical}"`));
-      assert.ok(page.includes(`/og/${og}.png`));
+      assertLocaleOg(page, RU_OG, id);
       assert.ok(page.includes(`${Number(date.slice(-2))} сентября 2034`));
       assert.ok(item.includes(`<guid isPermaLink="true">${canonical}</guid>`));
       assert.ok(item.includes(`<pubDate>${new Date(`${date}T23:59:59.000Z`).toUTCString()}</pubDate>`));
@@ -984,6 +1019,9 @@ test('English and Russian collections isolate equal basenames and emit only real
     ));
     assert.ok(ruRoute.includes('rel="alternate" type="application/rss+xml"'));
     assert.ok(!enRoute.includes('type="application/rss+xml"'));
+    // Same basename and the same status facts; each locale still shows only its own card.
+    assertLocaleOg(ruRoute, RU_OG, 'RU paired route');
+    assertLocaleOg(enRoute, EN_OG, 'EN paired route');
 
     await writeFile(join(site, 'src/content/en/incidents', `${EN_V1_FIXTURE_ID}.md`), '');
     build = buildSite(site);
@@ -1002,6 +1040,14 @@ test('English and Russian collections isolate equal basenames and emit only real
     assert.deepEqual(enRoutes, []);
     const ruOnly = await text(join(site, 'dist/incidents/blink-2026-09-19-security-alert/index.html'));
     assert.ok(!ruOnly.includes('hreflang="en"'));
+    for (const route of ['index.html', 'feed/index.html', 'about/index.html', 'sources/index.html', 'support/index.html', '404.html']) {
+      assertLocaleOg(await text(join(site, 'dist', route)), RU_OG, route);
+    }
+    assertLocaleOg(ruOnly, RU_OG, 'RU-only incident');
+    // Legacy cards stay at their URLs for previews that were already scraped.
+    for (const file of [...LEGACY_OG, 'ru', 'en']) {
+      assert.equal(existsSync(join(site, 'dist/og', `${file}.png`)), true, `${file}.png`);
+    }
   });
 });
 
@@ -1082,6 +1128,7 @@ sourceUrl: "https://example.com/history"
     }
     const trueOrphan = await text(join(site, 'dist/en/incidents/fixture-en-true-orphan/index.html'));
     assert.ok(trueOrphan.includes('Update to incident.'));
+    assertLocaleOg(trueOrphan, EN_OG, 'EN true orphan');
     assert.ok(!trueOrphan.includes('href="/incidents/fixture-missing-in-both-locales/"'));
     const externalRootUpdate = await text(join(site, 'dist/en/incidents/fixture-en-external-root-update/index.html'));
     assert.ok(externalRootUpdate.includes('Update to incident.'));
@@ -1114,6 +1161,7 @@ sourceUrl: "https://example.com/history"
       assert.ok(page.includes('data-incident-date="2035-12-31T23:59:59.000Z"'), id);
       for (const member of ids) assert.ok(page.includes(member === id ? `>${titles.get(member)}<` : `/en/incidents/${member}/`), `${id}: ${member}`);
       assert.ok(!page.includes('future_audience'));
+      assertLocaleOg(page, EN_OG, id);
     }
   });
 });
@@ -1197,6 +1245,7 @@ test('English schema rejects malformed or private artifact fields while unknown 
     const page = await text(join(site, 'dist/en/incidents/fixture-neutral-en/index.html'));
     assert.ok(!page.includes('future_status'));
     assert.ok(!page.includes('future_audience'));
+    assertLocaleOg(page, EN_OG, 'EN unknown-status page');
     for (const privateValue of ['reason', 'private model reasoning', 'rawModelUrl', 'private evidence']) {
       assert.ok(!page.includes(privateValue));
     }

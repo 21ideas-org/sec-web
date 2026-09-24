@@ -8,9 +8,9 @@ export interface StatusPresentationInput {
 }
 
 const FACTS = [
-  { id: 'exploitation_confirmed', label: 'Эксплуатация подтверждена', className: 'u-crit', accent: 'var(--crit-fg)', og: '/og/critical.png' },
-  { id: 'patch_unavailable', label: 'Патча нет', className: 'u-warn', accent: 'var(--warn-fg)', og: '/og/unpatched.png' },
-  { id: 'patch_available', label: 'Патч есть', className: 'u-ok', accent: 'var(--ok-fg)', og: '/og/patched.png' },
+  { id: 'exploitation_confirmed', label: 'Эксплуатация подтверждена', className: 'u-crit', accent: 'var(--crit-fg)' },
+  { id: 'patch_unavailable', label: 'Патча нет', className: 'u-warn', accent: 'var(--warn-fg)' },
+  { id: 'patch_available', label: 'Патч есть', className: 'u-ok', accent: 'var(--ok-fg)' },
 ] as const;
 
 /** Presence, including [], owns all facts. Legacy precedence remains per axis. */
@@ -56,8 +56,4 @@ export function urgencyClass(label: string): string {
 /** Green means only a released patch, never safety or absence of exploitation. */
 export function urgencyAccent(labels: readonly string[] = []): string {
   return FACTS.find((fact) => labels.includes(fact.label))?.accent ?? 'var(--dim)';
-}
-
-export function ogFor(labels: readonly string[] = []): string {
-  return FACTS.find((fact) => labels.includes(fact.label))?.og ?? '/og/default.png';
 }
