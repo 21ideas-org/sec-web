@@ -6,7 +6,7 @@ import Base from '../../layouts/Base.astro';
 import Urgency from '../../components/Urgency.astro';
 import Thread from '../../components/Thread.astro';
 import { allEnIncidents, allIncidents, dateLong, keepFlags, own, thread, threadStart } from '../../lib.ts';
-import { displayUrgency, ogFor } from '../../status.ts';
+import { displayUrgency } from '../../status.ts';
 import { displaySourceLinks } from '../../source-links.ts';
 
 export async function getStaticPaths() {
@@ -41,7 +41,6 @@ const sourceLinks = displaySourceLinks(d.links);
 <Base
   title={d.title}
   description={d.description}
-  image={ogFor(urgency)}
   type="article"
   pubDate={d.pubDate}
   counterpartUrl={counterpartUrl}

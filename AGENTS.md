@@ -57,7 +57,7 @@ Issue обязан содержать применимые решения websit
   своего `urgency[]` значения, включая unknown. Active/observed означают подтверждённую
   эксплуатацию; partial не означает отсутствие патча. Conflicting patch tags оба
   опускаются с безопасным build diagnostic, exploitation сохраняется.
-- Приоритет card/OG: exploitation red, patch unavailable yellow, patch available green,
+- Приоритет card/row: exploitation red, patch unavailable yellow, patch available green,
   иначе neutral. Green означает только наличие патча. Совместимые факты показаны вместе;
   пустой набор не означает безопасность. Не добавлять статусную статистику или фильтры.
 - `audience[]` остаётся free-string списком; reader нормализует только явные aliases.
@@ -98,10 +98,12 @@ Issue обязан содержать применимые решения websit
 
 ## Rendering invariants
 
-- Missing/unknown status не создаёт публичных claims; без известных фактов card/OG neutral.
+- Missing/unknown status не создаёт публичных claims; без известных фактов card neutral.
   Audience отображается независимо по собственному контракту.
-- OG images are static assets selected by code. Не добавлять per-incident generation в
-  deploy critical path.
+- OG — одна статичная карточка на локаль: `public/og/ru.png` и `public/og/en.png`,
+  растеризованные `npm run og` из `scripts/og/<locale>.svg`. Status её не выбирает; legacy
+  `critical/unpatched/patched/default.png` остаются только ради старых превью. Не добавлять
+  per-incident generation в deploy critical path.
 - Dates форматируются в UTC, независимо от timezone builder.
 - Command-line flags в prose не переносятся по внутреннему hyphen (`keepFlags`).
 - Link preview/third-party assets не добавляются в critical alert path.
