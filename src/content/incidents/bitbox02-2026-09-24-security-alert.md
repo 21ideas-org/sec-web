@@ -14,4 +14,6 @@
 "links":
   - "label": "blog.bitbox.swiss"
     "url": "https://blog.bitbox.swiss/en/email-address-exposure-at-newsletter-provider-brevo/"
+  - "label": "x.com - BitBoxSwiss"
+    "url": "https://x.com/BitBoxSwiss/status/2103138158363730373"
 ---
