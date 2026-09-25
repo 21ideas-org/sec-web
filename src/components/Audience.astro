@@ -2,9 +2,9 @@
 import { displayAudience } from '../audience.ts';
 import { audienceHref } from '../audience-filter.ts';
 
-interface Props { values: readonly string[]; }
-const { values } = Astro.props;
-const items = displayAudience(values);
+interface Props { values: readonly string[]; locale?: 'ru' | 'en'; }
+const { values, locale = 'ru' } = Astro.props;
+const items = displayAudience(values, locale);
 ---
 {/* A known audience is always a link into the filtered feed, wherever the badge
     appears. Legacy and unknown values stay plain: they have no canonical ID, and
@@ -13,7 +13,7 @@ const items = displayAudience(values);
 {
   items.map((a) =>
     a.id ? (
-      <a class="aud aud-link" href={audienceHref(a.id)}>{a.label}</a>
+      <a class="aud aud-link" href={audienceHref(a.id, locale)}>{a.label}</a>
     ) : (
       <span class="aud aud-badge">{a.label}</span>
     ),

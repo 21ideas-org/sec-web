@@ -1,7 +1,10 @@
 ---
 import { SITE_NAME, SITE_TITLE } from '../consts.ts';
+interface Props { locale?: 'ru' | 'en'; }
+const { locale = 'ru' } = Astro.props;
+const prefix = locale === 'en' ? '/en' : '';
 ---
 <footer class="foot">
   <span><span class="fname">{SITE_NAME}</span><span class="fshort">{SITE_TITLE}</span> · by <a href="https://21ideas.org">21ideas</a></span>
-  <span><a href="/rss.xml">RSS</a> · <a href="/about">о проекте</a> · <a href="/support">поддержать</a></span>
+  <span><a href={`${prefix}/rss.xml`}>RSS</a> · <a href={`${prefix}/about`}>{locale === 'en' ? 'about' : 'о проекте'}</a> · <a href={`${prefix}/support`}>{locale === 'en' ? 'support' : 'поддержать'}</a></span>
 </footer>

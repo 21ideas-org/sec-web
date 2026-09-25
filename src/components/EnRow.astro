@@ -1,0 +1,23 @@
+---
+import Audience from './Audience.astro';
+import Urgency from './Urgency.astro';
+import { dateShortEn } from '../lib.ts';
+import { displayUrgency } from '../status.ts';
+import { postAudienceIds } from '../audience-filter.ts';
+import type { EnIncident } from '../en-incidents.ts';
+interface Props { entry: EnIncident; }
+const { entry } = Astro.props;
+const d = entry.data;
+---
+<div class="row" data-audience={postAudienceIds(d.audience).join(' ')}>
+  <span class="dt">{dateShortEn(d.pubDate)}</span>
+  <div>
+    <div class="ti">
+      {d.parent && <span class="upd" title="Incident update">↳</span>}
+      <a href={`/en/incidents/${entry.id}/`}>{d.title}</a>
+    </div>
+    {d.description && <div class="de">{d.description}</div>}
+    {d.audience.length > 0 && <div class="row-aud"><Audience values={d.audience} locale="en" /></div>}
+  </div>
+  <span class="rt"><Urgency tags={displayUrgency(d, 'en')} /></span>
+</div>

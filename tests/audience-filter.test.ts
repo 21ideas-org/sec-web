@@ -19,6 +19,10 @@ import {
   triggerLabel,
 } from '../src/audience-filter.ts';
 
+test('English audience links preserve the shared filter ID', () => {
+  assert.equal(audienceHref('holders', 'en'), '/en/feed?audience=holders');
+});
+
 const query = (search: string | URLSearchParams) => parseAudienceQuery(search);
 const post = (...audience: string[]) => ({ id: audience.join('+') || 'none', audience });
 

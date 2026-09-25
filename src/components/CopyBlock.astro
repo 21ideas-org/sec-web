@@ -10,13 +10,14 @@
 interface Props {
   label: string;
   value: string;
+  locale?: 'ru' | 'en';
 }
-const { label, value } = Astro.props;
+const { label, value, locale = 'ru' } = Astro.props;
 ---
 <div class="code-wrap">
   <div class="code-toolbar">
     <span class="code-lang">{label}</span>
-    <button type="button" class="code-copy" aria-live="polite">копировать</button>
+    <button type="button" class="code-copy" data-locale={locale} aria-live="polite">{locale === 'en' ? 'copy' : 'копировать'}</button>
   </div>
   <pre class="code-block"><code>{value}</code></pre>
 </div>
@@ -30,10 +31,11 @@ const { label, value } = Astro.props;
     const btn = target.closest('.code-copy');
     if (!(btn instanceof HTMLButtonElement)) return;
     const pre = btn.closest('.code-wrap')?.querySelector('pre');
+    const en = btn.dataset.locale === 'en';
     if (!pre) return;
     const restore = () => {
       btn.removeAttribute('data-state');
-      btn.textContent = 'копировать';
+      btn.textContent = en ? 'copy' : 'копировать';
     };
     const say = (state: string, text: string) => {
       btn.dataset.state = state;
@@ -42,7 +44,7 @@ const { label, value } = Astro.props;
     };
     navigator.clipboard
       .writeText(pre.innerText)
-      .then(() => say('copied', 'скопировано'))
-      .catch(() => say('error', 'не вышло'));
+      .then(() => say('copied', en ? 'copied' : 'скопировано'))
+      .catch(() => say('error', en ? 'failed' : 'не вышло'));
   });
 </script>

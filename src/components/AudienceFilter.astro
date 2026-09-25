@@ -7,11 +7,19 @@ import {
   FILTER_ACCESSIBLE_NAME,
   SELECT_ALL_LABEL,
 } from '../audience-filter.ts';
+import { AUDIENCE_LABELS_EN } from '../audience.ts';
+interface Props { locale?: 'ru' | 'en'; }
+const { locale = 'ru' } = Astro.props;
+const en = locale === 'en';
+const labels = en ? {
+  all: 'All audiences', apply: 'Apply', selectAll: 'All', name: 'Audience filter',
+  hint: 'Select at least one audience',
+} : { all: ALL_AUDIENCES_LABEL, apply: APPLY_LABEL, selectAll: SELECT_ALL_LABEL, name: FILTER_ACCESSIBLE_NAME, hint: EMPTY_DRAFT_MESSAGE };
 ---
 {/* ⚠️ Обёртка скрыта в разметке и открывается скриптом. Фильтрация идёт на
     клиенте, и без JavaScript кнопка была бы мёртвым элементом в порядке
     табуляции; вместо неё лента показывает честное объяснение в <noscript>. */}
-<div class="aud-filter" data-audience-filter data-audience-state="all" hidden>
+<div class="aud-filter" data-audience-filter data-locale={locale} data-audience-state="all" hidden>
   <button
     type="button"
     class="aud-trigger"
@@ -23,8 +31,8 @@ import {
   >
     {/* Доступное имя называет и фильтр, и применённое состояние: «Аудитории: 2»
         само по себе не говорит, чем это управляет. */}
-    <span class="vh">{FILTER_ACCESSIBLE_NAME}: </span>
-    <span data-audience-trigger-label>{ALL_AUDIENCES_LABEL}</span>
+    <span class="vh">{labels.name}: </span>
+    <span data-audience-trigger-label>{labels.all}</span>
     <span class="aud-caret" aria-hidden="true">▾</span>
   </button>
 
@@ -34,13 +42,13 @@ import {
     class="aud-popover panel"
     id="aud-popover"
     role="dialog"
-    aria-label={FILTER_ACCESSIBLE_NAME}
+    aria-label={labels.name}
     data-audience-popover
     hidden
   >
     <label class="aud-opt">
       <input type="checkbox" data-audience-all />
-      <span>{SELECT_ALL_LABEL}</span>
+      <span>{labels.selectAll}</span>
     </label>
     {/* Все четыре варианта берутся из словаря, а не из тегов текущей выдачи:
         аудитория не исчезает и не гаснет оттого, что сегодня по ней нет постов. */}
@@ -48,22 +56,22 @@ import {
       AUDIENCE_OPTIONS.map((option) => (
         <label class="aud-opt">
           <input type="checkbox" value={option.id} data-audience-option />
-          <span>{option.label}</span>
+          <span>{en ? AUDIENCE_LABELS_EN[option.id] : option.label}</span>
         </label>
       ))
     }
-    <p class="aud-hint" id="aud-hint" data-audience-hint hidden>{EMPTY_DRAFT_MESSAGE}</p>
+    <p class="aud-hint" id="aud-hint" data-audience-hint hidden>{labels.hint}</p>
     <button
       type="button"
       class="aud-apply"
       aria-describedby="aud-hint"
       data-audience-apply
-    >{APPLY_LABEL}</button>
+    >{labels.apply}</button>
   </div>
 </div>
 
 <script>
-  import { AUDIENCE_IDS, type AudienceId } from '../audience.ts';
+  import { AUDIENCE_IDS, AUDIENCE_LABELS_EN, type AudienceId } from '../audience.ts';
   import {
     AUDIENCE_QUERY_KEY,
     FEED_PATH,
@@ -80,6 +88,7 @@ import {
   } from '../audience-filter.ts';
 
   const filter = document.querySelector<HTMLElement>('[data-audience-filter]');
+  const en = filter?.dataset.locale === 'en';
   const trigger = document.querySelector<HTMLButtonElement>('[data-audience-trigger]');
   const popover = document.querySelector<HTMLElement>('[data-audience-popover]');
   const label = document.querySelector<HTMLElement>('[data-audience-trigger-label]');
@@ -121,7 +130,7 @@ import {
 
       const filtered = applied.length > 0;
       const empty = filtered && visible === 0;
-      label!.textContent = triggerLabel(applied);
+      label!.textContent = en ? (applied.length === 0 ? 'All audiences' : applied.length === 1 ? AUDIENCE_LABELS_EN[applied[0]!] : `Audiences: ${applied.length}`) : triggerLabel(applied);
       filter!.dataset.audienceState = query.invalid
         ? 'invalid'
         : empty
@@ -212,7 +221,7 @@ import {
       if (!canApplyDraft(draft)) return;
       const selected = canonicalSelection(draft);
       const search = serializeAudienceQuery(draft);
-      history.pushState({}, '', `${FEED_PATH}${search}`);
+      history.pushState({}, '', `${en ? '/en/feed' : FEED_PATH}${search}`);
       render({ selected, invalid: false, search });
       closePanel(true);
     });

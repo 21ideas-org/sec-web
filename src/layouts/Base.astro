@@ -14,6 +14,7 @@ interface Props {
   rssUrl?: string | null;
   rssTitle?: string;
   counterpartUrl?: string;
+  canonicalPath?: string;
 }
 const props = Astro.props;
 const locale = props.locale ?? 'ru';
@@ -24,9 +25,9 @@ const locale = props.locale ?? 'ru';
   </head>
   <body>
     <div class="shell">
-      {locale === 'ru' && <Nav />}
+      <Nav locale={locale} />
       <slot />
-      {locale === 'ru' && <Footer />}
+      <Footer locale={locale} />
     </div>
   </body>
 </html>
