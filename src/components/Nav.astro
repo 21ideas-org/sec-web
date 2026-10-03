@@ -1,14 +1,28 @@
 ---
 import { SITE_TITLE } from '../consts.ts';
+interface Props { locale?: 'ru' | 'en'; }
+const { locale = 'ru' } = Astro.props;
 const path = Astro.url.pathname;
-const here = (p: string) => (path === p || (p !== '/' && path.startsWith(p)) ? 'page' : undefined);
+const prefix = locale === 'en' ? '/en' : '';
+const here = (p: string) => (path === p || (p !== '/' && p !== '/en/' && path.startsWith(p)) ? 'page' : undefined);
 ---
 <div class="top">
   <span>{SITE_TITLE}</span>
   <span>sec.21ideas.org</span>
   {/* Показывается тема, в которую переключит клик, а не текущая: кнопка называет
       результат, а не состояние. */}
-  <button class="tt" type="button" data-theme-toggle aria-label="Сменить тему">
+  <div class="top-controls">
+  <a data-language-switch href={locale === 'en' ? '/' : '/en/'} class="lang" lang={locale === 'en' ? 'ru' : 'en'} aria-label={locale === 'en' ? 'Switch to Russian' : 'Switch to English'} title={locale === 'en' ? 'Русский' : 'English'}>
+    {/* Tabler World icon, MIT license: docs/licenses/tabler-icons.txt */}
+    <svg class="icon icon-world" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+      <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+      <path d="M3.6 9h16.8" />
+      <path d="M3.6 15h16.8" />
+      <path d="M11.5 3a17 17 0 0 0 0 18" />
+      <path d="M12.5 3a17 17 0 0 1 0 18" />
+    </svg>
+  </a>
+  <button class="tt" type="button" data-theme-toggle data-locale={locale} aria-label={locale === 'en' ? 'Change theme' : 'Сменить тему'}>
     <svg class="icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
       <circle cx="12" cy="12" r="4" />
       <path d="M12 2v2" /><path d="M12 20v2" />
@@ -20,16 +34,19 @@ const here = (p: string) => (path === p || (p !== '/' && path.startsWith(p)) ? '
       <path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401" />
     </svg>
   </button>
+  </div>
 </div>
 <nav class="nav">
-  <a href="/" aria-current={here('/')}>Сводка</a>
-  <a href="/feed" aria-current={here('/feed')}>Инциденты</a>
-  <a href="/support" aria-current={here('/support')}>Поддержать</a>
-  <a href="/about" aria-current={here('/about')}>О проекте</a>
+  <a href={`${prefix}/`} aria-current={here(`${prefix}/`)}>{locale === 'en' ? 'Overview' : 'Сводка'}</a>
+  <a href={`${prefix}/feed`} aria-current={here(`${prefix}/feed`)}>{locale === 'en' ? 'Incidents' : 'Инциденты'}</a>
+  <a href={`${prefix}/support`} aria-current={here(`${prefix}/support`)}>{locale === 'en' ? 'Support' : 'Поддержать'}</a>
+  <a href={`${prefix}/about`} aria-current={here(`${prefix}/about`)}>{locale === 'en' ? 'About' : 'О проекте'}</a>
+  {locale === 'en' && <a href="/en/sources" aria-current={here('/en/sources')}>Sources</a>}
 </nav>
 
 <script>
   const btn = document.querySelector('[data-theme-toggle]');
+  const en = () => btn?.getAttribute('data-locale') === 'en';
   const media = window.matchMedia('(prefers-color-scheme: dark)');
   // Тема сейчас: явный выбор, иначе системная. Ровно тот же порядок, что у токенов
   // в global.css и у скрипта в BaseHead, — три состояния, а не два.
@@ -38,7 +55,7 @@ const here = (p: string) => (path === p || (p !== '/' && path.startsWith(p)) ? '
     return stamped ? stamped === 'dark' : media.matches;
   };
   const label = () =>
-    btn?.setAttribute('aria-label', isDark() ? 'Включить светлую тему' : 'Включить тёмную тему');
+    btn?.setAttribute('aria-label', en() ? (isDark() ? 'Use light theme' : 'Use dark theme') : (isDark() ? 'Включить светлую тему' : 'Включить тёмную тему'));
   label();
   // Пока явного выбора нет, тему решает система, и она может смениться при открытой
   // странице: без этого иконка и подпись остались бы от прошлого состояния.

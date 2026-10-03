@@ -1,0 +1,20 @@
+---
+import Base from '../../layouts/Base.astro';
+import { SITE_NAME } from '../../consts.ts';
+---
+<Base locale="en" title={`About · ${SITE_NAME}`} description="How Bitcoin Security Watcher selects and publishes security alerts." counterpartUrl="/about/">
+  <article class="prose" style="padding-top: 32px">
+    <h1>About</h1>
+    <p>Bitcoin Security Watcher tracks security issues that could cost Bitcoin users money or put them at risk: wallet and hardware firmware bugs, node vulnerabilities, personal data leaks, and compromised software packages.</p>
+    <h2>What counts as critical?</h2>
+    <p>We publish signals that call for action or awareness today. Audience labels help readers tell whether an alert concerns them.</p>
+    <h2>How it works</h2>
+    <p>Alerts are published automatically. Code collects and deduplicates source reports; a language model assesses the signals. An incorrect assessment can reach the public feed.</p>
+    <p><a href="/en/sources">See the projects and channels we monitor</a>.</p>
+    <h2>Where to read</h2>
+    <p>English incident pages and <a href="/en/rss.xml">RSS</a> contain English artifacts when available. Earlier Russian alerts remain in the <a href="/feed">Russian feed</a>. The <a href="https://t.me/bitcoin21sec" rel="noopener">@bitcoin21sec Telegram channel</a> publishes in Russian.</p>
+    <h2>Support</h2>
+    <p>Security Watcher is a nonprofit 21ideas project. Server infrastructure, site maintenance, and model calls need funding. <a href="/en/support">Support the project</a> if you find it useful.</p>
+    <p class="note">A <a href="https://21ideas.org" rel="noopener">21ideas</a> project. The <a href="https://github.com/21ideas-org/sec-web" rel="noopener">site source code</a> is public.</p>
+  </article>
+</Base>

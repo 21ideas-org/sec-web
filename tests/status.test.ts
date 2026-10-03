@@ -2,6 +2,12 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { displayUrgency } from '../src/status.ts';
 
+test('English status labels state only recorded facts', () => {
+  assert.deepEqual(displayUrgency({ statusTags: [] }, 'en'), []);
+  assert.deepEqual(displayUrgency({ statusTags: ['future_status'] }, 'en'), []);
+  assert.deepEqual(displayUrgency({ statusTags: ['exploitation_confirmed', 'patch_available'] }, 'en'), ['Exploitation confirmed', 'Patch available']);
+});
+
 test('present empty and unknown statusTags are authoritative over legacy facts', () => {
   for (const statusTags of [[], ['future_status']]) {
     assert.deepEqual(displayUrgency({ statusTags, urgency: ['#эксплуатируется', '#патч_есть'], exploitationStatus: 'active', fixStatus: 'available' }), []);

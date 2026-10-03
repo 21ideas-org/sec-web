@@ -32,6 +32,8 @@ export const dateLong = (d: Date) =>
     .replace(/\s*г\.$/, '');
 export const dateDayEn = (d: Date) =>
   d.toLocaleDateString('en-GB', { ...UTC, day: '2-digit', month: 'short' });
+export const dateShortEn = (d: Date) =>
+  d.toLocaleDateString('en-GB', { ...UTC, day: '2-digit', month: 'short', year: 'numeric' });
 export const dateLongEn = (d: Date) =>
   d.toLocaleDateString('en-GB', { ...UTC, day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -74,6 +76,8 @@ export async function allIncidents(): Promise<Incident[]> {
 export async function allEnIncidents(): Promise<EnIncident[]> {
   const entries = await getCollection('enIncidents');
   for (const entry of entries) {
+    const diagnostic = statusDiagnostic(entry.data);
+    if (diagnostic) console.warn(`[status] ${diagnostic}`);
     if (entry.body?.trim()) {
       throw new Error(`[en-content] ${entry.id}: EN v1 artifact body must be empty`);
     }

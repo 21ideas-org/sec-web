@@ -12,6 +12,11 @@ const FACTS = [
   { id: 'patch_unavailable', label: 'Патча нет', className: 'u-warn', accent: 'var(--warn-fg)' },
   { id: 'patch_available', label: 'Патч есть', className: 'u-ok', accent: 'var(--ok-fg)' },
 ] as const;
+const EN_FACTS: Record<string, string> = {
+  exploitation_confirmed: 'Exploitation confirmed',
+  patch_unavailable: 'No patch available',
+  patch_available: 'Patch available',
+};
 
 /** Presence, including [], owns all facts. Legacy precedence remains per axis. */
 function recordedTags(input: StatusPresentationInput): readonly string[] {
@@ -42,18 +47,18 @@ export function statusDiagnostic(input: StatusPresentationInput): string | undef
 }
 
 /** Trusted labels, deduplicated in accent priority order; unknown IDs are non-semantic. */
-export function displayUrgency(input: StatusPresentationInput): string[] {
+export function displayUrgency(input: StatusPresentationInput, locale: 'ru' | 'en' = 'ru'): string[] {
   const tags = recordedTags(input);
   const conflict = statusDiagnostic(input) !== undefined;
   return FACTS.filter(({ id }) => tags.includes(id) && (!conflict || id === 'exploitation_confirmed'))
-    .map(({ label }) => label);
+    .map(({ id, label }) => locale === 'en' ? EN_FACTS[id] : label);
 }
 
 export function urgencyClass(label: string): string {
-  return FACTS.find((fact) => fact.label === label)?.className ?? 'u-neutral';
+  return FACTS.find((fact) => fact.label === label || EN_FACTS[fact.id] === label)?.className ?? 'u-neutral';
 }
 
 /** Green means only a released patch, never safety or absence of exploitation. */
 export function urgencyAccent(labels: readonly string[] = []): string {
-  return FACTS.find((fact) => labels.includes(fact.label))?.accent ?? 'var(--dim)';
+  return FACTS.find((fact) => labels.includes(fact.label) || labels.includes(EN_FACTS[fact.id]!))?.accent ?? 'var(--dim)';
 }
