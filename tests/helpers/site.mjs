@@ -61,8 +61,8 @@ export async function corpus(directory) {
   })));
 }
 
-export function rssItemFor(xml, id) {
-  const canonical = `https://sec.21ideas.org/incidents/${id}/`;
+export function rssItemFor(xml, id, locale = 'ru') {
+  const canonical = `https://sec.21ideas.org/${locale === 'en' ? 'en/' : ''}incidents/${id}/`;
   const item = xml
     .split('<item>')
     .slice(1)
