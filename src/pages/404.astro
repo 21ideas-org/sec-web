@@ -2,36 +2,15 @@
 import Base from '../layouts/Base.astro';
 import { SITE_NAME } from '../consts.ts';
 ---
-<Base title={`Страница собирается · ${SITE_NAME}`} description="Страница ещё не собрана либо адрес неверный.">
-  <!--
-    ⚠️ Это НЕ обычная 404, и так задумано.
-
-    Согласованный delivery target отправляет Telegram после одной bounded create-only
-    попытки и не ждёт workflow, Pages, DNS или HTTP 200. В окно сборки читатель может
-    попасть сюда, и «не найдено» было бы враньём.
-
-    Цена решения: опечатка в адресе покажет то же самое. Принято сознательно —
-    честнее сказать «подожди» о странице, которая появится, чем «нет такой».
-  -->
+<Base locale="en" canonicalPath="/404.html" title={`Page unavailable · ${SITE_NAME}`} description="The page may still be publishing or the URL may be incorrect.">
   <section class="sec">
-    <div class="eyebrow">Страница пока недоступна</div>
+    <div class="eyebrow">Page unavailable</div>
     <article class="card panel" style="--accent: var(--warn-fg)">
-      <h2>Страница собирается</h2>
-      <p>
-        Если вы пришли по свежей ссылке из оповещения, страница ещё публикуется —
-        обновите её через минуту. Если ждать дольше минуты, возможны неполадки
-        у хостинга: текст оповещения доступен в самом сообщении канала.
-      </p>
-      <p style="margin-top: 12px">
-        Возможно, в адресе опечатка — тогда всё нужное лежит в <a href="/feed">списке инцидентов</a>.
-      </p>
-      <button class="go" type="button" data-reload
-        style="background:none;border:0;padding:0;font:inherit;color:var(--sig);cursor:pointer;border-bottom:1px solid var(--sig)">
-        Обновить страницу
-      </button>
+      <h2>This page may still be publishing</h2>
+      <p>If you followed a recent alert link, try refreshing in a minute. The URL may also contain a typo.</p>
+      <p>Browse the <a href="/en/feed">English incident feed</a> or the <a href="/feed">Russian history</a>.</p>
+      <button class="go" type="button" data-reload style="background:none;border:0;padding:0;font:inherit;color:var(--sig);cursor:pointer;border-bottom:1px solid var(--sig)">Refresh page</button>
     </article>
   </section>
-  <script>
-    document.querySelector('[data-reload]')?.addEventListener('click', () => location.reload());
-  </script>
+  <script>document.querySelector('[data-reload]')?.addEventListener('click', () => location.reload());</script>
 </Base>

@@ -1,0 +1,34 @@
+---
+import Audience from '../../components/Audience.astro';
+import Base from '../../layouts/Base.astro';
+import Counter from '../../components/Counter.astro';
+import EnRow from '../../components/EnRow.astro';
+import Urgency from '../../components/Urgency.astro';
+import { SITE_NAME } from '../../consts.ts';
+import { enIncidentGroups } from '../../en-incidents.ts';
+import { allEnIncidents, allIncidents, dateShortEn } from '../../lib.ts';
+import { displayUrgency, urgencyAccent } from '../../status.ts';
+const [posts, russian] = await Promise.all([allEnIncidents(), allIncidents()]);
+const groups = enIncidentGroups(posts, russian);
+const latest = posts[0];
+const recent = posts.slice(1, 6);
+const latestUrgency = latest ? displayUrgency(latest.data, 'en') : [];
+const yearAgo = Date.now() - 365 * 864e5;
+---
+<Base locale="en" title={`${SITE_NAME} · English`} description="Bitcoin security alerts in English." counterpartUrl="/">
+  <section class="board panel">
+    <Counter since={groups[0]?.date ?? null} locale="en" />
+    <div class="stats"><span>past year<b>{groups.filter((group) => group.date.valueOf() >= yearAgo).length}</b></span><span>alerts<b>{posts.length}</b></span></div>
+  </section>
+  {!latest && <section class="sec"><p class="note">No English alerts yet. Russian alerts are available in the <a href="/feed">Russian feed</a>.</p></section>}
+  {latest && <section class="sec">
+    <div class="sec-h"><h2><a href={`/en/incidents/${latest.id}/`}>Latest alert</a></h2></div>
+    <article class="card panel" style={`--accent: ${urgencyAccent(latestUrgency)}`}>
+      <div class="tags"><Urgency tags={latestUrgency} /><Audience values={latest.data.audience} locale="en" /><span class="aud when">{dateShortEn(latest.data.pubDate)}</span></div>
+      <h2><a href={`/en/incidents/${latest.id}/`}>{latest.data.title}</a></h2>
+      <p>{latest.data.description}</p>
+      <a class="go" href={`/en/incidents/${latest.id}/`}>Details →</a>
+    </article>
+  </section>}
+  {recent.length > 0 && <section class="sec"><div class="sec-h"><h2><a href="/en/feed">Earlier alerts</a></h2></div><div class="rows">{recent.map((entry) => <EnRow entry={entry} />)}</div></section>}
+</Base>

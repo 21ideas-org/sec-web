@@ -30,7 +30,8 @@ Issue обязан содержать применимые решения websit
 - EN v1 artifact — строгий immutable frontmatter contract с обязательным
   `enPublishedAt >= pubDate`; private evidence и неизвестные поля останавливают build.
   Artifact frontmatter-only: непустое Markdown body также останавливает build, а не
-  публикуется и не отбрасывается молча. EN RSS пока не существует и не рекламируется.
+  публикуется и не отбрасывается молча. EN RSS читает только готовые EN artifacts,
+  использует frozen `enPublishedAt` и сохраняет стабильный permalink/GUID.
   `hreflang` выводится только когда реально существуют оба locale artifacts с
   одинаковым basename.
 - Incident filename: `<product>-<YYYY-MM-DD>-<short>.md`; date — UTC frozen logical
@@ -64,7 +65,8 @@ Issue обязан содержать применимые решения websit
   Audience, identity, thread links и source provenance независимы от status facts.
 - Единственная нормализация audience — `src/audience.ts` (`normalizeAudience`), единственная
   логика фильтра — `src/audience-filter.ts`; браузерный скрипт импортирует их, а не заводит
-  свой словарь. Состояние фильтра живёт в URL (`/feed?audience=<id>`, повторяющийся ключ,
+  свой словарь. Состояние фильтра живёт в URL (`/feed?audience=<id>` для RU,
+  `/en/feed?audience=<id>` для EN, повторяющийся ключ,
   OR-совпадение, все четыре ID = лента без фильтра, нераспознанное значение = явное
   invalid-состояние со сбросом). Фильтрация клиентская, поверх уже отрендеренных строк:
   без backend, без подгрузки, без filtered RSS и audience landing pages. Legacy `all`,
@@ -79,7 +81,9 @@ Issue обязан содержать применимые решения websit
   numeric status ID. Остальные validated URL и label показываются без догадок; frozen
   Markdown при этом не переписывается.
 - Одна bounded website-попытка идёт перед парным Telegram send, но bot не ждёт retry,
-  workflow, Pages, DNS или HTTP 200. Custom 404 честно покрывает build window.
+  workflow, Pages, DNS или HTTP 200. Custom 404 честно покрывает build window: это один
+  общий English-only `src/pages/404.astro` (`/404.html`) для всех missing paths, включая
+  `/en/incidents/<slug>/`; отдельного `/en/404` и RU/client-side locale fallback нет.
 - Live и `--dry-run` одинаково пишут канонический public incident content в
   `sec-web/main` для `https://sec.21ideas.org`. Runtime mode меняет только парный
   Telegram target (`channel` или `dry_channel`) и не выбирает другой website, staging
@@ -94,7 +98,10 @@ Issue обязан содержать применимые решения websit
   workflow files правятся только отдельным явно разрешённым issue.
 - Existing `src/content/**/*.md` URLs/frontmatter не переписывать массово.
 - Donation addresses намеренно публичны; они живут только в `src/consts.ts` и
-  показываются только на `/support`. Не дублировать их в alert content.
+  показываются только на `/support` и `/en/support`. Не дублировать их в alert content.
+- EN routes читают только `enIncidents`; RU-only Markdown не создаёт EN page/RSS item.
+  EN chronology использует общий `pubDate`, EN RSS — frozen `enPublishedAt`.
+  Reciprocal `hreflang` для incident page возможен только при реальной паре.
 
 ## Rendering invariants
 

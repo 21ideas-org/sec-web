@@ -1,0 +1,18 @@
+---
+import Base from '../../layouts/Base.astro';
+import EnRow from '../../components/EnRow.astro';
+import AudienceFilter from '../../components/AudienceFilter.astro';
+import { allEnIncidents } from '../../lib.ts';
+import { SITE_NAME } from '../../consts.ts';
+const posts = await allEnIncidents();
+---
+<Base locale="en" title={`Incidents · ${SITE_NAME}`} description="English Bitcoin security alerts and incident updates." counterpartUrl="/feed/">
+  <section class="sec">
+    <div class="sec-h"><h1>Incidents</h1><AudienceFilter locale="en" /><a class="more" href="/en/rss.xml">RSS</a></div>
+    <noscript><p class="note" data-audience-nojs>Audience filtering requires JavaScript. All English alerts are shown.</p></noscript>
+    <p class="note" data-audience-invalid hidden>Audience filter in this link was not recognized. All English alerts are shown. <a href="/en/feed">Show all alerts</a></p>
+    {posts.length > 0 ? <div class="rows" data-audience-rows>{posts.map((entry) => <EnRow entry={entry} />)}</div> : <p class="note">No English alerts yet. Russian alerts are available in the <a href="/feed">Russian feed</a>.</p>}
+    <p class="note" data-audience-empty hidden>No alerts for the selected audiences. <a href="/en/feed">Show all alerts</a></p>
+    <p class="note" data-audience-history hidden>Older audience labels may be incomplete. The filter shows recorded audiences, not every affected person.</p>
+  </section>
+</Base>
