@@ -1,6 +1,6 @@
 ---
-interface Props { since: Date | null; }
-const { since } = Astro.props;
+interface Props { since: Date | null; locale?: 'ru' | 'en'; }
+const { since, locale = 'ru' } = Astro.props;
 
 /**
  * ⚠️ Цифра рендерится НА СБОРКЕ и уточняется скриптом до секунд.
@@ -23,7 +23,7 @@ if (since) {
 {
   since ? (
     <>
-      <div class="kicker">С последней уязвимости</div>
+      <div class="kicker">{locale === 'en' ? 'Since the last incident' : 'С последней уязвимости'}</div>
       {/* Подписей ДНИ/ЧАС/МИН/СЕК нет: четыре пары через двоеточие читаются как
           время без объяснения, а подпись под каждой парой заставляла держать
           обёртку .meter только ради выравнивания четырёх колонок. */}
@@ -33,10 +33,9 @@ if (since) {
     /* День до первой публикации. Прочерк вместо цифр выглядел бы сломанным
        счётчиком, а счётчик — главное обещание главной страницы. */
     <>
-      <div class="kicker">Наблюдение идёт</div>
+      <div class="kicker">{locale === 'en' ? 'Monitoring is active' : 'Наблюдение идёт'}</div>
       <p class="empty">
-        Оповещений пока не было. Счётчик пойдёт с первой уязвимости, которую канал
-        сочтёт критической.
+        {locale === 'en' ? 'No English alerts have been published yet. The counter starts with the first English incident.' : 'Оповещений пока не было. Счётчик пойдёт с первой уязвимости, которую канал сочтёт критической.'}
       </p>
     </>
   )

@@ -260,6 +260,97 @@ test('temporary fixture cleanup also runs after a failed assertion', async () =>
   assert.equal(existsSync(join(REPOSITORY, 'src/content/incidents', `${PRODUCER_FIXTURE_ID}.md`)), false);
 });
 
+test('English routes stay honest with an empty corpus and a paired artifact', async () => {
+  await withTemporaryDirectory(async (directory) => {
+    const site = join(directory, 'site');
+    await copySite(site);
+    let build = buildSite(site);
+    assert.equal(build.status, 0, `${build.stdout}\n${build.stderr}`);
+    const emptyFeed = await text(join(site, 'dist/en/feed/index.html'));
+    const emptyHome = await text(join(site, 'dist/en/index.html'));
+    const ruHome = await text(join(site, 'dist/index.html'));
+    const emptyRss = await text(join(site, 'dist/en/rss.xml'));
+    assert.match(emptyFeed, /No English alerts yet/);
+    assert.match(emptyHome, /No English alerts yet/);
+    assert.match(emptyHome, /data-language-switch[^>]*href="\/"[^>]*aria-label="Switch to Russian"/);
+    assert.match(ruHome, /data-language-switch[^>]*href="\/en\/"[^>]*aria-label="Switch to English"/);
+    assert.match(emptyHome, /<svg class="icon icon-world"[^>]*stroke-width="2"/);
+    assert.doesNotMatch(emptyHome.match(/<nav class="nav">([\s\S]*?)<\/nav>/)?.[1] ?? '', /Русский|English/);
+    assert.doesNotMatch(emptyRss, /<item>/);
+    assert.doesNotMatch(emptyFeed, /\/en\/incidents\/aqua-/);
+    assert.equal(existsSync(join(site, 'dist/en/incidents/blink-2026-09-19-security-alert/index.html')), false);
+    assert.match(emptyFeed, /rel="canonical" href="https:\/\/sec\.21ideas\.org\/en\/feed\/"/);
+    assert.match(emptyFeed, /hreflang="ru" href="https:\/\/sec\.21ideas\.org\/feed\/"/);
+    assert.match(emptyFeed, /href="https:\/\/sec\.21ideas\.org\/en\/rss\.xml"/);
+    const sitemap = await text(join(site, 'dist/sitemap-0.xml'));
+    for (const route of ['/en/', '/en/feed/', '/en/about/', '/en/sources/', '/en/support/']) {
+      assert.ok(sitemap.includes(`https://sec.21ideas.org${route}`), route);
+    }
+    for (const route of ['about', 'sources', 'support']) {
+      const page = await text(join(site, `dist/en/${route}/index.html`));
+      assert.match(page, /<html lang="en">/);
+      assert.ok(page.includes(`https://sec.21ideas.org/en/${route}/`));
+    }
+    // Pages serves the root 404.html for every missing path, /en/incidents/<slug>/ included:
+    // it is the only fallback artifact, and nothing builds a separate /en/404.
+    const artifacts = await readdir(join(site, 'dist'), { recursive: true });
+    assert.deepEqual(artifacts.filter((path) => /(^|\/)404(\.html|\/|$)/.test(path)), ['404.html']);
+    assert.ok(!sitemap.includes('/404'));
+    assert.equal(existsSync(join(site, 'dist/en/incidents/fixture-missing-en/index.html')), false);
+    const fallback = await text(join(site, 'dist/404.html'));
+    // Served under nested missing URLs, so every local link and asset must be root-absolute.
+    assert.doesNotMatch(fallback, /(?:href|src)="(?!https?:\/\/|\/|#)/);
+    assertLocaleOg(fallback, EN_OG, 'shared 404');
+    assert.match(fallback, /<html lang="en">/);
+    assert.match(fallback, /<title>Page unavailable · Bitcoin Security Watcher<\/title>/);
+    assert.match(fallback, /rel="canonical" href="https:\/\/sec\.21ideas\.org\/404\.html"/);
+    assert.match(fallback, /property="og:url" content="https:\/\/sec\.21ideas\.org\/404\.html"/);
+    assert.match(fallback, /English incident feed/);
+    assert.match(fallback, /href="https:\/\/sec\.21ideas\.org\/en\/rss\.xml"/);
+    assert.match(fallback, /href="\/en\/feed"/);
+    assert.doesNotMatch(fallback, /Страница собирается|data-ru-404|DOMContentLoaded|<noscript>/);
+
+    const ru = await readFile(join(FIXTURES, 'site-generated-alert-ru-en-v1.md'));
+    const en = await readFile(join(FIXTURES, 'site-generated-alert-en-v1.md'));
+    await writeFile(join(site, 'src/content/incidents', `${EN_V1_FIXTURE_ID}.md`), ru);
+    await mkdir(join(site, 'src/content/en/incidents'), { recursive: true });
+    await writeFile(join(site, 'src/content/en/incidents', `${EN_V1_FIXTURE_ID}.md`), en);
+    const hijackId = 'fixture-en-hijack';
+    await writeFile(join(site, 'src/content/en/incidents', `${hijackId}.md`), en.toString('utf8')
+      .replace('Coldcard advisory update', 'English hijack warning')
+      .replace('"hijacked": false', '"hijacked": true')
+      .replace('  - "patch_available"', '  - "patch_available"\n  - "patch_unavailable"')
+      .replace('"enPublishedAt": "2026-09-06T00:04:59.000Z"', '"enPublishedAt": "2026-09-06T00:05:00.000Z"'));
+    build = buildSite(site);
+    assert.equal(build.status, 0, `${build.stdout}\n${build.stderr}`);
+    assert.match(`${build.stdout}\n${build.stderr}`, /Conflicting patch status tags: both patch claims omitted/);
+    const enPage = await text(join(site, 'dist/en/incidents', EN_V1_FIXTURE_ID, 'index.html'));
+    const hijackPage = await text(join(site, 'dist/en/incidents', hijackId, 'index.html'));
+    const ruPage = await text(join(site, 'dist/incidents', EN_V1_FIXTURE_ID, 'index.html'));
+    const feed = await text(join(site, 'dist/en/feed/index.html'));
+    const rss = await text(join(site, 'dist/en/rss.xml'));
+    assert.match(enPage, /hreflang="ru"/);
+    assert.match(enPage, /Actions to take/);
+    assert.match(enPage, /<strong>Source:<\/strong>/);
+    assert.doesNotMatch(enPage, /Что делать|Источник:/);
+    assert.match(hijackPage, /appears to be compromised/);
+    assert.doesNotMatch(hijackPage, /href="https:\/\/coldcard\.com\/security"/);
+    assert.doesNotMatch(hijackPage, /hreflang="ru"/);
+    assert.match(ruPage, /hreflang="en"/);
+    assert.match(feed, /\/en\/feed\?audience=holders/);
+    assert.match(rss, /<language>en<\/language>/);
+    assert.match(rss, /<channel>.*<link>https:\/\/sec\.21ideas\.org\/en\/<\/link>/s);
+    assert.match(rss, /<category>Hodlers<\/category>/);
+    assert.match(rss, /&lt;strong&gt;Actions to take:&lt;\/strong&gt;/);
+    assert.doesNotMatch(rssItemFor(rss, hijackId, 'en').item, /coldcard\.com\/security/);
+    assert.doesNotMatch(rssItemFor(rss, hijackId, 'en').item, /<category>Patch available<\/category>|<category>No patch available<\/category>/);
+    assert.match(rss, /<category>Exploitation confirmed<\/category>/);
+    assert.match(rss, /<category>Patch available<\/category>/);
+    assert.match(rss, /<pubDate>Sun, 06 Sep 2026 00:04:59 GMT<\/pubDate>/);
+    assert.match(rss, new RegExp(`<guid isPermaLink="true">https://sec\\.21ideas\\.org/en/incidents/${EN_V1_FIXTURE_ID}/</guid>`));
+  });
+});
+
 test('source display semantics are shared by incident pages and RSS', async () => {
   const cases = [
     {
@@ -1018,7 +1109,7 @@ test('English and Russian collections isolate equal basenames and emit only real
       `rel="alternate" hreflang="ru" href="https://sec.21ideas.org/incidents/${EN_V1_FIXTURE_ID}/"`,
     ));
     assert.ok(ruRoute.includes('rel="alternate" type="application/rss+xml"'));
-    assert.ok(!enRoute.includes('type="application/rss+xml"'));
+    assert.ok(enRoute.includes('rel="alternate" type="application/rss+xml" title="Bitcoin Security Watcher" href="https://sec.21ideas.org/en/rss.xml"'));
     // Same basename and the same status facts; each locale still shows only its own card.
     assertLocaleOg(ruRoute, RU_OG, 'RU paired route');
     assertLocaleOg(enRoute, EN_OG, 'EN paired route');
@@ -1040,9 +1131,11 @@ test('English and Russian collections isolate equal basenames and emit only real
     assert.deepEqual(enRoutes, []);
     const ruOnly = await text(join(site, 'dist/incidents/blink-2026-09-19-security-alert/index.html'));
     assert.ok(!ruOnly.includes('hreflang="en"'));
-    for (const route of ['index.html', 'feed/index.html', 'about/index.html', 'sources/index.html', 'support/index.html', '404.html']) {
+    for (const route of ['index.html', 'feed/index.html', 'about/index.html', 'sources/index.html', 'support/index.html']) {
       assertLocaleOg(await text(join(site, 'dist', route)), RU_OG, route);
     }
+    // The shared host-level 404 is English-only.
+    assertLocaleOg(await text(join(site, 'dist/404.html')), EN_OG, '404.html');
     assertLocaleOg(ruOnly, RU_OG, 'RU-only incident');
     // Legacy cards stay at their URLs for previews that were already scraped.
     for (const file of [...LEGACY_OG, 'ru', 'en']) {
@@ -1058,7 +1151,7 @@ test('English orphan updates keep one RU-anchored incident before and after thei
     const enDirectory = join(site, 'src/content/en/incidents');
     await mkdir(enDirectory, { recursive: true });
     const root = 'fixture-en-thread-root';
-    const enArtifact = ({ title, pubDate, parent }) => `---
+    const enArtifact = ({ title, pubDate, parent, enPublishedAt = '2036-01-10T00:00:00.000Z' }) => `---
 "title": "${title}"
 "description": "Public English description"
 "pubDate": "${pubDate}"
@@ -1070,7 +1163,7 @@ test('English orphan updates keep one RU-anchored incident before and after thei
 "action": "Use the safe release."
 "hijacked": false
 "incidentKey": "fixture|english-thread"
-${parent ? `"parent": "${parent}"\n` : ''}"enPublishedAt": "2036-01-10T00:00:00.000Z"
+${parent ? `"parent": "${parent}"\n` : ''}"enPublishedAt": "${enPublishedAt}"
 "links": []
 ---
 `;
@@ -1096,11 +1189,13 @@ sourceUrl: "https://example.com/history"
       title: 'English update one',
       pubDate: '2036-01-01T00:00:00.000Z',
       parent: root,
+      enPublishedAt: '2036-01-03T00:00:00.000Z',
     });
     const secondUpdate = enArtifact({
       title: 'English update two',
       pubDate: '2036-01-02T00:00:00.000Z',
       parent: root,
+      enPublishedAt: '2036-01-04T00:00:00.000Z',
     });
     await writeFile(join(enDirectory, 'fixture-en-thread-update-1.md'), firstUpdate);
     await writeFile(join(enDirectory, 'fixture-en-thread-update-2.md'), secondUpdate);
@@ -1138,14 +1233,29 @@ sourceUrl: "https://example.com/history"
     await writeFile(join(enDirectory, `${root}.md`), enArtifact({
       title: 'English root',
       pubDate: '2035-12-31T12:00:00.000Z',
+      enPublishedAt: '2036-01-11T00:00:00.000Z',
     }));
     await writeFile(join(enDirectory, 'fixture-en-thread-update-3.md'), enArtifact({
       title: 'English update three',
       pubDate: '2036-01-03T00:00:00.000Z',
       parent: root,
+      enPublishedAt: '2036-01-12T00:00:00.000Z',
     }));
     build = buildSite(site);
     assert.equal(build.status, 0, `${build.stdout}\n${build.stderr}`);
+    const enHome = await text(join(site, 'dist/en/index.html'));
+    const enFeed = await text(join(site, 'dist/en/feed/index.html'));
+    const enRss = await text(join(site, 'dist/en/rss.xml'));
+    assert.match(enRss, /<category>future_audience<\/category>/);
+    assert.match(enHome, /past year<b>3<\/b>/);
+    assert.match(enHome, /alerts<b>6<\/b>/);
+    assert.ok(enFeed.indexOf('/en/incidents/fixture-en-thread-update-3/') < enFeed.indexOf(`/en/incidents/${root}/`), 'feed follows logical pubDate');
+    const rssRoot = enRss.indexOf(`<link>https://sec.21ideas.org/en/incidents/${root}/</link>`);
+    const rssFirst = enRss.indexOf('<link>https://sec.21ideas.org/en/incidents/fixture-en-thread-update-1/</link>');
+    const rssThird = enRss.indexOf('<link>https://sec.21ideas.org/en/incidents/fixture-en-thread-update-3/</link>');
+    assert.ok(rssThird < rssRoot && rssRoot < rssFirst, 'RSS follows frozen enPublishedAt');
+    assert.match(enRss, new RegExp(`<guid isPermaLink="true">https://sec\\.21ideas\\.org/en/incidents/${root}/</guid>`));
+    assert.match(enRss, /<pubDate>Fri, 11 Jan 2036 00:00:00 GMT<\/pubDate>/);
     assert.equal(await text(join(enDirectory, 'fixture-en-thread-update-1.md')), firstUpdate);
     assert.equal(await text(join(enDirectory, 'fixture-en-thread-update-2.md')), secondUpdate);
     const ids = [root, 'fixture-en-thread-update-1', 'fixture-en-thread-update-2', 'fixture-en-thread-update-3'];
@@ -1160,7 +1270,7 @@ sourceUrl: "https://example.com/history"
       assert.equal(page.split(`data-incident-root="${root}"`).length - 1, 1, id);
       assert.ok(page.includes('data-incident-date="2035-12-31T23:59:59.000Z"'), id);
       for (const member of ids) assert.ok(page.includes(member === id ? `>${titles.get(member)}<` : `/en/incidents/${member}/`), `${id}: ${member}`);
-      assert.ok(!page.includes('future_audience'));
+      assert.ok(page.includes('<span class="aud aud-badge">future_audience</span>'));
       assertLocaleOg(page, EN_OG, id);
     }
   });
@@ -1244,7 +1354,7 @@ test('English schema rejects malformed or private artifact fields while unknown 
     assert.equal(build.status, 0, `${build.stdout}\n${build.stderr}`);
     const page = await text(join(site, 'dist/en/incidents/fixture-neutral-en/index.html'));
     assert.ok(!page.includes('future_status'));
-    assert.ok(!page.includes('future_audience'));
+    assert.ok(page.includes('<span class="aud aud-badge">future_audience</span>'));
     assertLocaleOg(page, EN_OG, 'EN unknown-status page');
     for (const privateValue of ['reason', 'private model reasoning', 'rawModelUrl', 'private evidence']) {
       assert.ok(!page.includes(privateValue));

@@ -202,12 +202,13 @@ a:focus-visible { outline: 2px solid var(--sig); outline-offset: 2px; }
   font-size: var(--fs-xs); letter-spacing: 0.07em; color: var(--dim);
   padding-bottom: 11px; border-bottom: 1px solid var(--hair);
 }
-.top .tt {
-  justify-self: end;
+.top .top-controls { justify-self: end; display: flex; align-items: center; gap: 12px; }
+.top .tt, .top .lang {
   background: none; border: 0; padding: 0; color: inherit; cursor: pointer;
   display: inline-flex; align-items: center; -webkit-tap-highlight-color: transparent;
 }
-.top .tt:hover { color: var(--tx); }
+.top .tt:hover, .top .lang:hover { color: var(--tx); }
+.top .lang .icon { width: 16px; height: 16px; display: block; }
 .top .tt .icon { width: 16px; height: 16px; display: none; }
 /* Видимость иконок повторяет структуру токенов: тёмная — база, светлая —
    переопределение, и отдельная ветка на системную светлую без явного выбора.

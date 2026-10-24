@@ -74,8 +74,8 @@ export function serializeAudienceQuery(values: readonly AudienceId[]): string {
   return `?${new URLSearchParams(selected.map((id) => [AUDIENCE_QUERY_KEY, id])).toString()}`;
 }
 
-export function audienceHref(id: AudienceId): string {
-  return `${FEED_PATH}${serializeAudienceQuery([id])}`;
+export function audienceHref(id: AudienceId, locale: 'ru' | 'en' = 'ru'): string {
+  return `${locale === 'en' ? '/en/feed' : FEED_PATH}${serializeAudienceQuery([id])}`;
 }
 
 /**
