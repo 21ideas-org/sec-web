@@ -837,6 +837,7 @@ links: [{label: Source, url: "https://source.example/advice"}]
 // Authored timeline scenarios, not producer byte evidence. Insertion order deliberately
 // differs from publication time: a frozen legacy update can arrive after new posts.
 test('mixed-format history keeps each publication own facts and frozen identity', async () => {
+  const description = 'A separately recorded publication mentions ноды без патча in source prose';
   const cases = [
     ['legacy-root', '2034-09-01', null, null, ['Эксплуатация подтверждена']],
     ['new-tagged', '2034-09-02', 'legacy-root', ['patch_available'], ['Патч есть']],
@@ -850,7 +851,7 @@ test('mixed-format history keeps each publication own facts and frozen identity'
     for (const [name, date, parent, tags] of cases) {
       await writeFile(join(site, `src/content/incidents/mixed-${name}.md`), `---
 title: "Mixed ${name}"
-description: "A separately recorded publication"
+description: "${description}"
 pubDate: ${date}T23:59:59.000Z
 ${tags === null ? '' : `statusTags: ${JSON.stringify(tags)}`}
 urgency: ["#эксплуатируется", "#патча_нет"]
@@ -879,7 +880,10 @@ links: [{label: Source, url: "https://source.example/advice"}]
     const recentRoots = own.filter(({ data }) => !data.parent && data.pubDate.valueOf() >= Date.now() - 365 * 864e5);
     assert.ok(index.includes(`<span>за год<b>${recentRoots.length}</b></span>`));
     assert.ok(index.includes(`<span>всего<b>${own.length}</b></span>`));
-    for (const output of [index, feed, rss]) assert.doesNotMatch(output, /Без патча|без патча/);
+    // Reject the retired status label without censoring the same words in source prose.
+    for (const output of [index, feed, rss]) {
+      assert.doesNotMatch(output, /<span class="u [^"]*">[Бб]ез патча<\/span>|<category>[Бб]ез патча<\/category>/);
+    }
     for (const [name, date, parent, , labels] of cases) {
       const id = `mixed-${name}`;
       const page = await text(join(site, `dist/incidents/${id}/index.html`));
@@ -902,6 +906,7 @@ links: [{label: Source, url: "https://source.example/advice"}]
       assert.equal(item.split('<category>Ходлеры</category>').length - 1, 1);
       assert.deepEqual(rowAudiences(row), ['holders'], id);
       for (const output of [page, rssContent(item)]) {
+        assert.ok(output.includes(description), `${id}: source prose must be preserved`);
         assert.ok(output.includes('href="https://source.example/advice"'));
         assert.ok(output.includes('Follow this publication'));
         assert.doesNotMatch(output, /status-note|Статус угрозы|Срочность действий/);
