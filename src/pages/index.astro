@@ -18,7 +18,7 @@ const s = stats(list);
 const latestDate = latest && dateShort(latest.data.pubDate);
 const latestUrgency = latest ? displayUrgency(latest.data) : [];
 ---
-<Base title={SITE_NAME} description={SITE_DESCRIPTION}>
+<Base title={SITE_NAME} description={SITE_DESCRIPTION} counterpartUrl="/en/">
   <section class="board panel">
     <Counter since={anchor} />
     <div class="stats">

@@ -1,0 +1,154 @@
+---
+import Base from '../../layouts/Base.astro';
+import registry from '../../data/source-list.json';
+const sourceLabel = (label: string) => label
+  .replace(/^Карта блога · /u, 'Blog map · ')
+  .replace(/^Бюллетени · /u, 'Bulletins · ')
+  .replace(/^Статус · /u, 'Status · ')
+  .replace(/новые темы/u, 'new topics')
+  .replace(/сообщения и ответы/u, 'posts and replies');
+
+const groups = [
+  { id: 'A', title: 'Signing devices' },
+  { id: 'B', title: 'Wallets' },
+  { id: 'C', title: 'Nodes and protocol' },
+  { id: 'D', title: 'Lightning' },
+  { id: 'E', title: 'Payments and services' },
+  { id: 'F', title: 'Secondary sources' },
+  { id: 'G', title: 'Vulnerability databases' },
+  { id: 'H', title: 'Nodes and related projects' },
+  { id: 'I', title: 'Service infrastructure' },
+] as const;
+
+const active = registry.sources.filter((source) => source.enabled && source.verified);
+const nameOrder = new Intl.Collator('en', { numeric: true, sensitivity: 'base' });
+const inactive = registry.sources
+  .filter((source) => !source.enabled || !source.verified)
+  .sort((left, right) => nameOrder.compare(left.name, right.name));
+const sourceCount = active.reduce((count, source) => count + source.links.length, 0);
+const updated = new Intl.DateTimeFormat('en-GB', {
+  day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC',
+}).format(new Date(`${registry.updatedAt}T00:00:00Z`));
+---
+
+<Base locale="en" title="Sources · Bitcoin Security Watcher" description="Projects and channels monitored by Bitcoin Security Watcher." counterpartUrl="/sources/">
+  <header class="sources-intro prose">
+    <h1>Sources monitored by Bitcoin Security Watcher</h1>
+    <p>
+      These are the projects and channels Bitcoin Security Watcher currently monitors.
+    </p>
+    <p>
+      Know a project we should monitor?{' '}
+      <a href="https://github.com/21ideas-org/sec-web/discussions/new?category=ideas" rel="noopener noreferrer">Suggest it in GitHub Discussions</a>.
+    </p>
+    <p class="sources-date">
+      List updated <time datetime={registry.updatedAt}>{updated}</time>
+      <span class="source-totals">{active.length} active projects · {sourceCount} sources</span>
+    </p>
+  </header>
+
+  <nav class="sources-index" aria-label="Source groups">
+    {groups.map((group) => (
+      <a href={`#group-${group.id}`}>{group.title}</a>
+    ))}
+    <a href="#not-tracked">Not monitored</a>
+  </nav>
+
+  {groups.map((group) => {
+    const entries = active
+      .filter((source) => source.group === group.id)
+      .sort((left, right) => nameOrder.compare(left.name, right.name));
+    return entries.length > 0 && (
+      <section class="sec source-group" id={`group-${group.id}`} aria-labelledby={`title-${group.id}`}>
+        <div class="sec-h">
+          <h2 id={`title-${group.id}`}>{group.title}</h2>
+          <span class="source-count">{entries.length}</span>
+        </div>
+        <ul class="source-list">
+          {entries.map((source) => (
+            <li class="source-row">
+              <span class="source-name">{source.name}</span>
+              <ul class="source-links" aria-label={`Channels: ${source.name}`}>
+                {source.links.map((link) => (
+                  <li><a href={link.url} rel="noopener noreferrer">{sourceLabel(link.label)}</a></li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ul>
+      </section>
+    );
+  })}
+
+  <section class="sec source-group" id="not-tracked" aria-labelledby="title-not-tracked">
+    <div class="sec-h">
+      <h2 id="title-not-tracked">Not monitored</h2>
+      <span class="source-count">{inactive.length}</span>
+    </div>
+    <p class="source-explainer">These entries remain in the registry, but the bot does not poll them now.</p>
+    <ul class="source-list">
+      {inactive.map((source) => (
+        <li class="source-row">
+          <span class="source-name">{source.name}<small>{source.verified ? 'Disabled' : 'Channel not verified'}</small></span>
+          {source.links.length > 0 && (
+            <ul class="source-links" aria-label={`Links: ${source.name}`}>
+              {source.links.map((link) => (
+                  <li><a href={link.url} rel="noopener noreferrer">{sourceLabel(link.label)}</a></li>
+              ))}
+            </ul>
+          )}
+        </li>
+      ))}
+    </ul>
+  </section>
+</Base>
+
+<style>
+  .sources-intro { padding-top: 32px; }
+  .sources-intro .sources-date { color: var(--mut); font-family: var(--font); font-size: var(--fs-xs); }
+  .source-totals { display: block; }
+  .sources-index {
+    display: flex; flex-wrap: nowrap; gap: 14px; margin-top: 28px;
+    overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+  }
+  .sources-index::-webkit-scrollbar { display: none; }
+  .sources-index a { flex: 0 0 auto; font-size: var(--fs-sm); }
+  .sources-index[data-fade="start"] { -webkit-mask-image: linear-gradient(90deg, transparent, #000 24px); mask-image: linear-gradient(90deg, transparent, #000 24px); }
+  .sources-index[data-fade="end"] { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 24px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 24px), transparent); }
+  .sources-index[data-fade="both"] { -webkit-mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent); mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent); }
+  .source-group { scroll-margin-top: 24px; }
+  .source-count { color: var(--mut); font-size: var(--fs-sm); font-variant-numeric: tabular-nums; }
+  .source-list, .source-links { list-style: none; margin: 0; padding: 0; }
+  .source-list { display: grid; gap: 3px; }
+  .source-row { display: grid; grid-template-columns: minmax(0, 180px) minmax(0, 1fr); gap: 14px; padding: 12px 14px; background: var(--rowbg); }
+  .source-name { font-size: var(--fs-base); font-weight: 600; line-height: 1.4; }
+  .source-name small { display: block; margin-top: 5px; color: var(--mut); font-size: var(--fs-xs); font-weight: 400; }
+  .source-links { list-style: disc; padding-left: 20px; }
+  .source-links li + li { margin-top: 5px; }
+  .source-links a { font-size: var(--fs-sm); overflow-wrap: anywhere; }
+  .source-explainer { margin: 0 0 14px; color: var(--mut); font-family: var(--font-text); font-size: var(--fs-body); line-height: var(--lh-prose); }
+  @media (max-width: 560px) {
+    .sources-intro { padding-top: 16px; }
+    .source-row { grid-template-columns: 1fr; gap: 6px; }
+  }
+</style>
+
+<script>
+  const scroller = document.querySelector<HTMLElement>('.sources-index');
+  if (scroller) {
+    const sync = () => {
+      const max = scroller.scrollWidth - scroller.clientWidth;
+      if (max <= 1) {
+        scroller.removeAttribute('data-fade');
+        return;
+      }
+      const start = scroller.scrollLeft > 1;
+      const end = scroller.scrollLeft < max - 1;
+      scroller.dataset.fade = start && end ? 'both' : start ? 'start' : 'end';
+    };
+    sync();
+    scroller.addEventListener('scroll', sync, { passive: true });
+    if ('ResizeObserver' in window) new ResizeObserver(sync).observe(scroller);
+  }
+</script>

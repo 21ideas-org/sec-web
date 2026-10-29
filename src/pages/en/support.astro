@@ -1,0 +1,16 @@
+---
+import Base from '../../layouts/Base.astro';
+import CopyBlock from '../../components/CopyBlock.astro';
+import { SITE_NAME, SUPPORT_LN_ADDRESS, SUPPORT_ONCHAIN } from '../../consts.ts';
+---
+<Base locale="en" title={`Support · ${SITE_NAME}`} description="Support Bitcoin Security Watcher." counterpartUrl="/support/">
+  <article class="prose" style="padding-top: 32px">
+    <h1>Support</h1>
+    <p>The alert channel is free and has no ads. Contributions pay for the server and the model calls used to assess incoming signals.</p>
+    <blockquote>We are working to make Security Watcher support transparent, as already done for the <a href="https://gm.21ideas.org/support/" rel="noopener">Good Morning, Bitcoiner</a> project.</blockquote>
+    <CopyBlock label="Lightning" value={SUPPORT_LN_ADDRESS} locale="en" />
+    <CopyBlock label="Onchain" value={SUPPORT_ONCHAIN} locale="en" />
+    <p>Want to offer expert, technical, or organizational help, or introduce a potential supporter? Contact Tony on Telegram: <a href="https://t.me/Tony_Lightning" rel="noopener">@Tony_Lightning</a>.</p>
+    <p class="note">These addresses appear only on the support pages, never inside an alert. If you see a Bitcoin address in an alert, check it against this page at <code>sec.21ideas.org/en/support</code>.</p>
+  </article>
+</Base>

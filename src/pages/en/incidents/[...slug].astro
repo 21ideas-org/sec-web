@@ -1,8 +1,11 @@
 ---
 import Base from '../../../layouts/Base.astro';
+import Audience from '../../../components/Audience.astro';
+import Urgency from '../../../components/Urgency.astro';
 import { enIncidentGroups } from '../../../en-incidents.ts';
 import { allEnIncidents, allIncidents, dateDayEn, dateLongEn, keepFlags, own } from '../../../lib.ts';
 import { displaySourceLinks } from '../../../source-links.ts';
+import { displayUrgency } from '../../../status.ts';
 
 export async function getStaticPaths() {
   const [english, russian] = await Promise.all([allEnIncidents(), allIncidents()]);
@@ -35,6 +38,7 @@ const historyLabel = group.hasEnglishRoot
   : 'Russian incident history';
 const subject = [d.product, d.vendor !== d.product ? d.vendor : null].filter(Boolean).join(' · ');
 const sourceLinks = displaySourceLinks(d.links);
+const urgency = displayUrgency(d, 'en');
 ---
 <Base
   locale="en"
@@ -51,7 +55,7 @@ const sourceLinks = displaySourceLinks(d.links);
     data-incident-date={group.date.toISOString()}
   >
     {subject && <div class="eyebrow">{subject}</div>}
-    <div class="tags"><span class="aud when">{dateLongEn(d.pubDate)}</span></div>
+    <div class="tags"><Urgency tags={urgency} /><Audience values={d.audience} locale="en" /><span class="aud when">{dateLongEn(d.pubDate)}</span></div>
     {
       isUpdate && (
         <p class="up-of">
@@ -74,7 +78,7 @@ const sourceLinks = displaySourceLinks(d.links);
     {
       d.action && (
         <div class="action panel">
-          <div class="k">What to do</div>
+          <div class="k">Actions to take</div>
           <p set:html={keepFlags(d.action)} />
         </div>
       )
