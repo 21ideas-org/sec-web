@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-19",
+  "updatedAt": "2026-10-29",
   "sources": [
     {
       "id": "coldcard",
@@ -498,23 +498,6 @@
         {
           "label": "Atom · bitcoincore.org",
           "url": "https://bitcoincore.org/en/feed.xml"
-        }
-      ]
-    },
-    {
-      "id": "bitcoin-knots",
-      "name": "Bitcoin Knots",
-      "group": "C",
-      "enabled": true,
-      "verified": true,
-      "links": [
-        {
-          "label": "GitHub · bitcoinknots/bitcoin",
-          "url": "https://github.com/bitcoinknots/bitcoin"
-        },
-        {
-          "label": "X · @BitcoinKnots",
-          "url": "https://x.com/BitcoinKnots"
         }
       ]
     },
