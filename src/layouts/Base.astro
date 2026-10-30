@@ -25,7 +25,7 @@ const locale = props.locale ?? 'ru';
   </head>
   <body>
     <div class="shell">
-      <Nav locale={locale} />
+      <Nav locale={locale} counterpartUrl={props.counterpartUrl} />
       <slot />
       <Footer locale={locale} />
     </div>
