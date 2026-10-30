@@ -272,6 +272,9 @@ test('English routes stay honest with an empty corpus and a paired artifact', as
     const emptyRss = await text(join(site, 'dist/en/rss.xml'));
     assert.match(emptyFeed, /No English alerts yet/);
     assert.match(emptyHome, /No English alerts yet/);
+    assert.doesNotMatch(emptyFeed, /Russian feed/);
+    assert.doesNotMatch(emptyHome, /Russian feed/);
+    assert.match(emptyFeed, /data-language-switch[^>]*href="\/feed\/"/);
     assert.match(emptyHome, /data-language-switch[^>]*href="\/"[^>]*aria-label="Switch to Russian"/);
     assert.match(ruHome, /data-language-switch[^>]*href="\/en\/"[^>]*aria-label="Switch to English"/);
     assert.match(emptyHome, /<svg class="icon icon-world"[^>]*stroke-width="2"/);
@@ -289,6 +292,9 @@ test('English routes stay honest with an empty corpus and a paired artifact', as
     for (const route of ['about', 'sources', 'support']) {
       const page = await text(join(site, `dist/en/${route}/index.html`));
       assert.match(page, /<html lang="en">/);
+      assert.ok(page.includes(`data-language-switch href="/${route}/"`));
+      const russian = await text(join(site, `dist/${route}/index.html`));
+      assert.ok(russian.includes(`data-language-switch href="/en/${route}/"`));
       assert.ok(page.includes(`https://sec.21ideas.org/en/${route}/`));
     }
     // Pages serves the root 404.html for every missing path, /en/incidents/<slug>/ included:
@@ -330,6 +336,9 @@ test('English routes stay honest with an empty corpus and a paired artifact', as
     const feed = await text(join(site, 'dist/en/feed/index.html'));
     const rss = await text(join(site, 'dist/en/rss.xml'));
     assert.match(enPage, /hreflang="ru"/);
+    assert.ok(enPage.includes(`data-language-switch href="/incidents/${EN_V1_FIXTURE_ID}/"`));
+    assert.ok(ruPage.includes(`data-language-switch href="/en/incidents/${EN_V1_FIXTURE_ID}/"`));
+    assert.match(hijackPage, /data-language-switch[^>]*href="\/feed"/);
     assert.match(enPage, /Actions to take/);
     assert.match(enPage, /<strong>Source:<\/strong>/);
     assert.doesNotMatch(enPage, /Что делать|Источник:/);

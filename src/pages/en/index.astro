@@ -20,7 +20,7 @@ const yearAgo = Date.now() - 365 * 864e5;
     <Counter since={groups[0]?.date ?? null} locale="en" />
     <div class="stats"><span>past year<b>{groups.filter((group) => group.date.valueOf() >= yearAgo).length}</b></span><span>alerts<b>{posts.length}</b></span></div>
   </section>
-  {!latest && <section class="sec"><p class="note">No English alerts yet. Russian alerts are available in the <a href="/feed">Russian feed</a>.</p></section>}
+  {!latest && <section class="sec"><p class="note">No English alerts yet.</p></section>}
   {latest && <section class="sec">
     <div class="sec-h"><h2><a href={`/en/incidents/${latest.id}/`}>Latest alert</a></h2></div>
     <article class="card panel" style={`--accent: ${urgencyAccent(latestUrgency)}`}>

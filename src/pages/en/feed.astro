@@ -11,7 +11,7 @@ const posts = await allEnIncidents();
     <div class="sec-h"><h1>Incidents</h1><AudienceFilter locale="en" /><a class="more" href="/en/rss.xml">RSS</a></div>
     <noscript><p class="note" data-audience-nojs>Audience filtering requires JavaScript. All English alerts are shown.</p></noscript>
     <p class="note" data-audience-invalid hidden>Audience filter in this link was not recognized. All English alerts are shown. <a href="/en/feed">Show all alerts</a></p>
-    {posts.length > 0 ? <div class="rows" data-audience-rows>{posts.map((entry) => <EnRow entry={entry} />)}</div> : <p class="note">No English alerts yet. Russian alerts are available in the <a href="/feed">Russian feed</a>.</p>}
+    {posts.length > 0 ? <div class="rows" data-audience-rows>{posts.map((entry) => <EnRow entry={entry} />)}</div> : <p class="note">No English alerts yet.</p>}
     <p class="note" data-audience-empty hidden>No alerts for the selected audiences. <a href="/en/feed">Show all alerts</a></p>
     <p class="note" data-audience-history hidden>Older audience labels may be incomplete. The filter shows recorded audiences, not every affected person.</p>
   </section>

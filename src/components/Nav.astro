@@ -1,7 +1,8 @@
 ---
 import { SITE_TITLE } from '../consts.ts';
-interface Props { locale?: 'ru' | 'en'; }
-const { locale = 'ru' } = Astro.props;
+interface Props { locale?: 'ru' | 'en'; counterpartUrl?: string; }
+const { locale = 'ru', counterpartUrl } = Astro.props;
+const languageUrl = counterpartUrl ?? (locale === 'en' ? '/feed' : '/en/feed');
 const path = Astro.url.pathname;
 const prefix = locale === 'en' ? '/en' : '';
 const here = (p: string) => (path === p || (p !== '/' && p !== '/en/' && path.startsWith(p)) ? 'page' : undefined);
@@ -12,7 +13,7 @@ const here = (p: string) => (path === p || (p !== '/' && p !== '/en/' && path.st
   {/* Показывается тема, в которую переключит клик, а не текущая: кнопка называет
       результат, а не состояние. */}
   <div class="top-controls">
-  <a data-language-switch href={locale === 'en' ? '/' : '/en/'} class="lang" lang={locale === 'en' ? 'ru' : 'en'} aria-label={locale === 'en' ? 'Switch to Russian' : 'Switch to English'} title={locale === 'en' ? 'Русский' : 'English'}>
+  <a data-language-switch href={languageUrl} data-counterpart={counterpartUrl ? "true" : undefined} class="lang" lang={locale === 'en' ? 'ru' : 'en'} aria-label={locale === 'en' ? 'Switch to Russian' : 'Switch to English'} title={locale === 'en' ? 'Русский' : 'English'}>
     {/* Tabler World icon, MIT license: docs/licenses/tabler-icons.txt */}
     <svg class="icon icon-world" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
       <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
@@ -45,6 +46,21 @@ const here = (p: string) => (path === p || (p !== '/' && p !== '/en/' && path.st
 </nav>
 
 <script>
+  // Preserve filters and anchors only when the same page exists in both languages.
+  const languageSwitch = document.querySelector<HTMLAnchorElement>('[data-language-switch][data-counterpart]');
+  if (languageSwitch) {
+    const syncLanguageUrl = () => {
+      const target = new URL(languageSwitch.href);
+      target.search = window.location.search;
+      target.hash = window.location.hash;
+      languageSwitch.href = target.href;
+    };
+    syncLanguageUrl();
+    window.addEventListener('popstate', syncLanguageUrl);
+    document.addEventListener('click', (event) => {
+      if (event.target instanceof Element && event.target.closest('[data-language-switch]')) syncLanguageUrl();
+    }, true);
+  }
   const btn = document.querySelector('[data-theme-toggle]');
   const en = () => btn?.getAttribute('data-locale') === 'en';
   const media = window.matchMedia('(prefers-color-scheme: dark)');
