@@ -1,10 +1,12 @@
 ---
 import Base from '../../layouts/Base.astro';
 import EnRow from '../../components/EnRow.astro';
+import EnArchiveRow from '../../components/EnArchiveRow.astro';
 import AudienceFilter from '../../components/AudienceFilter.astro';
-import { allEnIncidents } from '../../lib.ts';
+import { allEnIncidents, allEnArchive } from '../../lib.ts';
 import { SITE_NAME } from '../../consts.ts';
 const posts = await allEnIncidents();
+const history = await allEnArchive();
 ---
 <Base locale="en" title={`Incidents · ${SITE_NAME}`} description="English Bitcoin security alerts and incident updates." counterpartUrl="/feed/">
   <section class="sec">
@@ -15,4 +17,12 @@ const posts = await allEnIncidents();
     <p class="note" data-audience-empty hidden>No alerts for the selected audiences. <a href="/en/feed">Show all alerts</a></p>
     <p class="note" data-audience-history hidden>Older audience labels may be incomplete. The filter shows recorded audiences, not every affected person.</p>
   </section>
+  {history.length > 0 && <>
+    <p class="note" data-audience-archive-link hidden>Chronicles are outside the audience filter: <a href="/en/feed#archive">all chronicles</a></p>
+    <section class="sec" id="archive" data-audience-archive>
+      <div class="sec-h"><h2>Chronicles</h2></div>
+      <div class="rows arch">{history.map((entry) => <EnArchiveRow entry={entry} />)}</div>
+      <p class="note">Selected historical Bitcoin security events. Links lead to source material. These entries do not appear in RSS or reset the incident counter.</p>
+    </section>
+  </>}
 </Base>
