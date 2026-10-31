@@ -10,7 +10,8 @@ This draft does not approve deployment or historical English incident roots.
 | --- | --- | --- |
 | Сводка | Overview | Navigation |
 | Инциденты | Incidents | Feed and navigation |
-| Хроники | Russian history | Link to existing RU archive; no EN archive implied |
+| Хроники | Chronicles | Selected, human-maintained external references in `/en/feed#archive`; no alert page/RSS/counter contribution |
+| Русская история инцидента | Russian history | Existing RU thread fallback when its English root is absent |
 | Апдейт инцидента | Incident update | Thread and feed |
 | Эксплуатация подтверждена | Exploitation confirmed | Verified status only |
 | Патча нет | No patch available | Verified status only |
@@ -26,3 +27,6 @@ Unknown audience labels remain neutral text. Unknown status IDs create no public
 The Russian history fallback refers readers to an existing RU root when an English
 update arrives before its English root. It does not imply that the RU history has
 been translated.
+The eight selected English chronicles and their source/date/title review are in
+[`en-chronicles-review.md`](en-chronicles-review.md). They are external references,
+separate from English incident roots and the automated producer contract.
