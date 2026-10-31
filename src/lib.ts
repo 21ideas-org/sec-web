@@ -3,6 +3,7 @@ import type { EnIncident } from './en-incidents.ts';
 import { statusDiagnostic } from './status.ts';
 
 export type Incident = CollectionEntry<'incidents'>;
+export type EnArchiveEntry = CollectionEntry<'enArchive'>;
 
 /**
  * Даты страниц — В UTC, а не в зоне машины сборки.
@@ -81,6 +82,14 @@ export async function allEnIncidents(): Promise<EnIncident[]> {
     if (entry.body?.trim()) {
       throw new Error(`[en-content] ${entry.id}: EN v1 artifact body must be empty`);
     }
+  }
+  return entries.sort(byDateDesc);
+}
+
+export async function allEnArchive(): Promise<EnArchiveEntry[]> {
+  const entries = await getCollection('enArchive');
+  for (const entry of entries) {
+    if (entry.body?.trim()) throw new Error(`[en-content] ${entry.id}: EN archive entry body must be empty`);
   }
   return entries.sort(byDateDesc);
 }

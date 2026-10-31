@@ -1,0 +1,11 @@
+---
+import { dateShortEn, type EnArchiveEntry } from '../lib.ts';
+interface Props { entry: EnArchiveEntry; }
+const { entry } = Astro.props;
+const d = entry.data;
+---
+<div class="row">
+  <span class="dt">{dateShortEn(d.pubDate)}</span>
+  <div><div class="ti"><a href={d.sourceUrl} rel="noopener">{d.title}</a></div></div>
+  <span class="ext">{d.source} ↗</span>
+</div>

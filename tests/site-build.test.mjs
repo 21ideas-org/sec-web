@@ -1375,3 +1375,62 @@ test('English schema rejects malformed or private artifact fields while unknown 
     }
   });
 });
+
+const EN_ARCHIVE_IDS = [
+  '2026-07-30-coldcard-entropy', '2026-01-30-phpcoinaddress', '2025-04-03-pypi-bitcoinlib',
+  '2024-01-04-bip3x-weak-rng', '2023-11-14-randstorm', '2023-08-08-milk-sad',
+  '2022-06-07-electrum-file-scheme', '2021-05-11-cake-wallet-seeds',
+];
+
+test('the eight selected English chronicles retain RU dates and source identity without alert fields', async () => {
+  const entries = await corpus(join(REPOSITORY, 'src/content/en/archive'));
+  assert.deepEqual(entries.map(e => e.id).sort(), [...EN_ARCHIVE_IDS].sort());
+  for (const { id, data } of entries) {
+    const ru = frontmatter(await text(join(REPOSITORY, `src/content/archive/${id}.md`)));
+    assert.equal(data.pubDate.toISOString(), ru.pubDate.toISOString(), id);
+    assert.equal(data.sourceUrl, ru.sourceUrl, id); assert.equal(data.source, ru.source, id);
+    assert.equal(data.external, true); assert.equal(new URL(data.sourceUrl).protocol, 'https:');
+    assert.deepEqual(Object.keys(data).sort(), ['external', 'pubDate', 'source', 'sourceUrl', 'title']);
+    assert.doesNotMatch(data.title, /\p{Script=Cyrillic}/u);
+  }
+});
+
+test('English chronicles render as external references, outside RSS, incident routes and counters', async () => {
+  await withTemporaryDirectory(async root => {
+    const site = join(root, 'site'); await copySite(site);
+    const build = buildSite(site); assert.equal(build.status, 0, `${build.stdout}\n${build.stderr}`);
+    const en = await text(join(site, 'dist/en/feed/index.html'));
+    const ru = await text(join(site, 'dist/feed/index.html'));
+    const rss = await text(join(site, 'dist/en/rss.xml'));
+    const index = await text(join(site, 'dist/en/index.html'));
+    assert.match(en, /id="archive"/); assert.match(en, />Chronicles</);
+    assert.match(en, /data-audience-archive-link/); assert.match(en, /href="\/en\/feed#archive"/);
+    const posts = await corpus(join(site, 'src/content/en/incidents'));
+    assert.ok(index.includes(`<span>alerts<b>${posts.length}</b></span>`));
+    let position = -1;
+    for (const id of EN_ARCHIVE_IDS) {
+      const data = frontmatter(await text(join(site, `src/content/en/archive/${id}.md`)));
+      const row = rowFor(en, `href="${data.sourceUrl}"`);
+      assert.ok(row.includes(data.title.replaceAll('&', '&amp;')), id);
+      assert.doesNotMatch(row, /data-audience|\/en\/incidents\//);
+      const next = en.indexOf(`href="${data.sourceUrl}"`); assert.ok(next > position); position = next;
+      assert.ok(!rss.includes(data.title), id);
+      assert.equal(existsSync(join(site, `dist/en/incidents/${id}/index.html`)), false, id);
+      const original = frontmatter(await text(join(site, `src/content/archive/${id}.md`)));
+      assert.ok(ru.includes(original.title)); assert.ok(!en.includes(original.title));
+    }
+  });
+});
+
+test('English chronicles reject private fields, unsafe sources and nonempty body text', async () => {
+  for (const field of ['reason: "private"', 'sourceUrl: "javascript:alert(1)"', 'sourceUrl: "https://user:secret@example.org/"', 'body']) {
+    await withTemporaryDirectory(async root => {
+      const site = join(root, 'site'); await copySite(site);
+      const directory = join(site, 'src/content/en/archive');
+      assert.ok((await readdir(directory)).length);
+      await writeFile(join(directory, 'fixture-invalid-archive.md'), `---\ntitle: "Invalid archive fixture"\npubDate: 2021-01-01\nexternal: true\nsource: "example.org"\n${field.startsWith('sourceUrl:') ? '' : 'sourceUrl: "https://example.org/"\n'}${field === 'body' ? '' : `${field}\n`}---\n${field === 'body' ? 'Private body must not be ignored.' : ''}`);
+      const build = buildSite(site); assert.notEqual(build.status, 0);
+      assert.match(`${build.stdout}\n${build.stderr}`, /data does not match collection schema|EN archive entry body must be empty/);
+    });
+  }
+});

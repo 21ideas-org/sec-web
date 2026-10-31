@@ -27,6 +27,8 @@ Issue обязан содержать применимые решения websit
   загружает только `src/content/en/incidents/`. Одинаковый basename в локалях обязан
   давать независимые collection IDs и routes `/incidents/<slug>/` и
   `/en/incidents/<slug>/` без утечки контента между ними.
+- Ручные EN-хроники — отдельная strict collection `enArchive` из `src/content/en/archive/`:
+  только external source references, без своих страниц, RSS, audience или счётчика.
 - EN v1 artifact — строгий immutable frontmatter contract с обязательным
   `enPublishedAt >= pubDate`; private evidence и неизвестные поля останавливают build.
   Artifact frontmatter-only: непустое Markdown body также останавливает build, а не
@@ -99,7 +101,8 @@ Issue обязан содержать применимые решения websit
 - Existing `src/content/**/*.md` URLs/frontmatter не переписывать массово.
 - Donation addresses намеренно публичны; они живут только в `src/consts.ts` и
   показываются только на `/support` и `/en/support`. Не дублировать их в alert content.
-- EN routes читают только `enIncidents`; RU-only Markdown не создаёт EN page/RSS item.
+- EN incident pages/content/RSS items создаются только из `enIncidents`; RU metadata
+  разрешена для chronology, history и locale pairing, без переноса RU prose.
   EN chronology использует общий `pubDate`, EN RSS — frozen `enPublishedAt`.
   Reciprocal `hreflang` для incident page возможен только при реальной паре.
 

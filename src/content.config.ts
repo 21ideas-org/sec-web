@@ -141,4 +141,23 @@ const enIncidents = defineCollection({
   schema: enIncidentSchema,
 });
 
-export const collections = { incidents, enIncidents };
+/** Human-maintained source references, separate from immutable bot artifacts. */
+const enArchive = defineCollection({
+  loader: glob({
+    pattern: '**/*.md',
+    base: './src/content/en/archive',
+    generateId: ({ entry }) => entry.replace(/^.*\//, '').replace(/\.md$/, ''),
+  }),
+  schema: z.object({
+    title: z.string().min(1),
+    pubDate: z.coerce.date(),
+    external: z.literal(true),
+    source: z.string().min(1),
+    sourceUrl: z.url().refine((value) => {
+      const url = new URL(value);
+      return ['https:', 'http:'].includes(url.protocol) && !url.username && !url.password;
+    }, 'archive sources must use http or https without credentials'),
+  }).strict(),
+});
+
+export const collections = { incidents, enIncidents, enArchive };
