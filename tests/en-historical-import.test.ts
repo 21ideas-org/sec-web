@@ -25,3 +25,8 @@ test('historical RSS suppression is exact and does not propagate to new updates'
   assert.equal(isEnHistoricalImport('start9-2026-08-26-cln-update-new-update'), false);
   assert.equal(isEnHistoricalImport('fresh-en-root'), false);
 });
+
+test('the Umbrel launch-window translation is suppressed without suppressing future updates', () => {
+  assert.equal(isEnHistoricalImport('umbrel-2026-11-01-security-alert'), true);
+  assert.equal(isEnHistoricalImport('umbrel-2026-11-01-security-alert-upd'), false);
+});
