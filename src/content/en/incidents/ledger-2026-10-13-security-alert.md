@@ -1,0 +1,14 @@
+---
+title: "Ledger: a hardware implant that reads the seed from the screen found in signing devices from reseller CryptoBilis; thefts of funds confirmed"
+description: "Ledger Donjon is investigating Ledger signing devices sold by reseller CryptoBilis in Southeast Asia: an unauthorized hardware implant was found inside the casing. The vendor confirmed the finding on October 10 in a device belonging to one victim. The implant reads data displayed on the screen and, when the 24 words of the recovery phrase are shown during initial setup, decodes them with a microcontroller and transmits them over LTE through a built-in eSIM. It is a separate component: the device's Secure Element and operating system are unchanged, and transactions and signatures are not substituted. All confirmed losses of funds associated with the October 9 incident involve signing devices purchased through this reseller; the vendor has not confirmed any theft from a device bought elsewhere. The reseller said it had stopped selling Ledger signing devices for the duration of the investigation. The vendor has not confirmed the total number of victims or the amount lost; the figures circulating online come from third parties and have not been fully verified. The vendor is also investigating reports of implants in other devices and regions. There is no patch here, and there cannot be one: this is physical tampering with the device, and an exposed recovery phrase remains compromised."
+pubDate: "2026-10-13T06:40:45.116Z"
+statusTags: ["exploitation_confirmed"]
+audience: ["holders"]
+product: "ledger signer"
+vendor: "Ledger"
+action: "If the signing device was purchased from this reseller and has not yet been set up, do not set it up and contact the vendor's support. If it has already been set up, treat the recovery phrase as exposed: immediately transfer funds to a new signing device with a new recovery phrase generated on a trusted device. Do not enter or restore an existing phrase on a device from this reseller, and do not enter it on any website, in any app or in any form. If funds have been lost or you suspect tampering, contact the vendor's support and file a police report; do not send the device to anyone or open it until you have coordinated with support and law enforcement. The vendor has provided its security team's contact details for researchers. For owners of devices bought from other sellers who want to inspect the inside of the casing, the vendor has published instructions, but first make sure you have a backup of the phrase: opening the device may damage it. The vendor emphasizes that it never calls, sends direct messages or asks for the 24 words."
+hijacked: false
+incidentKey: "ledger signer|fp:5291ab90847c643c"
+enPublishedAt: "2026-11-01T06:51:04.634Z"
+links: [{"label":"x.com - Ledger","url":"https://x.com/Ledger/status/2109896739985453358"}]
+---

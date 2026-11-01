@@ -1,0 +1,656 @@
+{
+  "version": 1,
+  "sourceCommit": "682418481d8b8d7d9fae8599de1519a5204c195e",
+  "preparedAt": "2026-11-01T06:51:04.634Z",
+  "entries": [
+    {
+      "slug": "amboss-2026-10-22-security-alert",
+      "sourceSha256": "b664ef0e792f99e6040f0ef8905dc64ba2efd7c8537837881eca9fa7e5a63637"
+    },
+    {
+      "slug": "aqua-2026-09-06-security-alert",
+      "sourceSha256": "bd0e881e9d56916f9d7108d4cc293c27d00f1e91675ca0c03cc271dafc44c6f2"
+    },
+    {
+      "slug": "aqua-2026-09-07-security-alert",
+      "sourceSha256": "9fd585ddcddde2439e84dee62f0ccdd4ccbd18bf5573d00835e43d94e0522453"
+    },
+    {
+      "slug": "aqua-2026-09-07-security-alert-upd",
+      "sourceSha256": "21ab915cda128c55eb7fd66d66e90c5f3dca1c8d9be530b85052c9fa8363b3af"
+    },
+    {
+      "slug": "aqua-2026-09-08-security-alert",
+      "sourceSha256": "6fc22602747ab629daf95767b4aa7ac91ce04e7f1f4c944d33fdf2e43986f1fe"
+    },
+    {
+      "slug": "aqua-2026-09-08-security-alert-upd",
+      "sourceSha256": "e6e1b8c072eeeeef3ce3bf3d44f8917c6f3835b99241a3f75fe4b1dc31adcf8e"
+    },
+    {
+      "slug": "aqua-2026-09-08-security-alert-upd2",
+      "sourceSha256": "2f1a61143521dc1bd82131005e2237899790c41c71bcf58e28015519b6cb6129"
+    },
+    {
+      "slug": "aqua-2026-09-08-security-alert-upd3",
+      "sourceSha256": "a0c1891c8ec13d83cce2c1be8e5290aef27bedf442890c74463de28d763c09c9"
+    },
+    {
+      "slug": "aqua-2026-09-10-security-alert",
+      "sourceSha256": "06d52bfd69c49f2bf4be11673ac661e3e0c19928ae57e428d11feb16654bbe7c"
+    },
+    {
+      "slug": "aqua-2026-09-15-security-alert",
+      "sourceSha256": "62362294251f791d7a4f1503c9e67fad86002148a058c8fee2e9fa12b05d4159"
+    },
+    {
+      "slug": "aqua-2026-09-16-security-alert",
+      "sourceSha256": "b0f9accec44c1631faec2ac6accbcf27a2170a421e02460fed3381e68c588d59"
+    },
+    {
+      "slug": "aqua-2026-09-17-security-alert",
+      "sourceSha256": "24e006f3d789a894b905b901df6a5df15589c0c469c150c3f13f12fc6c1025a3"
+    },
+    {
+      "slug": "bisq-2026-09-16-security-alert",
+      "sourceSha256": "5c058309e085c4bc657882dc864a6dbb010bd4a7733c0be7e96d7b3f55391736"
+    },
+    {
+      "slug": "bisq-2026-10-01-security-alert",
+      "sourceSha256": "4c33c2668881d5d2763347fe35bd30feb4b2babef5ba82c3abf176e94f118318"
+    },
+    {
+      "slug": "bisq2-2026-09-15-security-alert",
+      "sourceSha256": "eb92d2d881804581348ccb02003df074f25f3f255fb2950f485b013628195fd0"
+    },
+    {
+      "slug": "bisq2-2026-10-15-security-alert",
+      "sourceSha256": "a2caf7f1dfebc547563531df9c4a92271ea054630bfc63c4cc5045abeab30816"
+    },
+    {
+      "slug": "bitbox02-2026-09-09-security-alert",
+      "sourceSha256": "f31b1a27f563ef958eae0c9ca981e51cdc885420c5de2e066356b8ef47a3532c"
+    },
+    {
+      "slug": "bitbox02-2026-09-09-security-alert-upd",
+      "sourceSha256": "791b98f1b1c240df9fdfa1e7cea1a63f9b2cecbebef29c2b3ca31ccc9e266ba3"
+    },
+    {
+      "slug": "bitbox02-2026-09-24-security-alert",
+      "sourceSha256": "359c780c7c175c5814b0ba3ee522a80497f6914a894441a9d6a11afd59613d8c"
+    },
+    {
+      "slug": "bitbox02-2026-10-23-security-alert",
+      "sourceSha256": "a6c9c45ea3b3c6f6dbd6e8963589570f1b2c84c2dc0f3a90c6ed9b9c59bbe9c7"
+    },
+    {
+      "slug": "bitcoin-core-2026-10-28-security-alert",
+      "sourceSha256": "be14a8bb0e2a3dd92ef5bcbd1bfe7d33b0ca3dbebe034029dcc33a7b7ebbb618"
+    },
+    {
+      "slug": "bitcoin-core-2026-10-28-security-alert-upd",
+      "sourceSha256": "421d553c81c3ccc5859a2ba7ea6f2b4918b2f10e172d8f487b1dfab85f07be9e"
+    },
+    {
+      "slug": "bitcoin-core-2026-10-28-security-alert-upd3",
+      "sourceSha256": "97da80948fc47cd9b5f8f1eca5d6506fae8697674d4d19a822acfbb36b9e2f47"
+    },
+    {
+      "slug": "bitcoin-knots-2026-10-28-security-alert",
+      "sourceSha256": "5b2ec1c282c37d1e7115f6afd402f70d5937508fffa1f1cfbf999d81b8699e4a"
+    },
+    {
+      "slug": "blink-2026-09-19-security-alert",
+      "sourceSha256": "220138bc0c3003e1d69cf057dad1b990af8a12244c093378f46233d82fec0ea5"
+    },
+    {
+      "slug": "blink-2026-09-24-security-alert",
+      "sourceSha256": "de6f2b488063836371215d1c410b930920303f2dae1c6cae5dc90af57189ce8a"
+    },
+    {
+      "slug": "blink-2026-10-03-security-alert",
+      "sourceSha256": "dc8966555d3bb363b563699a7d96a8c456f00937d1f7be46a81852f9d7b12900"
+    },
+    {
+      "slug": "blink-2026-10-03-security-alert-upd",
+      "sourceSha256": "32b6d2450c2365c095a9797a307b891e58efec904f5f8dfe666589945b70e9eb"
+    },
+    {
+      "slug": "blink-2026-10-06-security-alert",
+      "sourceSha256": "56edc3beab3aeaebebcd9f3197126e0e4c64d498b77ec614ea92edfe37f95007"
+    },
+    {
+      "slug": "blink-2026-10-08-security-alert",
+      "sourceSha256": "998a4122c165cfe8cc7cf78156e0b55a3f9704f9bdbaa0c050c2fd5898c1ac1c"
+    },
+    {
+      "slug": "blockstream-blog-2026-09-08-security-alert",
+      "sourceSha256": "89301a6c66054e545decb27b830f01f496e79abffc62b9ce9e0a2d0646dbaf76"
+    },
+    {
+      "slug": "blockstream-blog-2026-09-09-security-alert",
+      "sourceSha256": "f75f2d0b1c24adf21b71454d760bf1857e77350411fda393e057c3753d8ada1e"
+    },
+    {
+      "slug": "blockstream-blog-2026-09-09-security-alert-upd",
+      "sourceSha256": "4316c1cf9835e11e76e9edd3ed93d7e52f36f95d5c89deb425c4586a0fa463e7"
+    },
+    {
+      "slug": "blockstream-blog-2026-09-10-security-alert",
+      "sourceSha256": "9d4750dc0b16df08ccf104eb3ffce0c9437ec81b7cacd3e79f8569740c6be6e2"
+    },
+    {
+      "slug": "blockstream-blog-2026-09-10-security-alert-upd",
+      "sourceSha256": "dedf12e6a1ee6d520c68d77c613bf81d44257486c9e19c1e5d52f0c445c68508"
+    },
+    {
+      "slug": "blockstream-blog-2026-09-23-security-alert",
+      "sourceSha256": "e80e43b9e5b52d954a684caae8489633a8446b027093890807ebf4f3b956dab5"
+    },
+    {
+      "slug": "btcpay-2026-08-26-cln-routes-off",
+      "sourceSha256": "63e83451fb00ad1bbb504f29f202ebbf580e97f033b26839608876e1e0a7380e"
+    },
+    {
+      "slug": "btcpay-2026-08-29-cln-26067",
+      "sourceSha256": "3e3d036ea9d5a692f252d6aad1f686bfba88255dcd1a39666147cf096bf21e52"
+    },
+    {
+      "slug": "btcpay-2026-09-08-security-alert",
+      "sourceSha256": "b9e9cc7cf0cb29515e743f527f085200dfcb76a115e85945d1ae02eee3aae2d8"
+    },
+    {
+      "slug": "btcpay-2026-10-06-security-alert",
+      "sourceSha256": "2833e1cac5f860a2ea05ee13dd99ffc4918bfa4aad55bf2ef8f92f5814199f0f"
+    },
+    {
+      "slug": "btcpay-2026-10-07-security-alert",
+      "sourceSha256": "70b936cfe7b373beea216a0700d0b826135b9bf2bfd114219bba9ebcea3cef01"
+    },
+    {
+      "slug": "btcpay-2026-10-21-security-alert",
+      "sourceSha256": "70348dec60e90c1e3a50f1b1b7265374b5ee5364c0d9694269e972557af97168"
+    },
+    {
+      "slug": "btcpay-2026-10-26-security-alert",
+      "sourceSha256": "965ff39f55c7d6e1900137472853643ca08eef64011c32b0f34b1bfedc82e563"
+    },
+    {
+      "slug": "btcpay-2026-10-26-security-alert-upd",
+      "sourceSha256": "8593614ba46f2f5933f01c93421efe46f97034597dded5b81a8c272f7af63fea"
+    },
+    {
+      "slug": "btcpay-2026-10-29-security-alert",
+      "sourceSha256": "314f44c7b1b53455b2371ced794de2afc28bb4c4576d7e92ab976fa62ee1786c"
+    },
+    {
+      "slug": "btcpay-2026-10-29-security-alert-upd",
+      "sourceSha256": "fbae90d4ed9b17baefbc882210d594834ffeaa174ed3b96bc2bf1c8d602abfc2"
+    },
+    {
+      "slug": "btcpay-2026-10-30-security-alert",
+      "sourceSha256": "c56090779561a776a17b9ccaa272fb7115ef33cfc39c83f934aefd6362b4a8db"
+    },
+    {
+      "slug": "casa-2026-09-09-security-alert",
+      "sourceSha256": "bd76d32065a54f833f15817fdc2c8dccbc585c37b55e533d1ccf37cb85b897a0"
+    },
+    {
+      "slug": "casa-2026-10-20-security-alert",
+      "sourceSha256": "f12f9fd2942c57db9fbbedeb5678360b0dfa4f0efebb8c870b03b0ff56afed3d"
+    },
+    {
+      "slug": "cln-2026-08-27-offline-guidance",
+      "sourceSha256": "c2ca79a7342bbf73d08fc1be86b6d0181144b76aa58d599f40e22b6c4f49abb4"
+    },
+    {
+      "slug": "cln-2026-08-28-blockstream-advisory",
+      "sourceSha256": "58b2b90ab5b9cf1c4433e3a89c29e416c3fbe241bdb58f5e396d5af791d57494"
+    },
+    {
+      "slug": "cln-2026-08-28-release-26067",
+      "sourceSha256": "26a54b87a12f57a70fac8ab75b5c8507665f86f28743efe10161813b486d9c90"
+    },
+    {
+      "slug": "coldcard-2026-10-03-security-alert",
+      "sourceSha256": "eeb2f7577c64b6586d85ee35e7231281fabbb41f2744bf64f27f5f118b35ce55"
+    },
+    {
+      "slug": "coldcard-2026-10-11-security-alert",
+      "sourceSha256": "bf09d534b535b197f61b4985d71a13c29db1862c3b0f633a887438977eff5d0d"
+    },
+    {
+      "slug": "coldcard-2026-10-11-security-alert-upd",
+      "sourceSha256": "6b61437cc22a7a5ea0e57274f52a596479c0b1d6d39a9d4ab78d9b194e0c4514"
+    },
+    {
+      "slug": "coldcard-2026-10-11-security-alert-upd2",
+      "sourceSha256": "1b185c22bf9e70e082a7e392627acaee6d463935e22693900c012da95ef3221e"
+    },
+    {
+      "slug": "coldcard-2026-10-11-security-alert-upd3",
+      "sourceSha256": "bec67f6027a60204a33e4fa871212fbdff9a1e96149556f5e09a7c74c36ea264"
+    },
+    {
+      "slug": "coldcard-2026-10-12-security-alert",
+      "sourceSha256": "bb082798054271e810de3adf1f0cd7585da18258b5fbe8ea0c7732569f191354"
+    },
+    {
+      "slug": "core-lightning-2026-09-02-security-alert",
+      "sourceSha256": "3104c32f7ae54a6792f199a71f1ce07a0a99bd187e5d7d2e383775412f2f3368"
+    },
+    {
+      "slug": "core-lightning-2026-09-15-security-alert",
+      "sourceSha256": "7e05ae6cb0c3c83e486e7e5d3673736938857ef2d40f30a6c0f1aeac3b9921f3"
+    },
+    {
+      "slug": "core-lightning-2026-09-22-security-alert",
+      "sourceSha256": "459c01c605fad1a2d662dff25b458abfac722ffe89dea5061fa5c39da73ea210"
+    },
+    {
+      "slug": "core-lightning-2026-10-02-security-alert",
+      "sourceSha256": "ee0548948386103a2ca37bb2f4cdbf7b668b7f304cbde4d5002f2e0b1530a8ff"
+    },
+    {
+      "slug": "core-lightning-2026-10-07-security-alert",
+      "sourceSha256": "a73ebd6ee585a8618bf5f70c834ae6c0098afc2f413ecc7e608b7304c8d145c8"
+    },
+    {
+      "slug": "core-lightning-2026-10-07-security-alert-upd",
+      "sourceSha256": "cf605227dfffbef9d319a0ad12d843756fbce8a6453d38e01c3b207e6c4bf76f"
+    },
+    {
+      "slug": "core-lightning-2026-10-22-security-alert",
+      "sourceSha256": "7d66795c4881d6ce241d047bdf24b5b68d2afe203f80fe331c3daa2c4d7ac38f"
+    },
+    {
+      "slug": "delving-bitcoin-2026-09-24-security-alert",
+      "sourceSha256": "e417d5c9385aa0bf896dc24f024f3edba50dcef5eed14a065eceb311ee37cf18"
+    },
+    {
+      "slug": "delving-bitcoin-2026-10-01-security-alert",
+      "sourceSha256": "00c6b7ff9f67e0e821d5e254f9f2e3065aeb91d08d35c07a151d6cce1f2986df"
+    },
+    {
+      "slug": "delving-bitcoin-2026-10-01-security-alert-upd",
+      "sourceSha256": "4d3787e6a7d012bbba4b3e8d5f81c9b4a835143038ac33aca556464ceba6836a"
+    },
+    {
+      "slug": "delving-bitcoin-2026-10-06-security-alert",
+      "sourceSha256": "11f5641e9e63d9b8b27dd879c0e8d2baa25501b65bf412ae134ee2f6c69818f1"
+    },
+    {
+      "slug": "delving-bitcoin-2026-10-24-security-alert",
+      "sourceSha256": "040547266d2d0b7d1797bdda1fce1e21469a0d95913e53d92376dc8a19bc0a93"
+    },
+    {
+      "slug": "delving-bitcoin-2026-10-27-security-alert",
+      "sourceSha256": "f59b9920df91658ad41fb3ad3b5c94c41212f0dfb91bf2ced4d53ba11f3cf5db"
+    },
+    {
+      "slug": "delving-bitcoin-2026-10-28-security-alert",
+      "sourceSha256": "8619b353b6fd7257c3e1290d9451f1091768d610ca7f40c77584538b014fa848"
+    },
+    {
+      "slug": "eclair-2026-09-14-security-alert",
+      "sourceSha256": "4bc088582795b399392e491fe7ab885229ec218275737a7786da8d4278515ffa"
+    },
+    {
+      "slug": "eclair-2026-10-15-security-alert",
+      "sourceSha256": "5ee16b8f93ca19bbfba209c69192d880c2c6610fe5e54901e24b84ee6b74f5f2"
+    },
+    {
+      "slug": "eclair-2026-10-20-security-alert",
+      "sourceSha256": "80ab34969fc673672a5ecbd937dadcbb4ea69c8505e25ac768435e53539ae72f"
+    },
+    {
+      "slug": "eclair-2026-10-27-security-alert",
+      "sourceSha256": "b990093c8954f120aa4ebd02584227e187a7031025bebea63d49f5cabd4d16e8"
+    },
+    {
+      "slug": "electrum-2026-09-12-security-alert",
+      "sourceSha256": "7b436da93829902ed9a2672736421a55268e35cb57b3ff679a0c808acbe70d5b"
+    },
+    {
+      "slug": "electrum-2026-09-19-security-alert",
+      "sourceSha256": "2c08481471d06bb9dc13ea5ff3c1819cc6b6450431a6661e2f5a5494afc3bc6b"
+    },
+    {
+      "slug": "electrum-2026-10-24-security-alert",
+      "sourceSha256": "10dbb8b0a36706627dfad90e9a524be952e1123a018c40bae7c0214643f9c6fb"
+    },
+    {
+      "slug": "ghsa-malware-2026-09-03-security-alert",
+      "sourceSha256": "f61d0ecc3a662477c99d228a027bc4c0758ec470b04aa81c60b55a26f230e716"
+    },
+    {
+      "slug": "ghsa-malware-2026-09-07-security-alert",
+      "sourceSha256": "fe990fff72bd7df54dc952c22967cf1472136e779d8171b954dc0cd0dd461cfa"
+    },
+    {
+      "slug": "ghsa-malware-2026-09-30-security-alert",
+      "sourceSha256": "0c0150d0f06dbc12307222bf153f8703b50e5b14069224efb003111907a88a91"
+    },
+    {
+      "slug": "ghsa-malware-2026-10-05-security-alert",
+      "sourceSha256": "998ce9ad1a403abdfc037726162ba0f0aff26286bfe101392663ae01d5ae8739"
+    },
+    {
+      "slug": "ghsa-malware-2026-10-05-security-alert-upd",
+      "sourceSha256": "c3ffc460546936ec23044b433b38aee1eb3dbe9e9a675f68d9570b00dbfdef37"
+    },
+    {
+      "slug": "ghsa-malware-2026-10-05-security-alert-upd2",
+      "sourceSha256": "aa494e3e4a3b669de564d36289edf61dbdcf8d7211eced4357461ea8ea6ea6b5"
+    },
+    {
+      "slug": "ghsa-malware-2026-10-05-security-alert-upd3",
+      "sourceSha256": "f4e911bacf49964e9ce6937f62ab805cf3b8d380297f4a64870fd03fcab6bb96"
+    },
+    {
+      "slug": "ghsa-malware-2026-10-05-security-alert-upd4",
+      "sourceSha256": "4a8585fbddd343f22dfe4325f772240555a568877f0e0674449dd2d5a61b6f60"
+    },
+    {
+      "slug": "ghsa-malware-2026-10-05-security-alert-upd5",
+      "sourceSha256": "3289e58352638c698e232637b288523ef590ce6290c04bfedbbbf0a7ca46f7ae"
+    },
+    {
+      "slug": "ghsa-malware-2026-10-05-security-alert-upd6",
+      "sourceSha256": "981581d5bc07441c00b260d027cdc5b81477fc8c49f6a659583255dc600f206f"
+    },
+    {
+      "slug": "ghsa-malware-2026-10-05-security-alert-upd7",
+      "sourceSha256": "9e3878ef4f2718a05022b199e1c5676e0af33290f8f70079af00a05d6082a273"
+    },
+    {
+      "slug": "ghsa-malware-2026-10-11-security-alert",
+      "sourceSha256": "71ce4881e6ebf7dcb1e70535cf2df5f5b3c629c59740a18bda0de67c82ff9149"
+    },
+    {
+      "slug": "ghsa-malware-2026-10-11-security-alert-upd",
+      "sourceSha256": "8639852b455ad7273a79dcae3b0b6e0570a97de6be0cfe693eab203ae1f580ef"
+    },
+    {
+      "slug": "ghsa-malware-2026-10-11-security-alert-upd2",
+      "sourceSha256": "ad24801783259282939ffa749aa3c6a59c2423e71181c14c3e4ea9c7392aaf96"
+    },
+    {
+      "slug": "ghsa-malware-2026-10-11-security-alert-upd3",
+      "sourceSha256": "b3fcc117a0ca85b9fec991410d9473e582af4e3db00a5a7ef598d5da9cfd44fc"
+    },
+    {
+      "slug": "ghsa-malware-2026-10-11-security-alert-upd4",
+      "sourceSha256": "d09f35cc79ee12c3a7b08688c145f554b44e69a84b469a49531edd0cd2b3f32b"
+    },
+    {
+      "slug": "ghsa-malware-2026-10-11-security-alert-upd5",
+      "sourceSha256": "e034bd0b888694281070da6c50573bfa756478577eaa102155cdb68bf1bb12a1"
+    },
+    {
+      "slug": "ghsa-malware-2026-10-11-security-alert-upd6",
+      "sourceSha256": "eec21bf0d84fd6c6d9f23b7b76ded1e36780fa203709cbeef4b22f0bf98efbba"
+    },
+    {
+      "slug": "ghsa-malware-2026-10-11-security-alert-upd7",
+      "sourceSha256": "91d5f6028178ed99d8a93a9a1aa4dffa126cda2927d3bb7959c18bf2b2e7aa0c"
+    },
+    {
+      "slug": "ghsa-malware-2026-10-11-security-alert-upd8",
+      "sourceSha256": "55558bb3f619f1dc27b234148a54cd43a9dbf18153944807bb786ffe0160a8f3"
+    },
+    {
+      "slug": "ghsa-malware-2026-10-11-security-alert-upd9",
+      "sourceSha256": "3c44bed7987c0424e70267f45c51721305649c0c8634775ace738a4aab732dc8"
+    },
+    {
+      "slug": "keystone-2026-09-29-security-alert",
+      "sourceSha256": "95bbaa7263fdc5db41fc6ae6e2a8a9d44534e06391c8554c9a5c162176eea58a"
+    },
+    {
+      "slug": "keystone-2026-10-09-security-alert",
+      "sourceSha256": "427608252ee2429a6968ae59ffe9945f8ab6385f083638d637f2ce40ffc2f67f"
+    },
+    {
+      "slug": "keystone-2026-10-24-security-alert",
+      "sourceSha256": "4adfa13d3d82525566aa8bc1d25ec0dfc195f5dd93e4108c92a66777296f71db"
+    },
+    {
+      "slug": "keystone-2026-10-26-security-alert",
+      "sourceSha256": "b547003a4314c07a72672b56d8e98fd4f4747ebc426d660a2257c85d5e257d7e"
+    },
+    {
+      "slug": "keystone-2026-10-29-security-alert",
+      "sourceSha256": "4bec39fa1f55dbae1c6a31d5ab28b4e57f4daef47e7664ff2c88028fddf9e791"
+    },
+    {
+      "slug": "keystone-2026-10-30-security-alert",
+      "sourceSha256": "393efdeeca1ae22a7d14bf214e2eedfb9486595f349173c9753d8c0f0826fc10"
+    },
+    {
+      "slug": "ldk-2026-10-02-security-alert",
+      "sourceSha256": "3de5f5681e6cf166ab7f33023515341398772a51a0d11685460229cb13e4fe37"
+    },
+    {
+      "slug": "ledger-2026-08-27-donjon-bulletins",
+      "sourceSha256": "74484fdeda439728901d57cfa33d1d2cbd98d61b777d916d127a1750c34f32b7"
+    },
+    {
+      "slug": "ledger-2026-08-28-qr-phishing",
+      "sourceSha256": "d3f19929219dda65262a47d6db409141bdc2277711fdbf7d31a654d941d65edc"
+    },
+    {
+      "slug": "ledger-2026-10-09-security-alert",
+      "sourceSha256": "bbb567b542cc44ba3fbd9718b88dcd114a72a48859775b49629cbe620600ff4b"
+    },
+    {
+      "slug": "ledger-2026-10-10-security-alert",
+      "sourceSha256": "2ba137567d6fd416394cce84d59d02794917a097017a991938ee7361d9df5c57"
+    },
+    {
+      "slug": "ledger-2026-10-11-security-alert",
+      "sourceSha256": "dcc30be63e6bcac4575351ca2f2c523d9c4738ab43f172de6b28b7c4abbb0475"
+    },
+    {
+      "slug": "ledger-2026-10-13-security-alert",
+      "sourceSha256": "38e4540a1fb32d6699a2059a8909b7dd220952548fabc641edb10a35256de5ef"
+    },
+    {
+      "slug": "ledger-2026-10-13-security-alert-upd",
+      "sourceSha256": "49ca14cf9c6b88d653f206a0c4a16eb3edfb5e1fb47d30f903f674d8887a2f81"
+    },
+    {
+      "slug": "ledger-2026-10-13-security-alert-upd2",
+      "sourceSha256": "b84b141b4180eaa02aba3b6af50247d22c8e36f9ed3cfd2f66980061b57f2f0f"
+    },
+    {
+      "slug": "liana-2026-09-15-security-alert",
+      "sourceSha256": "320c577e7d0ec771e176295784ae45e9c8dd08013179797864c3e255dab8af07"
+    },
+    {
+      "slug": "lnd-2026-10-22-security-alert",
+      "sourceSha256": "1741a28ddf90c7af7bf29151cc6b7169b6f6d5fbb622407b6eeff8a538141405"
+    },
+    {
+      "slug": "lnd-2026-10-30-security-alert",
+      "sourceSha256": "ac6162cfd3c0c93a8b0fd7768464c7d5dff20b3620c06c2de0e559a88fbf7aa0"
+    },
+    {
+      "slug": "mempool-2026-09-08-security-alert",
+      "sourceSha256": "9607510293f43e81c383dadb3d34108b12c0ab6a6ea65b2d5cecc2ade0ce43f9"
+    },
+    {
+      "slug": "mynode-2026-10-26-security-alert",
+      "sourceSha256": "d196d632c2a4832bbd01e987b5539268fb3b3ec0508c25c1926b7b3055c1283c"
+    },
+    {
+      "slug": "mynode-2026-10-30-security-alert",
+      "sourceSha256": "d3dd6368f6e48a88ea14108085a2b62bc225a30f8a3e9c309954357add9b2e3f"
+    },
+    {
+      "slug": "mynode-2026-10-30-security-alert-upd",
+      "sourceSha256": "f5d3efcffd03306fcf2ea2cbb13cedfe2c0a0d96003bc02591a627eb6c801c9c"
+    },
+    {
+      "slug": "mynode-2026-10-31-security-alert",
+      "sourceSha256": "d8205e45a19f749f07f06b3a944af3bf9b4231785b804137c68cb1adabe82b57"
+    },
+    {
+      "slug": "mynode-2026-10-31-security-alert-upd",
+      "sourceSha256": "fc08e51602e80e8766854ee5f66a50521d16bfc2a1f41409f82dd329b047a5bb"
+    },
+    {
+      "slug": "npm-2026-08-29-test-in-one",
+      "sourceSha256": "46cb740ff2030d1f709a476f5f8493b6b4b3a75f2b5366baf69b140c28ead20d"
+    },
+    {
+      "slug": "passport-2026-10-28-security-alert",
+      "sourceSha256": "33d27d09ae210cbc95315c8477a253085daf9871984f375eddc95fb023fd6d4f"
+    },
+    {
+      "slug": "phoenix-2026-10-20-security-alert",
+      "sourceSha256": "f3c4fd362a72779aaeef831de690074cde214ab3cd9e08ed3af7012d5c3e7955"
+    },
+    {
+      "slug": "robosats-2026-09-12-security-alert",
+      "sourceSha256": "1978319e331d04cfac2443fb9d09fc57443d85357db06b6205e350197d8b99f8"
+    },
+    {
+      "slug": "robosats-2026-10-31-security-alert",
+      "sourceSha256": "934e05bb0051bd963ff2bff95b86eb1eea31178ffaed5b34f00f583b6681dd7c"
+    },
+    {
+      "slug": "seedsigner-2026-10-23-security-alert",
+      "sourceSha256": "dc2c676d7fbf97788436ebf3d44d4d990d83bb98849cd628be1cc23dc1ce3c24"
+    },
+    {
+      "slug": "seedsigner-2026-10-26-security-alert",
+      "sourceSha256": "f1fff6017a7ee655fb63e1e7386dc679918cb3bb1723d85b41a17249a227980b"
+    },
+    {
+      "slug": "seedsigner-2026-10-30-security-alert",
+      "sourceSha256": "dedc43c3d84dd759731d3f8c8d69495c85bbce5f0ab2e120a5d1681b4fef2296"
+    },
+    {
+      "slug": "sparrow-2026-10-29-security-alert",
+      "sourceSha256": "4109823e03c0e02819b10376dc6db370ba32bb1c0f01e017ae3e936fd658b450"
+    },
+    {
+      "slug": "sparrow-2026-10-29-security-alert-upd",
+      "sourceSha256": "514ae5b799bb17ef99d969b6ceb8681ac7fc78fdfbffe424503619101d6787b9"
+    },
+    {
+      "slug": "specter-2026-09-01-security-alert",
+      "sourceSha256": "2e11a0e0ef7cc1318580e57f3c3ef0c778fe1ef6d0a752fcafbe52698036881d"
+    },
+    {
+      "slug": "specter-2026-09-01-security-alert-upd",
+      "sourceSha256": "8b7b27a2de42d4ac44d36903e23214ed859a51379dd74388e172fbee6359123c"
+    },
+    {
+      "slug": "specter-2026-09-01-security-alert-upd2",
+      "sourceSha256": "7c5d943b48cb677dc0c60d9cecde7ea684f03f4eb478660ede0e3344c080969e"
+    },
+    {
+      "slug": "specter-2026-09-06-security-alert",
+      "sourceSha256": "97c6712297baec9c07ff5e5a63aa2ff125584abcea6ce63c9711c10c3eb8f466"
+    },
+    {
+      "slug": "specter-2026-09-10-security-alert",
+      "sourceSha256": "0233fd52db40f8800e17acd0ab413fad9a26dd4ac94615524fd3c89788290579"
+    },
+    {
+      "slug": "stacker-news-security-2026-09-09-security-alert",
+      "sourceSha256": "605c7107e2d07ed520d126ae3b0bce2531a6bd2ad91655675f3603214ea47d18"
+    },
+    {
+      "slug": "stacker-news-security-2026-09-12-security-alert",
+      "sourceSha256": "557f2351aa490d8f8b4cf13b5987aa69ba3a1e5f3dd34d3b131b7b4d30f40cfa"
+    },
+    {
+      "slug": "stacker-news-security-2026-09-18-security-alert",
+      "sourceSha256": "0ceaa474df982a7d3db78e361e7a5dbba90b2f4698d5025efac02e9ae3730700"
+    },
+    {
+      "slug": "stacker-news-security-2026-09-20-security-alert",
+      "sourceSha256": "f6c8edcc9f9b5cb7f91da4278e5aa95fa7b5da523f98d16f70f1895aa53e8d46"
+    },
+    {
+      "slug": "stacker-news-security-2026-09-21-security-alert",
+      "sourceSha256": "f63517a02791960891fbefb2af5bf27304d4b531c7eb64656a7b687e4d1902ab"
+    },
+    {
+      "slug": "start9-2026-08-26-cln-update",
+      "sourceSha256": "bfa2b5e9b223ae52dd516457ac1e501e3164316a8d8da5b8581ecd305fc09d40"
+    },
+    {
+      "slug": "start9-2026-09-01-security-alert",
+      "sourceSha256": "228e036dcd097ba550b3cfaa0004a9c92e7fa680260842b15b2334c0b64902dc"
+    },
+    {
+      "slug": "start9-2026-09-15-security-alert",
+      "sourceSha256": "4b6e5d3118359ffee695fe69be28c0e066dfb169b969f873341bdc6c9cb0f364"
+    },
+    {
+      "slug": "start9-2026-10-01-security-alert",
+      "sourceSha256": "6f47828e386ac30619762e45caf8e93b3575e30d364968529c4479cd3c514e68"
+    },
+    {
+      "slug": "start9-2026-10-07-security-alert",
+      "sourceSha256": "15fd7813f411c422cf2173a90af510cd30893a626e6319183933cc3895963154"
+    },
+    {
+      "slug": "start9-2026-10-27-security-alert",
+      "sourceSha256": "6b45c04ee509b0daabf69bed893cb7d201cc0fa5138b864f9891e25b7be7a734"
+    },
+    {
+      "slug": "start9-2026-10-30-security-alert",
+      "sourceSha256": "b44fce8abec730ee901931e4140cc8bea91e792494306a081f272167e0d1c123"
+    },
+    {
+      "slug": "start9-2026-10-31-security-alert",
+      "sourceSha256": "a3e6a1ed5d348d7a4ae78215184c78fc0a54ca618bc7e856b3d23962dab470eb"
+    },
+    {
+      "slug": "strike-2026-09-06-security-alert",
+      "sourceSha256": "c6457390c60fc45ca0882bfc23a21f77336149238f9d30b1da302545281c4b80"
+    },
+    {
+      "slug": "tangem-2026-10-11-support-data-breach",
+      "sourceSha256": "9c70af759b8d697392a41361e979920cf1a3b77bab1ee407147eff19370b5513",
+      "manualIdentity": "manual-translation:tangem-2026-10-11-support-data-breach"
+    },
+    {
+      "slug": "trezor-2026-09-04-security-alert",
+      "sourceSha256": "e3d78d6ff37702e80ba249764f3cf1a2d13d82d8a1f75e662b4106ccbde086c6"
+    },
+    {
+      "slug": "trezor-2026-09-09-security-alert",
+      "sourceSha256": "b6a7727faada806dfe49bc6e19658bf1dabd3bc8ba1025b93d9ef54e2e4df217"
+    },
+    {
+      "slug": "trezor-2026-09-10-security-alert",
+      "sourceSha256": "bd99b6f9bada093485db0aa5b0bbe660e57532029ca2725a6055b99332880154"
+    },
+    {
+      "slug": "trezor-2026-10-30-security-alert",
+      "sourceSha256": "b2a543bb772590e3b525117e362ff433bb47ae98d6014b4eab1177c33c024520"
+    },
+    {
+      "slug": "umbrel-2026-08-27-cln-update",
+      "sourceSha256": "d2e30e26bd4b025b11d971648d24e564b39051f4f46692bf7a4cd1d8127e8106"
+    },
+    {
+      "slug": "unchained-2026-10-13-security-alert",
+      "sourceSha256": "e95aa0b1c0b9b9afd9b9d3f588b433bed8c4c1e26ea4389c09d87264cee5de19"
+    },
+    {
+      "slug": "wasabi-2026-10-27-security-alert",
+      "sourceSha256": "5a8c05cffeca01cc69e501a757c3ebbeb9cb875d8f70dcb10315513448914f4c"
+    },
+    {
+      "slug": "zeus-2026-09-18-security-alert",
+      "sourceSha256": "53f17ed0bb80007d437b730503f20045485b456967da27f6e93d1849b8f01aa2"
+    }
+  ]
+}

@@ -4,6 +4,8 @@ import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
+import { displayUrgency } from '../src/status.ts';
+import { displayAudience } from '../src/audience.ts';
 
 import {
   FIXTURES,
@@ -263,7 +265,7 @@ test('temporary fixture cleanup also runs after a failed assertion', async () =>
 test('English routes stay honest with an empty corpus and a paired artifact', async () => {
   await withTemporaryDirectory(async (directory) => {
     const site = join(directory, 'site');
-    await copySite(site);
+    await copySite(site, { emptyEnglishIncidents: true });
     let build = buildSite(site);
     assert.equal(build.status, 0, `${build.stdout}\n${build.stderr}`);
     const emptyFeed = await text(join(site, 'dist/en/feed/index.html'));
@@ -705,7 +707,7 @@ test('isolated generated fixtures preserve routes, archive behavior, status rend
     assert.ok(rootPage.includes(audienceLink('holders', 'Ходлеры')));
     assert.ok(nodeOperatorPage.includes(audienceLink('node_operators', 'Операторы нод')));
     assert.ok(merchantPage.includes(audienceLink('merchant_infra', 'Мерчанты')));
-    const entries = await corpus(join(site, 'src/content'));
+    const entries = [...await corpus(join(site, 'src/content/incidents')), ...await corpus(join(site, 'src/content/archive'))];
     const own = entries.filter(({ data }) => !data.external && !data.draft);
     const roots = own.filter(({ data }) => !data.parent);
     const expectedRecentRoots = roots.filter(({ data }) => data.pubDate.valueOf() >= Date.now() - 365 * 864e5).length;
@@ -975,7 +977,7 @@ links: [{label: Source, url: "https://source.example/advice"}]
     assert.ok(card.includes('--accent: var(--dim)'));
     for (const label of ['Эксплуатация подтверждена', 'Патча нет', 'Патч есть']) assert.ok(!card.includes(label));
     assert.ok(index.includes('data-since="2034-09-03T23:59:59.000Z"'), 'late updates must not reset the root counter');
-    const entries = await corpus(join(site, 'src/content'));
+    const entries = [...await corpus(join(site, 'src/content/incidents')), ...await corpus(join(site, 'src/content/archive'))];
     const own = entries.filter(({ data }) => !data.external && !data.draft);
     const recentRoots = own.filter(({ data }) => !data.parent && data.pubDate.valueOf() >= Date.now() - 365 * 864e5);
     assert.ok(index.includes(`<span>за год<b>${recentRoots.length}</b></span>`));
@@ -1084,7 +1086,7 @@ test('versioned English contract bytes stay paired with the authored Russian fix
 test('English and Russian collections isolate equal basenames and emit only real alternates', async () => {
   await withTemporaryDirectory(async (directory) => {
     const site = join(directory, 'site');
-    await copySite(site);
+    await copySite(site, { emptyEnglishIncidents: true });
     await mkdir(join(site, 'src/content/en/incidents'), { recursive: true });
 
     const ruBytes = await readFile(join(FIXTURES, 'site-generated-alert-ru-en-v1.md'));
@@ -1135,7 +1137,7 @@ test('English and Russian collections isolate equal basenames and emit only real
 
   await withTemporaryDirectory(async (directory) => {
     const site = join(directory, 'site');
-    await copySite(site);
+    await copySite(site, { emptyEnglishIncidents: true });
     const build = buildSite(site);
     assert.equal(build.status, 0, `${build.stdout}\n${build.stderr}`);
     assert.equal(existsSync(join(site, 'dist/en/incidents/blink-2026-09-19-security-alert/index.html')), false);
@@ -1161,7 +1163,7 @@ test('English and Russian collections isolate equal basenames and emit only real
 test('English orphan updates keep one RU-anchored incident before and after their English root arrives', async () => {
   await withTemporaryDirectory(async (directory) => {
     const site = join(directory, 'site');
-    await copySite(site);
+    await copySite(site, { emptyEnglishIncidents: true });
     const enDirectory = join(site, 'src/content/en/incidents');
     await mkdir(enDirectory, { recursive: true });
     const root = 'fixture-en-thread-root';
@@ -1380,9 +1382,89 @@ const EN_ARCHIVE_IDS = [
   '2026-07-30-coldcard-entropy', '2026-01-30-phpcoinaddress', '2025-04-03-pypi-bitcoinlib',
   '2024-01-04-bip3x-weak-rng', '2023-11-14-randstorm', '2023-08-08-milk-sad',
   '2022-06-07-electrum-file-scheme', '2021-05-11-cake-wallet-seeds',
+  '2020-05-18-coldcard-laser', '2020-01-31-trezor-voltage-glitch', '2018-11-20-event-stream-copay',
+  '2014-04-11-heartbleed', '2013-08-11-android-securerandom',
 ];
 
-test('the eight selected English chronicles retain RU dates and source identity without alert fields', async () => {
+test('historical English translations stay visible without becoming new RSS announcements', async () => {
+  await withTemporaryDirectory(async root => {
+    const site = join(root, 'site'); await copySite(site);
+    const catalog = JSON.parse(await text(join(site, 'src/data/en-historical-import.json')));
+    assert.equal(catalog.entries.length, 162);
+    const fixture = frontmatter(await text(join(FIXTURES, 'site-generated-alert-en-v1.md')));
+    delete fixture.parent;
+    const existing = { ...fixture, title: 'Existing live English alert', pubDate: '2039-01-01T00:00:00.000Z',
+      enPublishedAt: '2039-01-01T01:00:00.000Z' };
+    await writeFile(join(site, 'src/content/en/incidents/fixture-en-existing-live.md'),
+      `---\n${Object.entries(existing).map(([k,v]) => `${k}: ${JSON.stringify(v)}`).join('\n')}\n---\n`);
+    const importedIds = new Set(catalog.entries.map(entry => entry.slug));
+    const baseline = (await corpus(join(site, 'src/content/en/incidents'))).filter(entry => !importedIds.has(entry.id));
+    let build = buildSite(site); assert.equal(build.status, 0, `${build.stdout}\n${build.stderr}`);
+    let rss = await text(join(site, 'dist/en/rss.xml'));
+    assert.equal((rss.match(/<item>/g) ?? []).length, baseline.length, 'only actual non-imported entries belong in RSS');
+    for (const entry of baseline) {
+      const { item } = rssItemFor(rss, entry.id, 'en');
+      assert.ok(item.includes(new Date(entry.data.enPublishedAt).toUTCString()));
+    }
+    for (const { slug } of catalog.entries) assert.ok(!rss.includes(`/en/incidents/${slug}/`));
+    const feed = await text(join(site, 'dist/en/feed/index.html'));
+    for (const { slug } of catalog.entries) {
+      assert.ok(feed.includes(`/en/incidents/${slug}/`), `${slug}: history remains visible`);
+      assert.ok(existsSync(join(site, `dist/en/incidents/${slug}/index.html`)), `${slug}: own page remains`);
+    }
+    const parent = 'start9-2026-08-26-cln-update';
+    const ruParent = frontmatter(await text(join(site, `src/content/incidents/${parent}.md`)));
+    const added = ['fresh-en-root', 'fresh-en-update'];
+    for (const [index, id] of added.entries()) {
+      const data = { ...fixture, title: `Fresh English ${index ? 'update' : 'root'}`, description: 'Newly published English content.',
+        pubDate: `2040-01-0${index + 1}T00:00:00.000Z`, enPublishedAt: `2040-01-0${index + 1}T01:00:00.000Z`,
+        incidentKey: index ? ruParent.incidentKey : 'fixture|fresh-en-root', ...(index ? { parent } : {}) };
+      await writeFile(join(site, `src/content/en/incidents/${id}.md`), `---\n${Object.entries(data).map(([k,v]) => `${k}: ${JSON.stringify(v)}`).join('\n')}\n---\n`);
+    }
+    build = buildSite(site); assert.equal(build.status, 0, `${build.stdout}\n${build.stderr}`);
+    rss = await text(join(site, 'dist/en/rss.xml'));
+    assert.equal((rss.match(/<item>/g) ?? []).length, baseline.length + added.length);
+    for (const entry of baseline) rssItemFor(rss, entry.id, 'en');
+    for (const [index, id] of added.entries()) {
+      const { item, canonical } = rssItemFor(rss, id, 'en');
+      assert.ok(item.includes(`<guid isPermaLink="true">${canonical}</guid>`));
+      assert.ok(item.includes(new Date(`2040-01-0${index + 1}T01:00:00.000Z`).toUTCString()));
+      assert.match(item, /Newly published English content/);
+    }
+    for (const { slug } of catalog.entries) assert.ok(!rss.includes(`/en/incidents/${slug}/`));
+    const update = await text(join(site, 'dist/en/incidents/fresh-en-update/index.html'));
+    assert.ok(update.includes(`href="/en/incidents/${parent}/"`));
+  });
+});
+
+test('the manual import preserves source metadata and rejects a malformed catalog at build', async () => {
+  const catalog = JSON.parse(await text(join(REPOSITORY, 'src/data/en-historical-import.json')));
+  const imported = await corpus(join(REPOSITORY, 'src/content/en/incidents'));
+  const byId = new Map(imported.map(entry => [entry.id, entry.data]));
+  let updates = 0;
+  for (const entry of catalog.entries) {
+    const ruBytes = await readFile(join(REPOSITORY, `src/content/incidents/${entry.slug}.md`));
+    assert.equal(createHash('sha256').update(ruBytes).digest('hex'), entry.sourceSha256, entry.slug);
+    const ru = frontmatter(ruBytes.toString()), en = byId.get(entry.slug);
+    assert.ok(en, entry.slug);
+    assert.equal(en.pubDate.toISOString(), ru.pubDate.toISOString());
+    assert.equal(en.product, ru.product); assert.equal(en.vendor, ru.vendor);
+    assert.deepEqual(displayUrgency(en, 'en'), displayUrgency(ru, 'en'));
+    assert.deepEqual(displayAudience(en.audience, 'en'), displayAudience(ru.audience, 'en'));
+    assert.deepEqual(en.links, ru.links); assert.equal(en.parent, ru.parent);
+    assert.equal(en.incidentKey, ru.incidentKey ?? entry.manualIdentity);
+    if (en.parent) { updates++; assert.ok(byId.has(en.parent)); }
+  }
+  assert.equal(updates, 37);
+  await withTemporaryDirectory(async root => {
+    const site = join(root, 'site'); await copySite(site);
+    await writeFile(join(site, 'src/data/en-historical-import.json'), JSON.stringify({ ...catalog, entries: [...catalog.entries, catalog.entries[0]] }));
+    const build = buildSite(site); assert.notEqual(build.status, 0);
+    assert.match(`${build.stdout}\n${build.stderr}`, /Invalid EN historical import catalog/);
+  });
+});
+
+test('the selected English chronicles retain RU dates and source identity without alert fields', async () => {
   const entries = await corpus(join(REPOSITORY, 'src/content/en/archive'));
   assert.deepEqual(entries.map(e => e.id).sort(), [...EN_ARCHIVE_IDS].sort());
   for (const { id, data } of entries) {

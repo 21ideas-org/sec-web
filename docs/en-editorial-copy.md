@@ -1,10 +1,12 @@
-# English website copy for owner review
+# English website copy
 
 The English About, Sources, and Support copy is rendered from the corresponding
 `src/pages/en/` files. The 404 copy lives in the single shared, English-only
 `src/pages/404.astro`, which Pages serves for every missing path, including `/en/...`.
-Review those pages alongside this glossary before public rollout.
-This draft does not approve deployment or historical English incident roots.
+The owner approved About, Sources, Support and the UI terms below on 2026-11-01.
+This table records interface labels; it is not an input to English generation.
+The subsequent manual history import is documented in
+[`en-historical-import.md`](en-historical-import.md). Deployment remains separate.
 
 | Russian UI term | English UI term | Scope |
 | --- | --- | --- |
@@ -30,3 +32,5 @@ been translated.
 The eight selected English chronicles and their source/date/title review are in
 [`en-chronicles-review.md`](en-chronicles-review.md). They are external references,
 separate from English incident roots and the automated producer contract.
+The later owner-authorized import adds the remaining five external Chronicle titles
+without repeating that source review; all 13 retain their original dates and links.

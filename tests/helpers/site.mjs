@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { cp, mkdtemp, readFile, readdir, rm, symlink } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, readFile, readdir, rm, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -22,7 +22,7 @@ export async function withTemporaryDirectory(run) {
   }
 }
 
-export async function copySite(target) {
+export async function copySite(target, { emptyEnglishIncidents = false } = {}) {
   const excluded = new Set(['.astro', '.astro-cache', '.git', 'dist', 'node_modules']);
   await cp(REPOSITORY, target, {
     recursive: true,
@@ -31,6 +31,11 @@ export async function copySite(target) {
       return !excluded.has(first);
     },
   });
+  if (emptyEnglishIncidents) {
+    const incidents = join(target, 'src/content/en/incidents');
+    await rm(incidents, { recursive: true, force: true });
+    await mkdir(incidents, { recursive: true });
+  }
   await symlink(join(REPOSITORY, 'node_modules'), join(target, 'node_modules'), 'dir');
 }
 
