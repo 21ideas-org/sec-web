@@ -1,5 +1,10 @@
 # Selected English chronicles for owner review (#196)
 
+Historical scope note: the eight titles/dates below were owner-approved and merged
+in sec-web PR #39. The later #285 import adds five more direct title translations
+without repeating source verification; see [en-historical-import.md](en-historical-import.md).
+The original review record below describes the earlier eight-entry slice.
+
 Owner scope, 2026-10-31: prepare exactly the eight external references selected from
 the Russian Chronicles section. This extends the original active-root preparation
 scope of [central #196](https://github.com/21ideas-org/sec-watcher-bot/issues/196) to a

@@ -34,6 +34,10 @@ Issue обязан содержать применимые решения websit
   Artifact frontmatter-only: непустое Markdown body также останавливает build, а не
   публикуется и не отбрасывается молча. EN RSS читает только готовые EN artifacts,
   использует frozen `enPublishedAt` и сохраняет стабильный permalink/GUID.
+  Конечный ручной импорт из `src/data/en-historical-import.json` исключается из EN RSS
+  по exact slug через `src/en-historical-import.ts`; страницы/треды/счётчики остаются.
+  Новые updates к импортированному root не наследуют исключение. Происхождение и
+  ручная Tangem identity — в `docs/en-historical-import.md`; producer schema не менять.
   `hreflang` выводится только когда реально существуют оба locale artifacts с
   одинаковым basename.
 - Incident filename: `<product>-<YYYY-MM-DD>-<short>.md`; date — UTC frozen logical

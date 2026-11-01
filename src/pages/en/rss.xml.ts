@@ -6,6 +6,7 @@ import { displayUrgency } from '../../status.ts';
 import { displayAudience } from '../../audience.ts';
 import { displaySourceLinks } from '../../source-links.ts';
 import type { EnIncident } from '../../en-incidents.ts';
+import { isEnHistoricalImport } from '../../en-historical-import.ts';
 
 const esc = (value: string) => value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 function content(entry: EnIncident): string {
@@ -20,7 +21,8 @@ function content(entry: EnIncident): string {
   ].filter(Boolean).join('\n');
 }
 export async function GET(context: APIContext) {
-  const posts = (await allEnIncidents()).sort((a, b) => b.data.enPublishedAt.valueOf() - a.data.enPublishedAt.valueOf());
+  const posts = (await allEnIncidents()).filter((entry) => !isEnHistoricalImport(entry.id))
+    .sort((a, b) => b.data.enPublishedAt.valueOf() - a.data.enPublishedAt.valueOf());
   return rss({
     title: `${SITE_NAME} · English`,
     description: 'Bitcoin security alerts in English.',
