@@ -641,6 +641,10 @@
       "sourceSha256": "d2e30e26bd4b025b11d971648d24e564b39051f4f46692bf7a4cd1d8127e8106"
     },
     {
+      "slug": "umbrel-2026-11-01-security-alert",
+      "sourceSha256": "54860daa64552fe1f51807f5eddace771339f1a3dfb62de6088de2b873749b6a"
+    },
+    {
       "slug": "unchained-2026-10-13-security-alert",
       "sourceSha256": "e95aa0b1c0b9b9afd9b9d3f588b433bed8c4c1e26ea4389c09d87264cee5de19"
     },

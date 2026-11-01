@@ -1390,7 +1390,7 @@ test('historical English translations stay visible without becoming new RSS anno
   await withTemporaryDirectory(async root => {
     const site = join(root, 'site'); await copySite(site);
     const catalog = JSON.parse(await text(join(site, 'src/data/en-historical-import.json')));
-    assert.equal(catalog.entries.length, 162);
+    assert.equal(catalog.entries.length, 163);
     const fixture = frontmatter(await text(join(FIXTURES, 'site-generated-alert-en-v1.md')));
     delete fixture.parent;
     const existing = { ...fixture, title: 'Existing live English alert', pubDate: '2039-01-01T00:00:00.000Z',

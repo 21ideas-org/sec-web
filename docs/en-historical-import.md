@@ -1,6 +1,6 @@
 # Manual English history import (#285)
 
-This finite import contains direct English translations of 162 published Russian
+The original batch contains direct English translations of 162 published Russian
 announcements from `sec-web` revision `682418481d8b8d7d9fae8599de1519a5204c195e`,
 plus five Chronicle titles completing the 13 external references. The eight earlier
 English Chronicles are retained unchanged. The owner authorized translation and PR
@@ -18,12 +18,37 @@ producer fixture are unchanged. `enPublishedAt` records the actual preparation t
 `2026-11-01T06:51:04.634Z`; it does not pretend that English versions existed on the
 original Russian publication dates.
 
-`src/data/en-historical-import.json` records the fixed source revision, preparation
-time and each imported slug with its original RU file SHA-256. The hash is provenance
-for that snapshot, not an assertion that the source claims are correct. Tangem's
+The top-level `sourceCommit` and `preparedAt` in `src/data/en-historical-import.json`
+identify that original 162-entry batch. Each catalog entry records the exact RU file
+SHA-256 and the slug excluded from RSS. A later scoped addendum retains those original
+batch fields; its separate source revision is documented below and its actual English
+preparation time is frozen in its artifact. Source hashes identify the text translated,
+not an assertion that the source claims are correct. Tangem's
 `tangem-2026-10-11-support-data-breach` is the sole RU entry without `incidentKey`;
 its catalog entry records a stable `manual-translation:<slug>` site identity. This
 opaque key is not a recovered runtime incident identity and creates no bot state.
+
+## Umbrel launch-window addendum (#286)
+
+`umbrel-2026-11-01-security-alert` is a single manual addition from sec-web revision
+`70ec38bf667502d39f737d898cd6d87afdfb152b`. Its RU publication time,
+`2026-11-01T09:31:11.512Z`, falls after the original import preparation and before
+#197's immutable activation floor, `2026-11-01T10:31:41.209Z`. It was therefore absent
+from the initial English batch and ineligible for forward-only runtime authoring.
+The owner's request to add this missing announcement authorizes this one explicit
+addition, bringing the catalog to 163 entries.
+
+The artifact preserves the RU basename, date, identity, classification and links;
+`enPublishedAt` records its actual later preparation, rather than the original batch
+time. Its source hash is recorded in the catalog. The translation preserves the x86
+kernel fix versus the Raspberry Pi traffic-blocking mitigation, the remaining release
+details and the already-updated/no-further-action condition. This is a translation of
+the accepted public RU text, without renewed factual or eligibility assessment.
+
+The exact added slug is excluded from RSS alongside the original batch; future updates
+remain eligible. No original artifact or producer schema changes. This site addition
+does not move the activation floor, process its dormant runtime job, or count as
+#197's first native authoring/delivery acceptance case.
 
 ## RSS boundary
 
@@ -51,7 +76,7 @@ does not prove live English generation quality or complete #197.
 ## Deterministic verification
 
 The regression first demonstrated that the prepared history flooded RSS with new
-items. Actual-corpus tests now verify all 162 historical pages/feed entries remain
+items. Actual-corpus tests now verify all 163 historical pages/feed entries remain
 visible and absent from RSS; an additional standalone fixture and an update to an
 imported root enter RSS with their frozen timestamps and GUIDs. The actual-corpus
 RSS regression retains a preexisting
