@@ -54,3 +54,17 @@ test('each fact combination has the agreed accent priority with textual labels a
   assert.equal(statusDiagnostic({ statusTags: ['future'] }), undefined);
   assert.equal(statusDiagnostic({ statusTags: ['patch_available', 'patch_unavailable'] }), 'Conflicting patch status tags: both patch claims omitted.');
 });
+
+
+test('unsafe instructions suppress every status fact without changing historical hijack semantics', () => {
+  for (const locale of ['ru', 'en'] as const) {
+    for (const facts of [
+      { statusTags: ['exploitation_confirmed', 'patch_available'] },
+      { urgency: ['#эксплуатируется', '#патча_нет'], exploitationStatus: 'active', fixStatus: 'available' },
+    ]) {
+      assert.deepEqual(displayUrgency({ ...facts, unsafeInstruction: true }, locale), []);
+      assert.equal(displayUrgency({ ...facts, unsafeInstruction: false }, locale).length, 2);
+      assert.equal(displayUrgency({ ...facts, hijacked: true }, locale).length, 2);
+    }
+  }
+});

@@ -1,0 +1,13 @@
+---
+import { instructionWarning } from '../instruction-safety.ts';
+interface Props {
+  vendor?: string;
+  locale?: 'ru' | 'en';
+}
+const { vendor, locale = 'ru' } = Astro.props;
+const warning = instructionWarning(vendor, locale);
+---
+<aside class="instruction-warning panel" role="alert">
+  <strong>{warning.title}</strong>
+  <p>{warning.action}</p>
+</aside>

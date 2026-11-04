@@ -1,3 +1,4 @@
+import { instructionWarning } from '../instruction-safety.ts';
 import rss from '@astrojs/rss';
 import type { APIContext } from 'astro';
 import { SITE_DESCRIPTION, SITE_NAME } from '../consts.ts';
@@ -15,8 +16,7 @@ const esc = (t: string) =>
     .replace(/'/g, '&#39;');
 
 const sources = (e: Incident) => {
-  if (e.data.hijacked) return false;
-  const links = displaySourceLinks(e.data.links);
+  const links = displaySourceLinks(e.data.links, e.data);
   if (links.length === 0) return false;
   if (links.length === 1) {
     const [{ label, url }] = links;
@@ -40,14 +40,16 @@ const sources = (e: Incident) => {
  * не докликивает, а это единственная строка поста, ради которой он написан.
  */
 function itemContent(e: Incident): string {
+  const warning = instructionWarning(e.data.vendor);
   return [
+    e.data.unsafeInstruction && `<p><strong>${esc(warning.title)}</strong><br>${esc(warning.action)}</p>`,
     e.data.hijacked &&
       `<p><strong>Похоже, официальный аккаунт ${esc(e.data.vendor ?? 'вендора')} угнан.</strong><br>` +
         'Не переходите по ссылкам из его постов и никуда не вводите seed.</p>',
     e.data.description && `<p>${esc(e.data.description)}</p>`,
     e.data.action && `<p><strong>Что делать:</strong> ${esc(e.data.action)}</p>`,
     sources(e),
-    e.body?.trim(),
+    !e.data.unsafeInstruction && e.body?.trim(),
   ]
     .filter(Boolean)
     .join('\n');

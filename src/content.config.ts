@@ -44,6 +44,8 @@ const incidentSchema = z.object({
   updateSufficiency: z.string().optional(),
   actionTiming: z.string().optional(),
   hijacked: z.boolean().optional(),
+  /** Warning about this message, independent of account compromise. */
+  unsafeInstruction: z.boolean().optional(),
 
   /**
    * Ссылки приходят из вердикта ПОСЛЕ позиционной сверки. Модель не выдаёт
@@ -70,6 +72,9 @@ const incidentSchema = z.object({
   sourceUrl: z.url().optional(),
 
   draft: z.boolean().default(false),
+}).refine((data) => !(data.hijacked && data.unsafeInstruction), {
+  path: ['unsafeInstruction'],
+  message: 'hijacked and unsafeInstruction cannot both be true',
 });
 
 const incidents = defineCollection({
@@ -110,6 +115,7 @@ const enIncidentSchema = z
     vendor: z.string().optional(),
     action: z.string().optional(),
     hijacked: z.boolean(),
+    unsafeInstruction: z.boolean().optional(),
     incidentKey: z.string().min(1),
     parent: z.string().min(1).optional(),
     enPublishedAt: frozenUtcTimestamp,
@@ -123,6 +129,13 @@ const enIncidentSchema = z
   })
   .strict()
   .superRefine((data, context) => {
+    if (data.hijacked && data.unsafeInstruction) {
+      context.addIssue({
+        code: 'custom',
+        path: ['unsafeInstruction'],
+        message: 'hijacked and unsafeInstruction cannot both be true',
+      });
+    }
     if (data.enPublishedAt.valueOf() < data.pubDate.valueOf()) {
       context.addIssue({
         code: 'custom',

@@ -1,4 +1,5 @@
 ---
+import InstructionWarning from '../../../components/InstructionWarning.astro';
 import Base from '../../../layouts/Base.astro';
 import Audience from '../../../components/Audience.astro';
 import Urgency from '../../../components/Urgency.astro';
@@ -37,7 +38,7 @@ const historyLabel = group.hasEnglishRoot
   ? (root?.data.title ?? 'Incident history')
   : 'Russian incident history';
 const subject = [d.product, d.vendor !== d.product ? d.vendor : null].filter(Boolean).join(' · ');
-const sourceLinks = displaySourceLinks(d.links);
+const sourceLinks = displaySourceLinks(d.links, d);
 const urgency = displayUrgency(d, 'en');
 ---
 <Base
@@ -66,6 +67,8 @@ const urgency = displayUrgency(d, 'en');
     <h1 set:html={keepFlags(d.title)} />
     {d.description && <p set:html={keepFlags(d.description)} />}
 
+    {d.unsafeInstruction && <InstructionWarning vendor={d.vendor} locale="en" />}
+
     {
       d.hijacked && (
         <aside class="hijack panel" role="alert">
@@ -85,7 +88,7 @@ const urgency = displayUrgency(d, 'en');
     }
 
     {
-      !d.hijacked && sourceLinks.length > 0 && (
+      sourceLinks.length > 0 && (
         <div class="links">
           {sourceLinks.length === 1 ? (
             <p><strong>Source:</strong> <a href={sourceLinks[0]!.url} rel="noopener">{sourceLinks[0]!.label}</a></p>

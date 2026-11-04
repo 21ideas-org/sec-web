@@ -1,3 +1,5 @@
+import type { InstructionMarkers } from './instruction-safety.ts';
+
 export interface SourceLink {
   label: string;
   url: string;
@@ -30,7 +32,8 @@ function xStatusLink(link: SourceLink): XStatusLink | null {
 }
 
 /** Build-only presentation projection; stored source links remain immutable. */
-export function displaySourceLinks(links: readonly SourceLink[]): SourceLink[] {
+export function displaySourceLinks(links: readonly SourceLink[], markers: InstructionMarkers = {}): SourceLink[] {
+  if (markers.hijacked || markers.unsafeInstruction) return [];
   const seenStatusIds = new Set<string>();
   const display: SourceLink[] = [];
 

@@ -1516,3 +1516,136 @@ test('English chronicles reject private fields, unsafe sources and nonempty body
     });
   }
 });
+
+const instructionCases = JSON.parse(await text(join(FIXTURES, 'instruction-safety-v1.json')));
+const instructionFields = (data) => Object.entries(data).map(([key, value]) => `${JSON.stringify(key)}: ${JSON.stringify(value)}`).join('\n');
+
+async function installInstructionFixtures(site) {
+  for (const { name, data } of instructionCases) {
+    const id = `fixture-instruction-v1-${name}`;
+    // Broad RU reader may receive private producer fields; they must never render.
+    const ru = { ...data, reason: 'PRIVATE_REASON_SENTINEL', instructionEvidence: 'PRIVATE_EVIDENCE_SENTINEL' };
+    const en = { ...data, title: `English ${data.title}`, enPublishedAt: data.pubDate.replace('00:00:00', '00:05:00') };
+    await writeFile(join(site, `src/content/incidents/${id}.md`), `---\n${instructionFields(ru)}\n---\n`);
+    await writeFile(join(site, `src/content/en/incidents/${id}.md`), `---\n${instructionFields(en)}\n---\n`);
+  }
+}
+
+test('instruction-safety v1 preserves legacy meanings and renders neutral bilingual warnings across public surfaces', async () => {
+  await withTemporaryDirectory(async (directory) => {
+    const site = join(directory, 'site');
+    await copySite(site);
+    await installInstructionFixtures(site);
+    const build = buildSite(site);
+    assert.equal(build.status, 0, `${build.stdout}\n${build.stderr}`);
+    for (const locale of ['ru', 'en']) {
+      const prefix = locale === 'en' ? 'en/' : '';
+      const feed = await text(join(site, `dist/${prefix}feed/index.html`));
+      const rss = await text(join(site, `dist/${prefix}rss.xml`));
+      const home = await text(join(site, `dist/${prefix}index.html`));
+      const card = home.match(/<article class="card panel"[\s\S]*?<\/article>/)?.[0];
+      assert.ok(card?.includes('fixture-instruction-v1-dangerous-orphan'));
+      assert.ok(card.includes('--accent: var(--dim)'));
+      for (const { name, data } of instructionCases) {
+        const id = `fixture-instruction-v1-${name}`;
+        const page = await text(join(site, `dist/${prefix}incidents/${id}/index.html`));
+        const { item, canonical } = rssItemFor(rss, id, locale);
+        const content = rssContent(item);
+        const row = rowFor(feed, `/${prefix}incidents/${id}/`);
+        const dangerous = data.unsafeInstruction === true;
+        const warning = locale === 'en'
+          ? 'The message from Vendor &lt;img src=x onerror=alert(1)&gt; &amp; &quot;quoted&quot; contains a dangerous instruction.'
+          : 'В сообщении от Vendor &lt;img src=x onerror=alert(1)&gt; &amp; &quot;quoted&quot; есть опасная инструкция.';
+        // Astro text nodes need not escape quotes; decoded text still cannot create elements.
+        for (const output of [page, content]) {
+          assert.equal(output.replaceAll('&quot;', '"').includes(warning.replaceAll('&quot;', '"')), dangerous, `${locale} ${name} warning`);
+          assert.equal(output.includes(locale === 'en' ? 'Do not carry out the dangerous action described.' : 'Не выполняйте описанное опасное действие.'), dangerous);
+          assert.equal(output.includes(locale === 'en' ? 'account appears to be compromised.' : 'угнан.'), data.hijacked);
+          assert.ok(!output.includes('<img src=x'));
+          assert.equal(output.includes(data.links[0].url), !dangerous && !data.hijacked);
+        }
+        for (const output of [page, row, item, card]) {
+          for (const privateValue of ['PRIVATE_REASON_SENTINEL', 'PRIVATE_EVIDENCE_SENTINEL', 'instructionEvidence']) assert.ok(!output.includes(privateValue));
+        }
+        const facts = locale === 'en' ? ['Exploitation confirmed', 'Patch available'] : ['Эксплуатация подтверждена', 'Патч есть'];
+        for (const fact of facts) {
+          assert.equal(page.includes(`>${fact}</span>`), !dangerous);
+          assert.equal(row.includes(`>${fact}</span>`), !dangerous);
+          assert.equal(item.includes(`<category>${fact}</category>`), !dangerous);
+          if (dangerous) assert.ok(!card.includes(`>${fact}</span>`));
+        }
+        assert.deepEqual(rowAudiences(row), ['holders', 'developers']);
+        assert.ok(item.includes(`<category>${locale === 'en' ? 'Hodlers' : 'Ходлеры'}</category>`));
+        assert.ok(page.includes(`rel="canonical" href="${canonical}"`));
+        assert.ok(page.includes(`hreflang="${locale === 'en' ? 'ru' : 'en'}"`));
+        assert.ok(page.includes(`content="${data.pubDate}"`));
+        assert.ok(item.includes(`<pubDate>${new Date(data.pubDate.replace('00:00:00', locale === 'en' ? '00:05:00' : '00:00:00')).toUTCString()}</pubDate>`));
+        if (name === 'dangerous-update') assert.ok(page.includes(`href="/${prefix}incidents/fixture-instruction-v1-dangerous-root/"`));
+        if (name === 'dangerous-orphan') assert.ok(!page.includes(`href="/${prefix}incidents/fixture-instruction-v1-missing-root/"`));
+        if (name === 'confirmed-compromise') assert.ok(content.includes('The vendor confirmed the account compromise.'));
+      }
+    }
+  });
+});
+
+test('instruction-safety v1 rejects malformed and conflicting markers without relaxing strict English artifacts', async (t) => {
+  const valid = instructionCases.find(({ name }) => name === 'dangerous-root').data;
+  for (const locale of ['ru', 'en']) {
+    const cases = [
+      [{ ...valid, unsafeInstruction: 'true' }, '', 'unsafeInstruction'],
+      [{ ...valid, unsafeInstruction: true, hijacked: true }, '', 'hijacked and unsafeInstruction cannot both be true'],
+    ];
+    if (locale === 'en') {
+      for (const field of ['reason', 'instructionEvidence', 'unknownPrivateKey']) cases.push([{ ...valid, [field]: 'PRIVATE' }, '', field]);
+      cases.push([valid, 'Nonempty private body.', 'EN v1 artifact body must be empty']);
+      cases.push([{ ...valid, enPublishedAt: '2030-01-01T00:00:00.000Z' }, '', 'enPublishedAt']);
+    }
+    for (const [fields, body, expected] of cases) {
+      await t.test(`${locale} ${expected} ${fields.hijacked ? 'conflict' : body ? 'body' : 'shape'}`, () => withTemporaryDirectory(async (directory) => {
+        const site = join(directory, 'site');
+        await copySite(site);
+        const data = locale === 'en' ? { enPublishedAt: valid.pubDate, ...fields } : fields;
+        await writeFile(join(site, `src/content/${locale === 'en' ? 'en/' : ''}incidents/fixture-instruction-v1-invalid.md`), `---\n${instructionFields(data)}\n---\n${body}`);
+        const build = buildSite(site);
+        assert.notEqual(build.status, 0, `${locale} ${expected} must fail build`);
+        assert.ok(`${build.stdout}\n${build.stderr}`.includes(expected), `${build.stdout}\n${build.stderr}`);
+      }));
+    }
+  }
+});
+
+test('unsafe Russian instructions suppress legacy Markdown bodies without changing historical rendering', async (t) => {
+  await withTemporaryDirectory(async (directory) => {
+    const site = join(directory, 'site');
+    await copySite(site);
+    const originalUrl = 'https://source.invalid/instruction-body-original';
+    const body = `PRIVATE_BODY_EVIDENCE\n\n[Original source](${originalUrl})\n\n<a href="${originalUrl}">Original HTML link</a>\n\nЭксплуатация подтверждена. Патч есть.\n`;
+    const cases = [
+      ['absent', {}],
+      ['false', { unsafeInstruction: false }],
+      ['legacy-hijacked', { hijacked: true }],
+      ['dangerous', { unsafeInstruction: true }],
+    ];
+    for (const [name, markers] of cases) {
+      const fields = { title: `RU body fixture ${name}`, description: 'Public explanation', pubDate: '2041-01-01T00:00:00.000Z', statusTags: [], ...markers };
+      await writeFile(join(site, `src/content/incidents/fixture-instruction-body-${name}.md`), `---\n${instructionFields(fields)}\n---\n${body}`);
+    }
+    const build = buildSite(site);
+    assert.equal(build.status, 0, `${build.stdout}\n${build.stderr}`);
+    const rss = await text(join(site, 'dist/rss.xml'));
+    for (const [name, markers] of cases) {
+      const id = `fixture-instruction-body-${name}`;
+      const page = await text(join(site, `dist/incidents/${id}/index.html`));
+      const { item } = rssItemFor(rss, id);
+      for (const [surface, output] of [['page', page], ['RSS', rssContent(item)]]) {
+        await t.test(`${name} ${surface}`, () => {
+          for (const value of ['PRIVATE_BODY_EVIDENCE', originalUrl, 'Эксплуатация подтверждена', 'Патч есть']) {
+            assert.equal(output.includes(value), !markers.unsafeInstruction, `${surface} ${value}`);
+          }
+          assert.ok(output.includes('Public explanation'));
+          assert.equal(output.includes('есть опасная инструкция.'), Boolean(markers.unsafeInstruction));
+        });
+      }
+    }
+  });
+});

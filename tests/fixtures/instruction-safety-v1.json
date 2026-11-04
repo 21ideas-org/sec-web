@@ -1,0 +1,191 @@
+[
+  {
+    "name": "legacy",
+    "data": {
+      "title": "Instruction fixture legacy",
+      "description": "Source-supported public description.",
+      "pubDate": "2040-01-01T00:00:00.000Z",
+      "statusTags": [
+        "exploitation_confirmed",
+        "patch_available"
+      ],
+      "audience": [
+        "holders",
+        "developers"
+      ],
+      "vendor": "Vendor <img src=x onerror=alert(1)> & \"quoted\"",
+      "action": "Avoid the dangerous action described.",
+      "hijacked": false,
+      "incidentKey": "fixture|instruction-v1",
+      "links": [
+        {
+          "label": "Original source",
+          "url": "https://source.invalid/instruction-v1/legacy"
+        }
+      ]
+    }
+  },
+  {
+    "name": "safe",
+    "data": {
+      "title": "Instruction fixture safe",
+      "description": "Source-supported public description.",
+      "pubDate": "2040-01-02T00:00:00.000Z",
+      "statusTags": [
+        "exploitation_confirmed",
+        "patch_available"
+      ],
+      "audience": [
+        "holders",
+        "developers"
+      ],
+      "vendor": "Vendor <img src=x onerror=alert(1)> & \"quoted\"",
+      "action": "Avoid the dangerous action described.",
+      "hijacked": false,
+      "incidentKey": "fixture|instruction-v1",
+      "links": [
+        {
+          "label": "Original source",
+          "url": "https://source.invalid/instruction-v1/safe"
+        }
+      ],
+      "unsafeInstruction": false
+    }
+  },
+  {
+    "name": "confirmed-compromise",
+    "data": {
+      "title": "Instruction fixture confirmed-compromise",
+      "description": "The vendor confirmed the account compromise.",
+      "pubDate": "2040-01-03T00:00:00.000Z",
+      "statusTags": [
+        "exploitation_confirmed",
+        "patch_available"
+      ],
+      "audience": [
+        "holders",
+        "developers"
+      ],
+      "vendor": "Vendor <img src=x onerror=alert(1)> & \"quoted\"",
+      "action": "Avoid the dangerous action described.",
+      "hijacked": false,
+      "incidentKey": "fixture|instruction-v1",
+      "links": [
+        {
+          "label": "Original source",
+          "url": "https://source.invalid/instruction-v1/confirmed-compromise"
+        }
+      ],
+      "unsafeInstruction": false
+    }
+  },
+  {
+    "name": "legacy-hijacked",
+    "data": {
+      "title": "Instruction fixture legacy-hijacked",
+      "description": "Source-supported public description.",
+      "pubDate": "2040-01-04T00:00:00.000Z",
+      "statusTags": [
+        "exploitation_confirmed",
+        "patch_available"
+      ],
+      "audience": [
+        "holders",
+        "developers"
+      ],
+      "vendor": "Vendor <img src=x onerror=alert(1)> & \"quoted\"",
+      "action": "Avoid the dangerous action described.",
+      "hijacked": true,
+      "incidentKey": "fixture|instruction-v1",
+      "links": [
+        {
+          "label": "Original source",
+          "url": "https://source.invalid/instruction-v1/legacy-hijacked"
+        }
+      ]
+    }
+  },
+  {
+    "name": "dangerous-root",
+    "data": {
+      "title": "Instruction fixture dangerous-root",
+      "description": "Source-supported public description.",
+      "pubDate": "2040-01-05T00:00:00.000Z",
+      "statusTags": [
+        "exploitation_confirmed",
+        "patch_available"
+      ],
+      "audience": [
+        "holders",
+        "developers"
+      ],
+      "vendor": "Vendor <img src=x onerror=alert(1)> & \"quoted\"",
+      "action": "Avoid the dangerous action described.",
+      "hijacked": false,
+      "incidentKey": "fixture|instruction-v1",
+      "links": [
+        {
+          "label": "Original source",
+          "url": "https://source.invalid/instruction-v1/dangerous-root"
+        }
+      ],
+      "unsafeInstruction": true
+    }
+  },
+  {
+    "name": "dangerous-update",
+    "data": {
+      "title": "Instruction fixture dangerous-update",
+      "description": "Source-supported public description.",
+      "pubDate": "2040-01-06T00:00:00.000Z",
+      "statusTags": [
+        "exploitation_confirmed",
+        "patch_available"
+      ],
+      "audience": [
+        "holders",
+        "developers"
+      ],
+      "vendor": "Vendor <img src=x onerror=alert(1)> & \"quoted\"",
+      "action": "Avoid the dangerous action described.",
+      "hijacked": false,
+      "incidentKey": "fixture|instruction-v1",
+      "links": [
+        {
+          "label": "Original source",
+          "url": "https://source.invalid/instruction-v1/dangerous-update"
+        }
+      ],
+      "unsafeInstruction": true,
+      "parent": "fixture-instruction-v1-dangerous-root"
+    }
+  },
+  {
+    "name": "dangerous-orphan",
+    "data": {
+      "title": "Instruction fixture dangerous-orphan",
+      "description": "Source-supported public description.",
+      "pubDate": "2040-01-07T00:00:00.000Z",
+      "statusTags": [
+        "exploitation_confirmed",
+        "patch_available"
+      ],
+      "audience": [
+        "holders",
+        "developers"
+      ],
+      "vendor": "Vendor <img src=x onerror=alert(1)> & \"quoted\"",
+      "action": "Avoid the dangerous action described.",
+      "hijacked": false,
+      "incidentKey": "fixture|instruction-v1",
+      "links": [
+        {
+          "label": "Original source",
+          "url": "https://source.invalid/instruction-v1/dangerous-orphan"
+        }
+      ],
+      "unsafeInstruction": true,
+      "parent": "fixture-instruction-v1-missing-root"
+    }
+  }
+]

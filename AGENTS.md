@@ -57,6 +57,15 @@ Issue обязан содержать применимые решения websit
 
 ## Current schema и delivery
 
+- `unsafeInstruction?: boolean` — предупреждение об опасной инструкции в конкретном
+  сообщении, не вывод об угоне аккаунта. `true` скрывает source links и status facts
+  во всех consumers через `src/source-links.ts` и `src/status.ts`; legacy RU Markdown
+  body также не рендерится на странице и в RSS для этого marker. Нейтральный текст
+  задаёт `src/instruction-safety.ts`, vendor выводится escaped. `hijacked: true`
+  сохраняет legacy warning и links policy; оба marker `true` запрещены schema.
+  Missing/false не означает безопасность. EN contract остаётся strict; `reason` и
+  `instructionEvidence` публично не выводятся. Reader поставляется до нового producer;
+  существующий immutable content и frozen fixtures не переписываются.
 - `statusTags?: string[]` — optional supported facts. Наличие, включая `[]`, полностью
   отключает legacy fallback. Unknown IDs не печатаются и не создают claims; неверная
   форма останавливает build. Единственная presentation boundary — `src/status.ts`.

@@ -76,3 +76,25 @@ The paired fixture SHA-256 values are:
 It is contract evidence, not public incident content and not a claim that the later
 bot renderer already exists. Any intentional serialization change must re-pin the
 fixture bytes and hash in both repositories in one reviewed change.
+
+
+## Instruction-safety consumer contract v1
+
+`instruction-safety-v1.json` is independently authored reader evidence for central
+issue #289, based on the approved 2026-11-03 instruction-safety/BTCPay plan (SHA-256
+`4b84ec4b0ab6d4f43483677cce74431338c03a45586b8ed72fa533204e2d2a8f`). It is not
+current producer output and does not replace any pinned historical fixture.
+The harness serializes these cases into temporary RU and EN artifacts only: absent
+and false markers, an attributed confirmed-compromise narrative, legacy hijack,
+and dangerous-message root/update/orphan cases with HTML-sensitive vendor data.
+Private RU fields and invalid EN fields are added only within isolated test trees.
+All source URLs use `.invalid`; tests never visit them.
+
+`unsafeInstruction: true` warns only about the specific dangerous message and hides
+source links and status facts, including legacy RU Markdown bodies that could bypass
+the frontmatter presentation helpers. The harness separately exercises Markdown/HTML
+body links and fact/private-text sentinels for true, false, absent and legacy-hijack
+markers. `hijacked: true` preserves the old account-compromise
+warning and links policy. Both true is invalid; missing/false makes no safety or
+authenticity claim. Reader/schema deployment must precede producer activation;
+this consumer change neither enables the producer nor republishes immutable content.

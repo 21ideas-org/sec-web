@@ -1,3 +1,4 @@
+import { instructionWarning } from '../../instruction-safety.ts';
 import rss from '@astrojs/rss';
 import type { APIContext } from 'astro';
 import { SITE_NAME } from '../../consts.ts';
@@ -11,8 +12,10 @@ import { isEnHistoricalImport } from '../../en-historical-import.ts';
 const esc = (value: string) => value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 function content(entry: EnIncident): string {
   const d = entry.data;
-  const links = d.hijacked ? [] : displaySourceLinks(d.links);
+  const links = displaySourceLinks(d.links, d);
+  const warning = instructionWarning(d.vendor, 'en');
   return [
+    d.unsafeInstruction && `<p><strong>${esc(warning.title)}</strong><br>${esc(warning.action)}</p>`,
     d.hijacked && `<p><strong>The official ${esc(d.vendor ?? 'vendor')} account appears to be compromised.</strong><br>Do not follow links from its posts or enter your seed anywhere.</p>`,
     d.description && `<p>${esc(d.description)}</p>`,
     d.action && `<p><strong>Actions to take:</strong> ${esc(d.action)}</p>`,
