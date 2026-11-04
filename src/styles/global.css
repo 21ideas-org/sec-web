@@ -401,6 +401,9 @@ a:focus-visible { outline: 2px solid var(--sig); outline-offset: 2px; }
 .hijack strong { color: var(--crit-fg); }
 .hijack p { margin: 6px 0 0; }
 
+.instruction-warning { margin: 24px 0; padding: 16px 20px; }
+.instruction-warning p { margin: 6px 0 0; }
+
 /* ─── Секции и строки ─── */
 .sec { padding-top: 40px; }
 @media (max-width: 560px) { .sec { padding-top: 28px; } }

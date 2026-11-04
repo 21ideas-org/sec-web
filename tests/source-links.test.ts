@@ -45,3 +45,15 @@ test('non-X and noncanonical X URLs retain their stored safe display values', ()
 
   assert.deepEqual(displaySourceLinks(links), links);
 });
+
+
+test('instruction and legacy hijack warnings hide original links only in their presentation', () => {
+  const links = [{ label: 'Original source', url: 'https://source.invalid/message' }];
+  for (const markers of [{ unsafeInstruction: true }, { hijacked: true }]) {
+    assert.deepEqual(displaySourceLinks(links, markers), []);
+  }
+  for (const markers of [{}, { unsafeInstruction: false }, { hijacked: false }]) {
+    assert.deepEqual(displaySourceLinks(links, markers), links);
+  }
+  assert.equal(links.length, 1);
+});

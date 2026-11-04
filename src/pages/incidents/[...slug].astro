@@ -2,6 +2,7 @@
 import { render } from 'astro:content';
 import Audience from '../../components/Audience.astro';
 import IncidentCta from '../../components/IncidentCta.astro';
+import InstructionWarning from '../../components/InstructionWarning.astro';
 import Base from '../../layouts/Base.astro';
 import Urgency from '../../components/Urgency.astro';
 import Thread from '../../components/Thread.astro';
@@ -29,14 +30,15 @@ const d = entry.data;
 const start = posts[0];
 // Крошка нужна только апдейту: на начале треда она указывала бы на саму страницу.
 const isUpdate = start !== undefined && start.id !== entry.id;
-const { Content } = await render(entry);
+// Legacy Markdown may contain source links or status prose outside frontmatter.
+const Content = d.unsafeInstruction ? undefined : (await render(entry)).Content;
 const date = dateLong(d.pubDate);
 // Продукт и вендор — надзаголовком. В треде из семи постов про Core Lightning
 // заголовки похожи, а «кто это сказал» различает их сразу. Вендор опускается,
 // когда совпадает с продуктом: «Core Lightning · Core Lightning» — не строка.
 const subject = [d.product, d.vendor !== d.product ? d.vendor : null].filter(Boolean).join(' · ');
 const urgency = displayUrgency(d);
-const sourceLinks = displaySourceLinks(d.links);
+const sourceLinks = displaySourceLinks(d.links, d);
 ---
 <Base
   title={d.title}
@@ -62,6 +64,8 @@ const sourceLinks = displaySourceLinks(d.links);
     <h1 set:html={keepFlags(d.title)} />
     {d.description && <p set:html={keepFlags(d.description)} />}
 
+    {d.unsafeInstruction && <InstructionWarning vendor={d.vendor} />}
+
     {
       d.hijacked && (
         <aside class="hijack panel" role="alert">
@@ -81,7 +85,7 @@ const sourceLinks = displaySourceLinks(d.links);
     }
 
     {
-      !d.hijacked && sourceLinks.length > 0 && (
+      sourceLinks.length > 0 && (
         <div class="links">
           {sourceLinks.length === 1 ? (
             <p><strong>Источник:</strong> <a href={sourceLinks[0]!.url} rel="noopener">{sourceLinks[0]!.label}</a></p>
@@ -99,7 +103,7 @@ const sourceLinks = displaySourceLinks(d.links);
       )
     }
 
-    <Content />
+    {Content && <Content />}
 
     <IncidentCta />
 

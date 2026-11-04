@@ -1,4 +1,6 @@
-export interface StatusPresentationInput {
+import type { InstructionMarkers } from './instruction-safety.ts';
+
+export interface StatusPresentationInput extends InstructionMarkers {
   statusTags?: readonly string[];
   urgency?: readonly string[];
   exploitationStatus?: string;
@@ -20,6 +22,7 @@ const EN_FACTS: Record<string, string> = {
 
 /** Presence, including [], owns all facts. Legacy precedence remains per axis. */
 function recordedTags(input: StatusPresentationInput): readonly string[] {
+  if (input.unsafeInstruction) return [];
   if (input.statusTags !== undefined) return input.statusTags;
   const legacy = input.urgency ?? [];
   const tags: string[] = [];
