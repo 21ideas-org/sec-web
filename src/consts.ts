@@ -6,6 +6,8 @@ export const SITE_DESCRIPTION = 'Критические оповещения д�
 export const SITE_URL = 'https://sec.21ideas.org';
 
 export const TELEGRAM_URL = 'https://t.me/bitcoin21sec';
+export const EN_TELEGRAM_URL = 'https://t.me/bitcoin_watch';
+export const SITE_REPOSITORY_URL = 'https://github.com/21ideas-org/sec-web';
 export const NOSTR_URL = 'https://njump.me/npub1lm3f47nzyf0rjp6fsl4qlnkmzed4uj4h2gnf2vhe3l3mrj85vqks6z3c7l';
 
 // Поддержка. Реквизиты живут ТОЛЬКО здесь и показываются ТОЛЬКО на /support.
