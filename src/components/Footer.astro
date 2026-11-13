@@ -1,10 +1,61 @@
 ---
-import { SITE_NAME, SITE_TITLE } from '../consts.ts';
+import { EN_TELEGRAM_URL, NOSTR_URL, SITE_NAME, SITE_REPOSITORY_URL, SITE_TITLE, TELEGRAM_URL } from '../consts.ts';
 interface Props { locale?: 'ru' | 'en'; }
 const { locale = 'ru' } = Astro.props;
-const prefix = locale === 'en' ? '/en' : '';
+const en = locale === 'en';
+const prefix = en ? '/en' : '';
+const supportLabel = en ? 'Support the project' : 'Поддержать проект';
 ---
 <footer class="foot">
   <span><span class="fname">{SITE_NAME}</span><span class="fshort">{SITE_TITLE}</span> · by <a href="https://21ideas.org">21ideas</a></span>
-  <span><a href={`${prefix}/rss.xml`}>RSS</a> · <a href={`${prefix}/about`}>{locale === 'en' ? 'about' : 'о проекте'}</a> · <a href={`${prefix}/support`}>{locale === 'en' ? 'support' : 'поддержать'}</a></span>
+  <div class="footer-links">
+    <a class="footer-icon" href={`${prefix}/support/`} aria-label={supportLabel} title={supportLabel}>
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true" focusable="false">
+        <path d="m13 2-9 12h7l-1 8 10-12h-7l1-8Z" />
+      </svg>
+    </a>
+    <a class="footer-icon" href={SITE_REPOSITORY_URL} rel="noopener" aria-label={en ? 'Site repository on GitHub' : 'Репозиторий сайта на GitHub'} title="GitHub">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true" focusable="false">
+        <path d="M12 .297C5.37.297 0 5.67 0 12.297c0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.011-1.04-.017-2.04-3.338.724-4.043-1.61-4.043-1.61-.546-1.387-1.333-1.756-1.333-1.756-1.09-.745.083-.729.083-.729 1.205.085 1.838 1.237 1.838 1.237 1.07 1.835 2.809 1.305 3.495.998.108-.776.418-1.305.762-1.605-2.665-.305-5.467-1.334-5.467-5.93 0-1.31.469-2.381 1.236-3.221-.124-.303-.536-1.524.117-3.176 0 0 1.008-.322 3.301 1.23a11.52 11.52 0 0 1 3.003-.404c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.655 1.652.243 2.873.12 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.621-5.479 5.921.43.372.823 1.102.823 2.222 0 1.606-.015 2.899-.015 3.293 0 .322.216.694.825.576C20.565 22.092 24 17.594 24 12.297c0-6.627-5.373-12-12-12" />
+      </svg>
+    </a>
+    <a class="footer-icon" href={en ? EN_TELEGRAM_URL : TELEGRAM_URL} rel="noopener" aria-label={en ? 'Subscribe on Telegram' : 'Подписаться в Telegram'} title="Telegram">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true" focusable="false">
+        <path d="M22.8 3.2c.3-1.2-.5-1.7-1.3-1.4L1.8 9.4c-1.3.5-1.3 1.2-.3 1.5l5.1 1.6L18.4 5c.6-.4 1.2-.2.7.2l-9.6 8.7-.4 5.2c.6 0 .9-.3 1.3-.6l2.5-2.4 5.2 3.8c1 .5 1.6.3 1.9-.9z" />
+      </svg>
+    </a>
+    {en && <a class="footer-icon" href={NOSTR_URL} rel="noopener" aria-label="Follow on Nostr" title="Nostr">
+      <!-- Andrea Nicolini / Bembureda, CC0: https://github.com/mbarulli/nostr-logo. ViewBox trims the source padding. -->
+      <svg viewBox="48 44 168 168" width="18" height="18" fill="currentColor" aria-hidden="true" focusable="false">
+        <path d="M210.8 199.4c0 3.1-2.5 5.7-5.7 5.7h-68c-3.1 0-5.7-2.5-5.7-5.7v-15.5c.3-19 2.3-37.2 6.5-45.5 2.5-5 6.7-7.7 11.5-9.1 9.1-2.7 24.9-.9 31.7-1.2 0 0 20.4.8 20.4-10.7s-9.1-8.6-9.1-8.6c-10 .3-17.7-.4-22.6-2.4-8.3-3.3-8.6-9.2-8.6-11.2-.4-23.1-34.5-25.9-64.5-20.1-32.8 6.2.4 53.3.4 116.1v8.4c0 3.1-2.6 5.6-5.7 5.6H57.7c-3.1 0-5.7-2.5-5.7-5.7v-144c0-3.1 2.5-5.7 5.7-5.7h31.7c3.1 0 5.7 2.5 5.7 5.7 0 4.7 5.2 7.2 9 4.5 11.4-8.2 26-12.5 42.4-12.5 36.6 0 64.4 21.4 64.4 68.7v83.2ZM150 99.3c0-6.7-5.4-12.1-12.1-12.1s-12.1 5.4-12.1 12.1 5.4 12.1 12.1 12.1S150 106 150 99.3Z" />
+      </svg>
+    </a>}
+    <a class="footer-icon" href={`${prefix}/rss.xml`} aria-label={en ? 'Subscribe via RSS' : 'Подписаться по RSS'} title="RSS">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false">
+        <circle cx="5" cy="19" r="1.7" fill="currentColor" stroke="none" />
+        <path d="M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16" />
+      </svg>
+    </a>
+  </div>
 </footer>
+
+<style>
+  .foot { align-items: center; }
+  .footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-inline-start: auto;
+  }
+  .footer-icon {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+  }
+  @media (pointer: coarse) {
+    .footer-icon { width: 44px; height: 44px; }
+  }
+</style>
