@@ -7,7 +7,7 @@ const prefix = en ? '/en' : '';
 const supportLabel = en ? 'Support the project' : 'Поддержать проект';
 ---
 <footer class="foot">
-  <span><span class="fname">{SITE_NAME}</span><span class="fshort">{SITE_TITLE}</span> · by <a href="https://21ideas.org">21ideas</a></span>
+  <span><span class="fname">{SITE_NAME}</span><span class="fshort">{SITE_TITLE}</span> · by <a href={en ? 'https://21ideas.org/en/' : 'https://21ideas.org'}>21ideas</a></span>
   <div class="footer-links">
     <a class="footer-icon" href={`${prefix}/support/`} aria-label={supportLabel} title={supportLabel}>
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true" focusable="false">
