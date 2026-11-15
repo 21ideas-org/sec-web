@@ -98,8 +98,9 @@ export async function allEnArchive(): Promise<EnArchiveEntry[]> {
 export const own = (list: Incident[]) => list.filter((e) => !e.data.external);
 /** Хроника, которая ведётся руками. */
 export const archive = (list: Incident[]) => list.filter((e) => e.data.external);
-/** Начала тредов: апдейт (`parent`) новым инцидентом не считается. */
-export const threadStarts = (list: Incident[]) => own(list).filter((e) => !e.data.parent);
+/** Начала тредов: апдейты считаются один раз с корнем, сироты — самостоятельно. */
+export const threadStarts = (list: Incident[]) =>
+  own(list).filter((entry) => threadStart(list, entry).id === entry.id);
 
 /**
  * Начало треда, которому принадлежит пост.

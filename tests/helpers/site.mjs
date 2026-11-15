@@ -43,8 +43,10 @@ export async function text(path) {
   return readFile(path, 'utf8');
 }
 
-export function buildSite(site) {
-  return spawnSync(process.execPath, [join(REPOSITORY, 'node_modules/astro/bin/astro.mjs'), 'build'], {
+export function buildSite(site, { now } = {}) {
+  // Freeze Date.now in the build process when testing counters and time windows.
+  const clock = now === undefined ? [] : ['--import', `data:text/javascript,Date.now=()=>${now}`];
+  return spawnSync(process.execPath, [...clock, join(REPOSITORY, 'node_modules/astro/bin/astro.mjs'), 'build'], {
     cwd: site,
     encoding: 'utf8',
     env: { ...process.env, ASTRO_TELEMETRY_DISABLED: '1' },
