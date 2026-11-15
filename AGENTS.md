@@ -44,7 +44,7 @@ Issue обязан содержать применимые решения websit
   publication time, известное до GitHub/Telegram network calls. Archive сохраняет свой
   `<YYYY-MM-DD>-<name>` naming.
 - `parent` у update равен root slug. Orphan должен остаться видимой самостоятельной
-  страницей, а не уронить build.
+  страницей, а не уронить build; RU counter и статистика используют тот же fallback.
 - `external: true` одновременно отключает собственную incident page и RSS, исключает
   запись из counter и направляет link на `sourceUrl`. Не разъединять эти следствия.
 - Counter считает от первого post последнего thread; facts описывают отдельную
