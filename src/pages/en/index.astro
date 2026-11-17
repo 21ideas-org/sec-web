@@ -4,7 +4,7 @@ import Base from '../../layouts/Base.astro';
 import Counter from '../../components/Counter.astro';
 import EnRow from '../../components/EnRow.astro';
 import Urgency from '../../components/Urgency.astro';
-import { SITE_NAME } from '../../consts.ts';
+import { EN_TELEGRAM_URL, NOSTR_URL, SITE_NAME } from '../../consts.ts';
 import { enIncidentGroups } from '../../en-incidents.ts';
 import { allEnIncidents, allIncidents, dateShortEn } from '../../lib.ts';
 import { displayUrgency, urgencyAccent } from '../../status.ts';
@@ -27,8 +27,16 @@ const yearAgo = Date.now() - 365 * 864e5;
       <div class="tags"><Urgency tags={latestUrgency} /><Audience values={latest.data.audience} locale="en" /><span class="aud when">{dateShortEn(latest.data.pubDate)}</span></div>
       <h2><a href={`/en/incidents/${latest.id}/`}>{latest.data.title}</a></h2>
       <p>{latest.data.description}</p>
-      <a class="go" href={`/en/incidents/${latest.id}/`}>Details →</a>
+      <a class="go" href={`/en/incidents/${latest.id}/`}>Details</a>
     </article>
   </section>}
+  <section class="subscribe panel" aria-label="Subscribe to alerts">
+    <p>Get Bitcoin Security Alerts.</p>
+    <div class="subscribe-actions">
+      <a class="subscribe-btn subscribe-btn-primary" href={EN_TELEGRAM_URL} rel="noopener">telegram</a>
+      <a class="subscribe-btn" href="/en/rss.xml">rss</a>
+      <a class="subscribe-btn" href={NOSTR_URL} rel="noopener">nostr</a>
+    </div>
+  </section>
   {recent.length > 0 && <section class="sec"><div class="sec-h"><h2><a href="/en/feed">Earlier alerts</a></h2></div><div class="rows">{recent.map((entry) => <EnRow entry={entry} />)}</div></section>}
 </Base>

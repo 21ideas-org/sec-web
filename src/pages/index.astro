@@ -45,17 +45,17 @@ const latestUrgency = latest ? displayUrgency(latest.data) : [];
           </div>
           <h2><a href={`/incidents/${latest.id}/`}>{latest.data.title}</a></h2>
           <p>{latest.data.description}</p>
-          <a class="go" href={`/incidents/${latest.id}/`}>Подробности →</a>
+          <a class="go" href={`/incidents/${latest.id}/`}>Подробности</a>
         </article>
       </section>
     )
   }
 
   <section class="subscribe panel" aria-label="Подписка на оповещения">
-    <p>Получать оповещения об анонсах можно в Telegram или по RSS.</p>
+    <p>Получайте оповещения.</p>
     <div class="subscribe-actions">
-      <a class="subscribe-btn subscribe-btn-primary" href={TELEGRAM_URL} rel="noopener">telegram <span aria-hidden="true">→</span></a>
-      <a class="subscribe-btn" href="/rss.xml">rss <span aria-hidden="true">→</span></a>
+      <a class="subscribe-btn subscribe-btn-primary" href={TELEGRAM_URL} rel="noopener">telegram</a>
+      <a class="subscribe-btn" href="/rss.xml">rss</a>
     </div>
   </section>
 
