@@ -1649,3 +1649,39 @@ test('unsafe Russian instructions suppress legacy Markdown bodies without changi
     }
   });
 });
+
+test('the Russian and English source catalogs link to the same monitored sources', async () => {
+  await withTemporaryDirectory(async (directory) => {
+    const site = join(directory, 'site');
+    await copySite(site);
+    const build = buildSite(site);
+    assert.equal(build.status, 0, `${build.stdout}\n${build.stderr}`);
+
+    const russian = await text(join(site, 'dist/sources/index.html'));
+    const english = await text(join(site, 'dist/en/sources/index.html'));
+    assert.match(russian, /<html lang="ru">/);
+    assert.match(english, /<html lang="en">/);
+    assert.ok(russian.includes('hreflang="en" href="https://sec.21ideas.org/en/sources/"'));
+    assert.ok(english.includes('hreflang="ru" href="https://sec.21ideas.org/sources/"'));
+    assert.ok(russian.includes('Манифесты прошивок'));
+    assert.ok(english.includes('Firmware manifests'));
+    const sourceHrefs = (page) => [...page.matchAll(/<ul class="source-links"[^>]*>(.*?)<\/ul>/gs)]
+      .flatMap(([, list]) => [...list.matchAll(/href="([^"]+)"/g)].map(([, url]) => url));
+    const urls = sourceHrefs(russian);
+    assert.deepEqual(sourceHrefs(english), urls);
+    for (const url of [
+      'https://bitkey.world/security-updates',
+      'https://github.com/proto-at-block/bitkey',
+      'https://github.com/trezor/trezor-firmware',
+      'https://github.com/trezor/data/tree/master/firmware',
+      'https://github.com/ElementsProject/elements',
+      'https://blog.liquid.net/rss/',
+      'https://github.com/BitBoxSwiss/bitbox-wallet-app',
+      'https://github.com/bitcoin-core/secp256k1',
+      'https://github.com/Blockstream/green_qt',
+      'https://github.com/Start9Labs/start-technologies',
+    ]) assert.ok(urls.includes(url), `missing source ${url}`);
+    assert.ok(!urls.some((url) => url.includes('bitcoinknots/bitcoin')));
+    assert.ok(!urls.includes('https://github.com/Start9Labs/start-os'));
+  });
+});
