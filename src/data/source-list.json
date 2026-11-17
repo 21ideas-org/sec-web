@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-29",
+  "updatedAt": "2026-11-17",
   "sources": [
     {
       "id": "coldcard",
@@ -36,6 +36,14 @@
         {
           "label": "GitHub · trezor/trezor-suite",
           "url": "https://github.com/trezor/trezor-suite"
+        },
+        {
+          "label": "GitHub · trezor/trezor-firmware",
+          "url": "https://github.com/trezor/trezor-firmware"
+        },
+        {
+          "label": "Манифесты прошивок · Trezor",
+          "url": "https://github.com/trezor/data/tree/master/firmware"
         },
         {
           "label": "X · @Trezor",
@@ -76,12 +84,33 @@
           "url": "https://github.com/digitalbitbox/bitbox02-firmware"
         },
         {
+          "label": "GitHub · BitBoxSwiss/bitbox-wallet-app",
+          "url": "https://github.com/BitBoxSwiss/bitbox-wallet-app"
+        },
+        {
           "label": "RSS · blog.bitbox.swiss",
           "url": "https://blog.bitbox.swiss/en/rss/"
         },
         {
           "label": "X · @BitBoxSwiss",
           "url": "https://x.com/BitBoxSwiss"
+        }
+      ]
+    },
+    {
+      "id": "bitkey",
+      "name": "Bitkey / Block",
+      "group": "A",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "Бюллетени · Bitkey",
+          "url": "https://bitkey.world/security-updates"
+        },
+        {
+          "label": "GitHub · proto-at-block/bitkey",
+          "url": "https://github.com/proto-at-block/bitkey"
         }
       ]
     },
@@ -418,7 +447,7 @@
     },
     {
       "id": "blockstream-green",
-      "name": "Blockstream Green",
+      "name": "Blockstream App (Green)",
       "group": "B",
       "enabled": true,
       "verified": true,
@@ -426,6 +455,10 @@
         {
           "label": "GitHub · Blockstream/gdk",
           "url": "https://github.com/Blockstream/gdk"
+        },
+        {
+          "label": "GitHub · Blockstream/green_qt (Desktop)",
+          "url": "https://github.com/Blockstream/green_qt"
         }
       ]
     },
@@ -498,6 +531,36 @@
         {
           "label": "Atom · bitcoincore.org",
           "url": "https://bitcoincore.org/en/feed.xml"
+        }
+      ]
+    },
+    {
+      "id": "elements",
+      "name": "Elements Core / Liquid Network",
+      "group": "C",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · ElementsProject/elements",
+          "url": "https://github.com/ElementsProject/elements"
+        },
+        {
+          "label": "RSS · blog.liquid.net",
+          "url": "https://blog.liquid.net/rss/"
+        }
+      ]
+    },
+    {
+      "id": "libsecp256k1",
+      "name": "libsecp256k1",
+      "group": "C",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "GitHub · bitcoin-core/secp256k1",
+          "url": "https://github.com/bitcoin-core/secp256k1"
         }
       ]
     },
@@ -870,8 +933,8 @@
       "verified": true,
       "links": [
         {
-          "label": "GitHub · Start9Labs/start-os",
-          "url": "https://github.com/Start9Labs/start-os"
+          "label": "GitHub · Start9Labs/start-technologies",
+          "url": "https://github.com/Start9Labs/start-technologies"
         },
         {
           "label": "X · @start9labs",
