@@ -1665,6 +1665,12 @@ test('the Russian and English source catalogs link to the same monitored sources
     assert.ok(english.includes('hreflang="ru" href="https://sec.21ideas.org/sources/"'));
     assert.ok(russian.includes('Манифесты прошивок'));
     assert.ok(english.includes('Firmware manifests'));
+    for (const page of [russian, english]) {
+      const wallets = page.match(/<section[^>]*id="group-B"[^>]*>[\s\S]*?<\/section>/u)?.[0];
+      assert.ok(wallets);
+      assert.match(wallets, />Coinos<\/span>/u);
+      assert.match(wallets, />Coinos v3<\/span>/u);
+    }
     const sourceHrefs = (page) => [...page.matchAll(/<ul class="source-links"[^>]*>(.*?)<\/ul>/gs)]
       .flatMap(([, list]) => [...list.matchAll(/href="([^"]+)"/g)].map(([, url]) => url));
     const urls = sourceHrefs(russian);
@@ -1680,8 +1686,17 @@ test('the Russian and English source catalogs link to the same monitored sources
       'https://github.com/bitcoin-core/secp256k1',
       'https://github.com/Blockstream/green_qt',
       'https://github.com/Start9Labs/start-technologies',
+      'https://github.com/blinkbitcoin/blink-legacy',
+      'https://blog.blockstream.com/sitemap-posts.xml',
+      'https://git.coinos.io/coinos-server.git/atom/?h=master',
+      'https://git.coinos.io/coinos-ui.git/atom/?h=master',
+      'https://git.coinos.io/coinosv3.git/atom/?h=master',
+      'https://git.coinos.io/coinosv3-server.git/atom/?h=master',
     ]) assert.ok(urls.includes(url), `missing source ${url}`);
     assert.ok(!urls.some((url) => url.includes('bitcoinknots/bitcoin')));
     assert.ok(!urls.includes('https://github.com/Start9Labs/start-os'));
+    assert.ok(!urls.includes('https://github.com/blinkbitcoin/blink'));
+    assert.ok(!urls.includes('https://blog.blockstream.com/feed/'));
+    assert.ok(!urls.some((url) => url.startsWith('https://github.com/coinos/')));
   });
 });

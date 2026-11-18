@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-17",
+  "updatedAt": "2026-11-18",
   "sources": [
     {
       "id": "coldcard",
@@ -190,8 +190,8 @@
           "url": "https://github.com/blinkbitcoin/blink-mobile"
         },
         {
-          "label": "GitHub · blinkbitcoin/blink",
-          "url": "https://github.com/blinkbitcoin/blink"
+          "label": "GitHub · blinkbitcoin/blink-legacy",
+          "url": "https://github.com/blinkbitcoin/blink-legacy"
         },
         {
           "label": "Статус · blink.statuspage.io",
@@ -470,8 +470,8 @@
       "verified": true,
       "links": [
         {
-          "label": "RSS · blog.blockstream.com",
-          "url": "https://blog.blockstream.com/feed/"
+          "label": "Карта блога · blog.blockstream.com",
+          "url": "https://blog.blockstream.com/sitemap-posts.xml"
         },
         {
           "label": "X · @Blockstream",
@@ -1236,12 +1236,29 @@
       "verified": true,
       "links": [
         {
-          "label": "GitHub · coinos/coinos-server",
-          "url": "https://github.com/coinos/coinos-server"
+          "label": "Atom · coinos-server",
+          "url": "https://git.coinos.io/coinos-server.git/atom/?h=master"
         },
         {
-          "label": "GitHub · coinos/coinos-ui",
-          "url": "https://github.com/coinos/coinos-ui"
+          "label": "Atom · coinos-ui",
+          "url": "https://git.coinos.io/coinos-ui.git/atom/?h=master"
+        }
+      ]
+    },
+    {
+      "id": "coinos-v3",
+      "name": "Coinos v3",
+      "group": "B",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "Atom · coinosv3",
+          "url": "https://git.coinos.io/coinosv3.git/atom/?h=master"
+        },
+        {
+          "label": "Atom · coinosv3-server",
+          "url": "https://git.coinos.io/coinosv3-server.git/atom/?h=master"
         }
       ]
     }
