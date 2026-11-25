@@ -1676,6 +1676,15 @@ test('the Russian and English source catalogs link to the same monitored sources
     const urls = sourceHrefs(russian);
     assert.deepEqual(sourceHrefs(english), urls);
     for (const url of [
+      'https://braiins.com/blog/rss.xml',
+      'https://x.com/Braiins',
+      'https://downloads.braiins.com/braiins-os/',
+    ]) assert.equal(urls.filter((sourceUrl) => sourceUrl === url).length, 1, `Braiins source ${url}`);
+    assert.equal((russian.match(/>Braiins<\/span>/g) ?? []).length, 1);
+    assert.equal((english.match(/>Braiins<\/span>/g) ?? []).length, 1);
+    assert.ok(russian.includes('Релизы Braiins OS'));
+    assert.ok(english.includes('Braiins OS releases'));
+    for (const url of [
       'https://bitkey.world/security-updates',
       'https://github.com/proto-at-block/bitkey',
       'https://github.com/trezor/trezor-firmware',
