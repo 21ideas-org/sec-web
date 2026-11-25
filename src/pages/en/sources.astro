@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import registry from '../../data/source-list.json';
 const sourceLabel = (label: string) => label
+  .replace(/^Релизы Braiins OS$/u, 'Braiins OS releases')
   .replace(/^Карта блога · /u, 'Blog map · ')
   .replace(/^Манифесты прошивок · /u, 'Firmware manifests · ')
   .replace(/^Бюллетени · /u, 'Bulletins · ')

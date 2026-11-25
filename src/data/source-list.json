@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-18",
+  "updatedAt": "2026-11-25",
   "sources": [
     {
       "id": "coldcard",
@@ -1003,6 +1003,27 @@
         {
           "label": "GitHub · bitaxeorg/ESP-Miner",
           "url": "https://github.com/bitaxeorg/ESP-Miner"
+        }
+      ]
+    },
+    {
+      "id": "braiins",
+      "name": "Braiins",
+      "group": "H",
+      "enabled": true,
+      "verified": true,
+      "links": [
+        {
+          "label": "RSS · braiins.com",
+          "url": "https://braiins.com/blog/rss.xml"
+        },
+        {
+          "label": "X · @Braiins",
+          "url": "https://x.com/Braiins"
+        },
+        {
+          "label": "Релизы Braiins OS",
+          "url": "https://downloads.braiins.com/braiins-os/"
         }
       ]
     },
